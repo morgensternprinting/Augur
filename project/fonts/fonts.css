@@ -1,0 +1,12 @@
+/* ──────────────────────────────────────────────────────────────
+   Augur — Webfonts
+   IBM Plex superfamily: a sober, instrument-grade grotesque.
+   - Plex Sans            → UI + body
+   - Plex Sans Condensed  → display / big numerals headers
+   - Plex Mono            → stats, profiles, tabular readouts
+
+   NOTE: loaded from Google Fonts CDN. Self-host the .woff2 for full
+   offline support — flagged in readme.md.
+   ────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');

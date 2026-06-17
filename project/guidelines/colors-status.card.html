@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Status & feedback" subtitle="Unit status dots + semantic signals" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); font-family:var(--font-ui); color:var(--text-secondary); padding:18px; display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  .item { display:flex; align-items:center; gap:9px; font-size:13px; }
+  .dot { width:14px; height:14px; border-radius:var(--r-pill); flex:none; }
+  .key { font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); }
+  .grp { display:flex; flex-direction:column; gap:12px; }
+</style>
+</head>
+<body>
+  <div class="grp">
+    <div class="item"><span class="dot" style="background:var(--status-full)"></span> Pleine force <span class="key">--status-full</span></div>
+    <div class="item"><span class="dot" style="background:var(--status-weak)"></span> Sous 25 % de FU <span class="key">--status-weak</span></div>
+  </div>
+  <div class="grp">
+    <div class="item"><span class="dot" style="background:var(--status-fleeing)"></span> En fuite <span class="key">--status-fleeing</span></div>
+    <div class="item"><span class="dot" style="background:var(--status-destroyed)"></span> Détruite <span class="key">--status-destroyed</span></div>
+  </div>
+  <div class="grp">
+    <div class="item"><span class="dot" style="background:var(--positive)"></span> Positive</div>
+    <div class="item"><span class="dot" style="background:var(--danger)"></span> Danger</div>
+  </div>
+</body>
+</html>

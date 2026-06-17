@@ -1,0 +1,26 @@
+<!-- @dsCard group="Type" viewport="700x190" name="Body & UI" subtitle="Plex Sans — reading sizes at the table" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); color:var(--text-primary); padding:18px 22px; font-family:var(--font-ui); }
+  .stack { display:flex; flex-direction:column; gap:10px; }
+  .line { display:flex; align-items:baseline; gap:14px; }
+  .key { font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); width:120px; flex:none; }
+  .b { font-size:var(--fs-body); }
+  .sm { font-size:var(--fs-sm); color:var(--text-secondary); }
+  .xs { font-size:var(--fs-xs); color:var(--text-tertiary); }
+  .lab { font-size:var(--fs-label); letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--text-tertiary); font-weight:600; }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="line"><span class="key">body · 16/400</span><span class="b">Choisis l'unité adverse engagée.</span></div>
+    <div class="line"><span class="key">sm · 14/400</span><span class="sm">Profil rempli automatiquement depuis le roster.</span></div>
+    <div class="line"><span class="key">xs · 12/400</span><span class="xs">Modificateurs de résolution statiques</span></div>
+    <div class="line"><span class="key">label · 11/600</span><span class="lab">Force d'unité</span></div>
+  </div>
+</body>
+</html>

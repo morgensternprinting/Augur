@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Outcome spectrum" subtitle="5 steps, best → catastrophe — the core of the palette" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); font-family:var(--font-ui); color:var(--text-secondary); padding:18px; }
+  .row { display:flex; gap:8px; }
+  .out { flex:1; border-radius:var(--r-md); padding:10px; box-sizing:border-box; height:108px; display:flex; flex-direction:column; justify-content:space-between; color:#06090d; }
+  .nm { font-family:var(--font-display); font-weight:600; font-size:15px; }
+  .key { font-family:var(--font-mono); font-size:10px; opacity:.75; }
+  .flee { box-shadow:var(--glow-flee); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="out" style="background:var(--out-win)"><span class="nm">L'emporter</span><span class="key">--out-win</span></div>
+    <div class="out" style="background:var(--out-draw)"><span class="nm" style="color:#eef2f8">Égalité</span><span class="key" style="color:#eef2f8">--out-draw</span></div>
+    <div class="out" style="background:var(--out-give)"><span class="nm">Céder</span><span class="key">--out-give</span></div>
+    <div class="out" style="background:var(--out-fallback)"><span class="nm">Reculer</span><span class="key">--out-fallback</span></div>
+    <div class="out flee" style="background:var(--out-flee)"><span class="nm" style="color:#fff">FUIR</span><span class="key" style="color:#fff">--out-flee</span></div>
+  </div>
+</body>
+</html>
