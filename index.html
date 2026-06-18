@@ -89,12 +89,28 @@ button{font-family:inherit;}
 @keyframes augur-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
-/* On a real phone (narrow), let the frame fill the screen */
-@media (max-width:430px){
-  body{padding:0;}
-  #root .augur-frame{width:100vw!important;height:100vh!important;height:100dvh!important;border:none!important;border-radius:0!important;box-shadow:none!important;}
-}
 @media (min-width:431px){ body{padding:24px;box-sizing:border-box;} }
+
+/* ── Real phone (narrow): drop the fixed-height device shell and let the
+   document scroll naturally (bulletproof on iOS Safari). The tab bar is
+   pinned to the viewport with position:fixed; content reserves space for it. ── */
+@media (max-width:430px){
+  html,body{height:auto;}
+  body{display:block;padding:0;min-height:100dvh;}
+  .augur-frame{
+    width:100%!important;height:auto!important;min-height:100dvh!important;
+    border:none!important;border-radius:0!important;box-shadow:none!important;
+    display:block!important;overflow:visible!important;
+  }
+  .augur-content{display:block!important;flex:none!important;overflow:visible!important;min-height:0!important;}
+  .augur-body{overflow:visible!important;height:auto!important;flex:none!important;}
+  /* tab bar fixed to the bottom of the viewport */
+  .augur-tabbar{position:fixed!important;left:0;right:0;bottom:0;z-index:40;}
+  /* keep the last content/action bar clear of the fixed tab bar */
+  .augur-content{padding-bottom:calc(64px + var(--safe-bottom))!important;}
+  /* modal sheets must cover the viewport, not the (now tall) frame */
+  .augur-sheet{position:fixed!important;}
+}
 </style>
 </head>
 <body>
@@ -645,7 +661,7 @@ function ScreenHeader({ title, eyebrow, right=null }) {
     {right}</div>;
 }
 function Body({ children, style={} }) {
-  return <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',
+  return <div className="augur-body" style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',
     padding:'0 var(--screen-pad) var(--screen-pad)',
     display:'flex',flexDirection:'column',gap:'var(--sp-3)',...style}}>{children}</div>;
 }
@@ -679,7 +695,7 @@ const TABS = [
   {key:'tracker',label:'Partie',icon:'map'},
 ];
 function TabBar({ active, onChange }) {
-  return <div style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
+  return <div className="augur-tabbar" style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
     background:'rgba(8,10,14,0.82)',backdropFilter:'blur(16px)',borderTop:'1px solid var(--border-default)'}}>
     {TABS.map(t=>{const on=t.key===active;
       return <button key={t.key} type="button" onClick={()=>onChange(t.key)}
@@ -695,7 +711,7 @@ function PhoneFrame({ active, onTab, children }) {
     background:'var(--bg-app)',borderRadius:44,overflow:'hidden',border:'10px solid #000',
     boxShadow:'var(--shadow-3),0 0 0 1px #2a2f38',display:'flex',flexDirection:'column'}}>
     <StatusBar/>
-    <div style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
+    <div className="augur-content" style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
     {onTab&&<TabBar active={active} onChange={onTab}/>}
   </div>;
 }
@@ -847,7 +863,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
 
   const tgtOptions = [...lists.map((l,i)=>({value:String(i),label:l.name||('Liste '+(i+1))})),{value:'new',label:'➕ Nouvelle liste'}];
 
-  return <div onClick={onBack} style={{position:'absolute',inset:0,zIndex:51,display:'flex',flexDirection:'column',
+  return <div className="augur-sheet" onClick={onBack} style={{position:'absolute',inset:0,zIndex:51,display:'flex',flexDirection:'column',
     justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
@@ -896,7 +912,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
   const filtered = units.filter(u => norm(u.name).includes(norm(q)));
   const rowClick = (u) => { if (configurable) setCfg(u); else { onPick(u.id); onClose(); } };
   return <Fragment>
-    <div onClick={onClose} style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
+    <div className="augur-sheet" onClick={onClose} style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
       justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
       <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
         borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
