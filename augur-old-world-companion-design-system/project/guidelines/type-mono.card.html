@@ -1,0 +1,24 @@
+<!-- @dsCard group="Type" viewport="700x160" name="Mono / stat readouts" subtitle="Plex Mono — tabular profiles & probabilities" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); color:var(--text-primary); padding:18px 22px; font-family:var(--font-mono); }
+  .stack { display:flex; flex-direction:column; gap:12px; }
+  .profile { font-size:16px; font-weight:600; letter-spacing:.01em; }
+  .profile small { color:var(--text-tertiary); font-weight:400; }
+  .pct { font-size:22px; font-weight:600; color:var(--signal-400); }
+  .key { font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); }
+  .pos { color:var(--positive); } .neg { color:var(--danger); }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="profile">CC&nbsp;4&nbsp;<small>·</small>&nbsp;F&nbsp;3&nbsp;<small>·</small>&nbsp;E&nbsp;4&nbsp;<small>·</small>&nbsp;A&nbsp;1&nbsp;<small>·</small>&nbsp;Svg&nbsp;5+&nbsp;<small>·</small>&nbsp;Cd&nbsp;7</div>
+    <div><span class="pct">63&nbsp;%</span> &nbsp; <span class="pct pos">+148</span> &nbsp; <span class="pct neg">−92</span></div>
+    <div class="key">tabular figures · signed VP · French % spacing</div>
+  </div>
+</body>
+</html>

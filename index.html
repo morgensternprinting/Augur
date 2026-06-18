@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C0F14">
+<title>Augur — Compagnon Old World</title>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Augur — table-side companion for Warhammer: The Old World.
+     Single self-contained file. Real combat engine (Monte-Carlo)
+     wired to the existing TOW unit data. Dark-first sober instrument.
+     Design system: augur-old-world-companion-design-system handoff.
+     ══════════════════════════════════════════════════════════════ -->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ---- Neutral slate ramp ---- */
+  --slate-950:#080A0E; --slate-900:#0C0F14; --slate-880:#11151C; --slate-850:#151B24;
+  --slate-800:#1B232F; --slate-750:#222C3A; --slate-700:#2B3645; --slate-600:#3B4859;
+  --slate-500:#556377; --slate-400:#7C8CA3; --slate-300:#A2B0C4; --slate-200:#C9D3E0;
+  --slate-100:#E7ECF3; --slate-50:#F4F6FA;
+
+  /* ---- Brand signal ---- */
+  --signal-700:#1E6E92; --signal-600:#2A8DB8; --signal-500:#3FA7D6; --signal-400:#6BC1E4; --signal-300:#9BD7EE;
+  --signal-soft:rgba(63,167,214,0.14); --signal-glow:rgba(63,167,214,0.30);
+
+  /* ---- Outcome spectrum (best → catastrophe) ---- */
+  --out-win:#4FB07A; --out-draw:#6E83A6; --out-give:#C9A24B; --out-fallback:#D98441; --out-flee:#E4544E;
+  --out-win-soft:rgba(79,176,122,0.16); --out-give-soft:rgba(201,162,75,0.16);
+  --out-flee-soft:rgba(228,84,78,0.16); --out-flee-glow:rgba(228,84,78,0.34);
+
+  /* ---- Status ---- */
+  --status-full:#4FB07A; --status-weak:#C9A24B; --status-fleeing:#E4544E; --status-destroyed:#55657C;
+
+  /* ---- Semantic ---- */
+  --positive:#4FB07A; --caution:#D9A441; --danger:#E4544E; --info:#3FA7D6;
+
+  /* ---- Surfaces ---- */
+  --bg-app:var(--slate-900); --bg-sunken:var(--slate-950);
+  --surface-1:var(--slate-850); --surface-2:var(--slate-800); --surface-3:var(--slate-750); --surface-hover:var(--slate-700);
+
+  /* ---- Borders ---- */
+  --border-subtle:rgba(162,176,196,0.10); --border-default:rgba(162,176,196,0.16); --border-strong:rgba(162,176,196,0.28);
+
+  /* ---- Text ---- */
+  --text-primary:var(--slate-100); --text-secondary:var(--slate-300); --text-tertiary:var(--slate-400);
+  --text-disabled:var(--slate-500); --text-on-signal:#051018; --text-inverse:var(--slate-900);
+  --ring:0 0 0 2px var(--bg-app),0 0 0 4px var(--signal-500);
+
+  /* ---- Type ---- */
+  --font-display:'IBM Plex Sans Condensed','Arial Narrow',sans-serif;
+  --font-ui:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',monospace;
+  --fs-hero:56px; --fs-display:34px; --fs-h1:26px; --fs-h2:21px; --fs-h3:18px;
+  --fs-body:16px; --fs-sm:14px; --fs-xs:12px; --fs-label:11px;
+  --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+  --lh-tight:1.04; --lh-snug:1.2; --lh-normal:1.45;
+  --ls-tight:-0.02em; --ls-normal:0; --ls-label:0.10em;
+
+  /* ---- Spacing ---- */
+  --sp-0:0; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+  --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
+  --touch-min:44px; --touch-comfy:52px; --touch-large:60px;
+  --screen-pad:16px; --screen-w:390px; --safe-top:12px; --safe-bottom:24px;
+
+  /* ---- Radii / elevation / motion ---- */
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px; --r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,0.40); --shadow-2:0 4px 14px rgba(0,0,0,0.45);
+  --shadow-3:0 12px 32px rgba(0,0,0,0.55); --shadow-sheet:0 -8px 32px rgba(0,0,0,0.55);
+  --glow-signal:0 0 0 1px var(--signal-600),0 0 18px var(--signal-glow);
+  --glow-flee:0 0 0 1px var(--out-flee),0 0 20px var(--out-flee-glow);
+  --inset-hairline:inset 0 0 0 1px var(--border-default);
+  --ease-out:cubic-bezier(0.22,1,0.36,1); --ease-inout:cubic-bezier(0.65,0,0.35,1);
+  --dur-fast:120ms; --dur-base:200ms; --dur-slow:320ms;
+}
+
+html,body{margin:0;height:100%;}
+body{
+  background:radial-gradient(120% 90% at 50% 0%,#14181f 0%,var(--slate-950) 70%);
+  min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-ui); color:var(--text-primary); -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:0;height:0;} *{scrollbar-width:none;}
+button{font-family:inherit;}
+@keyframes augur-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes augur-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* On a real phone (narrow), let the frame fill the screen */
+@media (max-width:430px){
+  body{padding:0;}
+  #root .augur-frame{width:100vw!important;height:100vh!important;height:100dvh!important;border:none!important;border-radius:0!important;box-shadow:none!important;}
+}
+@media (min-width:431px){ body{padding:24px;box-sizing:border-box;} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Real Old World data (local copies of the TOW en 1 datasets, kept beside
+     this file so the app works from file:// and any preview server). -->
+<script src="./unit_db.js"></script>
+<script src="./owb_unit_data.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef, Fragment } = React;
+
+/* ════════════════════════════════════════════════════════════════
+   0 · DATA ADAPTER
+   Merge UNIT_DB (stats, save, special rules) with OWB_UNIT_DATA
+   (points, French names). The engine needs stats; VP needs points.
+   ════════════════════════════════════════════════════════════════ */
+
+const FACTIONS = {
+  'beastmen-brayherds':'Hommes-bêtes', 'chaos-dwarfs':'Nains du Chaos',
+  'daemons-of-chaos':'Démons du Chaos', 'dark-elves':'Elfes Noirs',
+  'dwarfen-mountain-holds':'Nains', 'empire-of-man':'Empire',
+  'grand-cathay':'Grand Cathay', 'high-elf-realms':'Hauts Elfes',
+  'kingdom-of-bretonnia':'Bretonnie', 'lizardmen':'Hommes-lézards',
+  'ogre-kingdoms':'Royaumes Ogres', 'orc-and-goblin-tribes':'Peaux-Vertes',
+  'skaven':'Skavens', 'tomb-kings-of-khemri':'Rois des Tombes',
+  'vampire-counts':'Comtes Vampires', 'warriors-of-chaos':'Guerriers du Chaos',
+  'wood-elf-realms':'Elfes Sylvains',
+};
+
+const num = (x) => {
+  if (x == null) return 0;
+  const m = String(x).match(/-?\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+};
+const DIACRITICS = new RegExp('[̀-ͯ]', 'g');
+const normName = (s) => String(s || '').toLowerCase()
+  .normalize('NFD').replace(DIACRITICS, '')
+  .replace(/[^a-z0-9]+/g, ' ').trim();
+
+// Parse a save string like "4+", "2+", "—", "-" → number 2..7 (7 = no save)
+const parseSave = (s) => {
+  const n = num(s);
+  return (n >= 1 && n <= 6) ? n : 7;
+};
+
+// Pick the most combat-relevant profile (one that actually fights).
+function pickCombatProfile(profiles) {
+  if (!profiles || !profiles.length) return null;
+  let p = profiles[0];
+  for (const c of profiles) { if (num(c.WS) > 0 && num(c.A) > 0) { p = c; break; } }
+  return p;
+}
+function profileFromRaw(p) {
+  return {
+    M: num(p.M), ws: num(p.WS), bs: num(p.BS), s: num(p.S),
+    t: num(p.T), w: Math.max(1, num(p.W) || 1), i: num(p.I),
+    a: Math.max(1, num(p.A) || 1), ld: num(p.Ld) || 7,
+  };
+}
+const rulesOf = (u) => (u.specialRules || []).map(r => r.slug || normName(r.name));
+
+// Resolve an engine-ready unit straight from a UNIT_DB slug (used by JSON import,
+// where the TOW en 1 builder stores units keyed by UNIT_DB slug + count + ppm).
+function engineUnitFromSlug(slug, name, count, ppm) {
+  if (typeof UNIT_DB === 'undefined') return null;
+  let u = UNIT_DB[slug];
+  if (!u) { // tolerate minor slug drift
+    const want = normName(slug.replace(/-/g, ' '));
+    for (const k in UNIT_DB) { if (k === slug || normName(UNIT_DB[k].name) === want) { u = UNIT_DB[k]; break; } }
+  }
+  if (!u) return null;
+  const p = pickCombatProfile(u.profiles); if (!p) return null;
+  const rules = rulesOf(u);
+  return {
+    id: slug, name: name || u.name, army: u.army, category: u.category || '',
+    profile: profileFromRaw(p), save: parseSave(u.armourValue),
+    points: ppm || 0, size: count || num(u.unitSize) || 1,
+    rules, unbreakable: rules.includes('unbreakable'),
+  };
+}
+
+// Build the playable roster: iterate OWB (fieldable units w/ points & FR names),
+// attach stats from UNIT_DB via exact key → suffix-strip → normalized name match.
+function buildRoster() {
+  const hasUDB = typeof UNIT_DB !== 'undefined';
+  const hasOWB = typeof OWB_UNIT_DATA !== 'undefined';
+  if (!hasUDB && !hasOWB) return { units: [], byArmy: {}, coverage: 0 };
+
+  // index UNIT_DB by normalized name within army for fuzzy join
+  const udbByName = {}; // army → { normName → entry }
+  if (hasUDB) {
+    for (const k in UNIT_DB) {
+      const u = UNIT_DB[k]; if (!u) continue;
+      const a = u.army || '_';
+      (udbByName[a] = udbByName[a] || {})[normName(u.name)] = { key: k, ...u };
+    }
+  }
+  const SUF = ['-core','-special','-rare','-characters','-character','-mounts','-mount','-regiment'];
+  const stripSuf = (k) => { let b = k; for (const s of SUF) if (b.endsWith(s)) b = b.slice(0, -s.length); return b; };
+
+  const findStats = (id, owb) => {
+    if (!hasUDB) return null;
+    if (UNIT_DB[id]) return { key: id, ...UNIT_DB[id] };
+    const base = stripSuf(id);
+    if (UNIT_DB[base]) return { key: base, ...UNIT_DB[base] };
+    const army = owb.army;
+    const byName = udbByName[army] || {};
+    const nn = normName(owb.name_en || owb.name_fr);
+    if (byName[nn]) return byName[nn];
+    // prefix match: a UNIT_DB key starting with base
+    for (const k in UNIT_DB) {
+      const u = UNIT_DB[k];
+      if (u.army === army && (k === base || k.startsWith(base + '-'))) return { key: k, ...u };
+    }
+    // loose name containment
+    for (const key in byName) {
+      if (key.includes(nn) || nn.includes(key)) return byName[key];
+    }
+    return null;
+  };
+
+  const units = [];
+  const source = hasOWB ? OWB_UNIT_DATA : null;
+  if (source) {
+    for (const id in source) {
+      const owb = source[id];
+      const stats = findStats(id, owb);
+      if (!stats || !stats.profiles || !stats.profiles.length) continue; // engine needs a profile
+      // pick the most "combatant" profile: prefer one with WS & A defined
+      let p = stats.profiles[0];
+      for (const cand of stats.profiles) {
+        if (num(cand.WS) > 0 && num(cand.A) > 0) { p = cand; break; }
+      }
+      const rules = (stats.specialRules || []).map(r => r.slug || normName(r.name));
+      const sizeMin = num(stats.unitSize) || 1;
+      units.push({
+        id,
+        udbKey: stats.key,                   // real UNIT_DB key, for re-resolving stats
+        name: owb.name_fr || owb.name_en || stats.name,
+        army: owb.army || stats.army,
+        category: owb.category || stats.category || '',
+        points: owb.points || 0,             // OWB base points (per model for troops)
+        size: sizeMin,
+        save: parseSave(stats.armourValue),
+        profile: {
+          M: num(p.M), ws: num(p.WS), bs: num(p.BS), s: num(p.S),
+          t: num(p.T), w: Math.max(1, num(p.W) || 1), i: num(p.I),
+          a: Math.max(1, num(p.A) || 1), ld: num(p.Ld) || 7,
+        },
+        rules,
+        unbreakable: rules.includes('unbreakable'),
+        fearsome: rules.includes('terror') || rules.includes('fear'),
+      });
+    }
+  } else if (hasUDB) {
+    // fallback: stats only, no points
+    for (const k in UNIT_DB) {
+      const u = UNIT_DB[k]; const p = (u.profiles || [])[0]; if (!p) continue;
+      const rules = (u.specialRules || []).map(r => r.slug || normName(r.name));
+      units.push({ id: k, name: u.name, army: u.army, category: u.category || '', points: 0,
+        size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
+        profile: { M:num(p.M),ws:num(p.WS),bs:num(p.BS),s:num(p.S),t:num(p.T),w:Math.max(1,num(p.W)||1),i:num(p.I),a:Math.max(1,num(p.A)||1),ld:num(p.Ld)||7 },
+        rules, unbreakable: rules.includes('unbreakable') });
+    }
+  }
+
+  units.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  const byArmy = {};
+  for (const u of units) (byArmy[u.army] = byArmy[u.army] || []).push(u);
+  return { units, byArmy, coverage: units.length };
+}
+
+const ROSTER = buildRoster();
+const armyUnits = (army) => ROSTER.byArmy[army] || [];
+const armyList = () => Object.keys(FACTIONS).filter(a => (ROSTER.byArmy[a] || []).length);
+
+/* ════════════════════════════════════════════════════════════════
+   1 · COMBAT ENGINE  (Monte-Carlo, Old World close combat)
+   A model, not a full rules engine — the README flags stat/prob
+   values as illustrative. The math below is genuine Old World:
+   WS-vs-WS to-hit, S-vs-T to-wound, save w/ Strength modifier,
+   static combat resolution, break test on Ld, pursuit → VP.
+   ════════════════════════════════════════════════════════════════ */
+
+const d6 = () => (Math.random() * 6 | 0) + 1;
+const roll2d6 = () => d6() + d6();
+
+// To-hit: attacker WS vs defender WS (classic table)
+function toHitTarget(aWS, dWS) {
+  if (aWS <= 0) aWS = 1; if (dWS <= 0) dWS = 1;
+  if (aWS > dWS) return 3;
+  if (dWS >= 2 * aWS) return 5;
+  return 4;
+}
+// To-wound: Strength vs Toughness. Returns 2..6, or 7 = impossible.
+function toWoundTarget(s, t) {
+  const diff = s - t;
+  let need = 4 - diff;
+  if (need < 2) need = 2;
+  if (need > 6) return diff <= -3 ? 7 : 6;
+  return need;
+}
+// Effective save after Strength armour-penetration modifier.
+function effectiveSave(save, s) {
+  if (save >= 7) return 7;
+  const mod = Math.max(0, s - 3); // S4 -1, S5 -2, ...
+  const eff = save + mod;
+  return eff > 6 ? 7 : eff;
+}
+
+// Roll a unit's attacks against a defender → unsaved wounds inflicted.
+function resolveAttacks(att, def, nAttacks) {
+  const hitT = toHitTarget(att.ws, def.ws);
+  const woundT = toWoundTarget(att.s, def.t);
+  if (woundT === 7) return 0;
+  const saveT = effectiveSave(def.save, att.s);
+  let unsaved = 0;
+  for (let i = 0; i < nAttacks; i++) {
+    if (d6() < hitT) continue;            // missed
+    if (d6() < woundT) continue;          // failed to wound
+    if (saveT <= 6 && d6() >= saveT) continue; // saved
+    unsaved++;
+  }
+  return unsaved;
+}
+
+// Map a single combat to a per-unit outcome bucket for THIS unit.
+//  win | draw | give (lost, held) | fallback (broke, escaped) | flee (broke, caught)
+function classify(myRes, foeRes, broke, caught) {
+  if (myRes > foeRes) return 'win';
+  if (myRes === foeRes) return 'draw';
+  if (!broke) return 'give';       // lost combat but passed break — holds
+  return caught ? 'flee' : 'fallback';
+}
+
+// One iteration. Returns { meOut, foeOut, vpSwing }.
+function simulateOnce(cfg) {
+  const me = cfg.me, foe = cfg.foe;
+
+  // Special case: charging a unit that is already fleeing → no melee, it is
+  // run down (caught) on a pursuit roll; otherwise it escapes off the table edge.
+  if (cfg.fleeingTarget) {
+    const caught = roll2d6() >= roll2d6();
+    return {
+      meOut: 'win', foeOut: caught ? 'flee' : 'fallback',
+      vpSwing: caught ? lossPoints(foe, foe.size * foe.profile.w, true) : 0,
+    };
+  }
+
+  // simultaneous-ish: both deal wounds based on starting profiles
+  const myWounds  = resolveAttacks(me.profile, { ...foe.profile, save: foe.save }, cfg.myAttacks);
+  const foeWounds = resolveAttacks(foe.profile, { ...me.profile, save: me.save }, cfg.foeAttacks);
+
+  const myRes  = myWounds  + cfg.myStatic;
+  const foeRes = foeWounds + cfg.foeStatic;
+
+  // Break tests on the loser (Old World: 2D6 ≤ Ld − combat-result-difference)
+  const diff = Math.abs(myRes - foeRes);
+  let meBroke = false, foeBroke = false, meCaught = false, foeCaught = false;
+  if (myRes > foeRes) {
+    if (foe.unbreakable) { foeBroke = false; }
+    else {
+      const target = foe.profile.ld - diff;
+      foeBroke = roll2d6() > target;
+      if (foeBroke) foeCaught = caughtInPursuit(me.profile, foe.profile);
+    }
+  } else if (foeRes > myRes) {
+    if (me.unbreakable) { meBroke = false; }
+    else {
+      const target = me.profile.ld - diff;
+      meBroke = roll2d6() > target;
+      if (meBroke) meCaught = caughtInPursuit(foe.profile, me.profile);
+    }
+  }
+
+  const meOut  = classify(myRes, foeRes, meBroke, meCaught);
+  const foeOut = classify(foeRes, myRes, foeBroke, foeCaught);
+
+  // VP swing = enemy points lost − my points lost.
+  // The foe's casualties come from the wounds I inflicted (myWounds), and
+  // vice-versa — plus the whole unit if it is caught fleeing.
+  const foeLost = lossPoints(foe, myWounds, foeCaught);
+  const myLost  = lossPoints(me, foeWounds, meCaught);
+  return { meOut, foeOut, vpSwing: foeLost - myLost };
+}
+
+// Pursuit catch: fleeing unit rolls flee (2D6), pursuer rolls pursuit (2D6),
+// Swiftstride uses 3D6-pick-2. Caught if pursuit ≥ flee.
+function caughtInPursuit(pursuer, fleer) {
+  const swift = (u) => u && u.swiftstride;
+  const flee = roll2d6();
+  const pur = roll2d6();
+  return pur >= flee;
+}
+
+// Points lost: unsaved wounds × points-per-wound, capped at the unit's value.
+// If caught in pursuit, the whole unit is destroyed.
+function lossPoints(unit, wounds, caught) {
+  const total = unit.points * unit.size;             // approx unit value
+  if (caught) return total;
+  const ppw = (unit.points * unit.size) / Math.max(1, unit.size * unit.profile.w);
+  return Math.min(total, Math.round(wounds * ppw));
+}
+
+function monteCarlo(cfg, N = 8000) {
+  const tally = {
+    me:  { win:0, draw:0, give:0, fallback:0, flee:0 },
+    foe: { win:0, draw:0, give:0, fallback:0, flee:0 },
+  };
+  const swings = new Array(N);
+  for (let i = 0; i < N; i++) {
+    const r = simulateOnce(cfg);
+    tally.me[r.meOut]++; tally.foe[r.foeOut]++;
+    swings[i] = r.vpSwing;
+  }
+  const dist = (t) => {
+    const o = {}; for (const k in t) o[k] = t[k] / N; return o;
+  };
+  swings.sort((a, b) => a - b);
+  const pct = (p) => swings[Math.min(N - 1, Math.max(0, Math.floor(p * N)))];
+  const mean = Math.round(swings.reduce((s, v) => s + v, 0) / N);
+  const meDist = dist(tally.me), foeDist = dist(tally.foe);
+  const myWinProb = meDist.win + meDist.draw * 0.5;
+  const badExchange = myWinProb > 0.6 && mean < 60 && (cfg.foe.unbreakable || foeDist.flee < 0.2);
+  return {
+    expectedVP: mean,
+    range: [Math.round(pct(0.10)), Math.round(pct(0.90))],
+    me: meDist, foe: foeDist,
+    badExchange,
+    N,
+  };
+}
+
+// Static combat resolution for one side, from its factor block `s` and the
+// opponent's `o` (a flank/rear attack cancels the opponent's rank bonus).
+// `charged` = this side benefits from a charge (charger or counter-charge).
+function sideStatic(s, o, charged) {
+  const oppNegatesRanks = (o && o.flankRear > 0);
+  let cr = 0;
+  if (!oppNegatesRanks && s.ranks > 1) cr += Math.min(s.ranks - 1, 3); // +1/rank, max +3
+  if (s.banner) cr += 1;
+  if (s.warbanner) cr += 1;
+  cr += (s.flankRear || 0);          // flank +1, rear +2
+  if (s.highGround) cr += 1;
+  if (charged) cr += 1;              // charge bonus
+  return cr;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   2 · UI PRIMITIVES  (faithful to the Augur design system)
+   ════════════════════════════════════════════════════════════════ */
+const Icon = ({ name, size = 20, color, style = {} }) =>
+  <i data-lucide={name} style={{ width: size, height: size, color, ...style }} />;
+
+function Button({ children, variant='primary', size='md', icon=null, block=false, disabled=false, style={}, ...rest }) {
+  const [pressed, setPressed] = useState(false);
+  const sizes = { md:{height:'var(--touch-comfy)',font:'var(--fs-body)',pad:'0 var(--sp-5)'},
+                  lg:{height:'var(--touch-large)',font:'var(--fs-h3)',pad:'0 var(--sp-6)'} };
+  const variants = {
+    primary:{background:'var(--signal-500)',color:'var(--text-on-signal)',border:'1px solid transparent'},
+    secondary:{background:'var(--surface-3)',color:'var(--text-primary)',border:'1px solid var(--border-default)'},
+    ghost:{background:'transparent',color:'var(--text-secondary)',border:'1px solid transparent'},
+    danger:{background:'var(--out-flee-soft)',color:'var(--out-flee)',border:'1px solid var(--out-flee)'},
+  };
+  const s = sizes[size]||sizes.md, v = variants[variant]||variants.primary;
+  return <button type="button" disabled={disabled}
+    onPointerDown={()=>setPressed(true)} onPointerUp={()=>setPressed(false)} onPointerLeave={()=>setPressed(false)}
+    style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:'var(--sp-2)',
+      height:s.height,padding:s.pad,width:block?'100%':'auto',
+      font:`var(--fw-semibold) ${s.font}/1 var(--font-ui)`,letterSpacing:'0.01em',borderRadius:'var(--r-md)',
+      cursor:disabled?'not-allowed':'pointer',
+      transition:'transform var(--dur-fast) var(--ease-out),filter var(--dur-fast) var(--ease-out),background var(--dur-fast)',
+      transform:pressed&&!disabled?'scale(0.97)':'scale(1)',filter:pressed&&!disabled?'brightness(0.92)':'none',
+      opacity:disabled?0.4:1,...v,...style}} {...rest}>{icon}{children}</button>;
+}
+
+function Stepper({ value, onChange=()=>{}, min=0, max=99, step=1, label=null, signed=false, size='md', style={} }) {
+  const h = size==='lg'?'var(--touch-large)':'var(--touch-comfy)';
+  const clamp = (n)=>Math.max(min,Math.min(max,n));
+  const display = signed&&value>0?`+${value}`:`${value}`;
+  const btn = (dir,glyph)=>(
+    <button type="button" aria-label={dir>0?'augmenter':'diminuer'}
+      onClick={()=>onChange(clamp(value+dir*step))} disabled={dir>0?value>=max:value<=min}
+      style={{width:h,height:h,flex:'none',display:'flex',alignItems:'center',justifyContent:'center',
+        background:'transparent',border:'none',cursor:'pointer',color:'var(--text-primary)',fontSize:'22px',
+        opacity:(dir>0?value>=max:value<=min)?0.3:1,borderRadius:'var(--r-md)'}}>{glyph}</button>);
+  return <div style={style}>
+    {label&&<div style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-2)'}}>{label}</div>}
+    <div style={{display:'flex',alignItems:'center',background:'var(--surface-3)',borderRadius:'var(--r-md)',
+      border:'1px solid var(--border-default)'}}>
+      {btn(-1,'−')}
+      <div style={{flex:1,textAlign:'center',minWidth:'40px',font:'var(--fw-semibold) var(--fs-h3)/1 var(--font-mono)',
+        color:'var(--text-primary)',fontVariantNumeric:'tabular-nums'}}>{display}</div>
+      {btn(1,'+')}
+    </div></div>;
+}
+
+function Switch({ checked=false, onChange=()=>{}, label=null, disabled=false, style={} }) {
+  const track = <span role="switch" aria-checked={checked} onClick={()=>!disabled&&onChange(!checked)}
+    style={{width:'52px',height:'30px',flex:'none',borderRadius:'var(--r-pill)',
+      background:checked?'var(--signal-500)':'var(--surface-3)',
+      border:`1px solid ${checked?'var(--signal-500)':'var(--border-strong)'}`,position:'relative',
+      cursor:disabled?'not-allowed':'pointer',transition:'background var(--dur-base) var(--ease-out)',opacity:disabled?0.4:1}}>
+    <span style={{position:'absolute',top:'3px',left:checked?'24px':'3px',width:'24px',height:'24px',
+      borderRadius:'var(--r-pill)',background:checked?'var(--text-on-signal)':'var(--slate-300)',
+      transition:'left var(--dur-base) var(--ease-out)',boxShadow:'var(--shadow-1)'}}/></span>;
+  if(!label) return <span style={style}>{track}</span>;
+  return <label style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'var(--sp-4)',
+    minHeight:'var(--touch-min)',cursor:disabled?'not-allowed':'pointer',...style}}>
+    <span style={{font:'var(--fw-medium) var(--fs-body)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{label}</span>
+    {track}</label>;
+}
+
+function Segmented({ options=[], value, onChange=()=>{}, size='md', style={} }) {
+  const items = options.map(o=>typeof o==='string'?{value:o,label:o}:o);
+  const h = size==='sm'?'36px':'var(--touch-min)';
+  return <div role="tablist" style={{display:'flex',gap:'2px',padding:'3px',background:'var(--surface-3)',
+    borderRadius:'var(--r-md)',border:'1px solid var(--border-default)',...style}}>
+    {items.map(it=>{const active=it.value===value;
+      return <button key={it.value} role="tab" aria-selected={active} onClick={()=>onChange(it.value)}
+        style={{flex:1,height:h,minWidth:0,display:'flex',alignItems:'center',justifyContent:'center',gap:'var(--sp-2)',
+          border:'none',cursor:'pointer',whiteSpace:'nowrap',borderRadius:'var(--r-sm)',
+          background:active?'var(--signal-500)':'transparent',color:active?'var(--text-on-signal)':'var(--text-secondary)',
+          font:`var(--fw-semibold) ${size==='sm'?'var(--fs-sm)':'var(--fs-body)'}/1 var(--font-ui)`,
+          transition:'background var(--dur-fast) var(--ease-out),color var(--dur-fast)',overflow:'hidden',textOverflow:'ellipsis'}}>{it.label}</button>;})}
+  </div>;
+}
+
+function Card({ children, elevation=1, padding='var(--sp-4)', selected=false, glow=false, style={}, ...rest }) {
+  const surf={1:'var(--surface-1)',2:'var(--surface-2)',3:'var(--surface-3)'}[elevation]||'var(--surface-1)';
+  const shadow={1:'var(--shadow-1)',2:'var(--shadow-2)',3:'var(--shadow-3)'}[elevation]||'var(--shadow-1)';
+  return <div style={{background:surf,borderRadius:'var(--r-lg)',
+    border:`1px solid ${selected?'var(--signal-500)':'var(--border-subtle)'}`,padding,
+    boxShadow:glow?'var(--glow-signal)':shadow,...style}} {...rest}>{children}</div>;
+}
+
+function Badge({ children, tone='neutral', solid=false, icon=null, style={} }) {
+  const tones={neutral:{fg:'var(--text-secondary)',soft:'var(--surface-3)',solid:'var(--slate-600)'},
+    signal:{fg:'var(--signal-300)',soft:'var(--signal-soft)',solid:'var(--signal-500)'},
+    win:{fg:'var(--out-win)',soft:'var(--out-win-soft)',solid:'var(--out-win)'},
+    caution:{fg:'var(--caution)',soft:'var(--out-give-soft)',solid:'var(--caution)'},
+    flee:{fg:'var(--out-flee)',soft:'var(--out-flee-soft)',solid:'var(--out-flee)'}};
+  const t=tones[tone]||tones.neutral;
+  return <span style={{display:'inline-flex',alignItems:'center',gap:'var(--sp-1)',height:'22px',padding:'0 var(--sp-2)',
+    borderRadius:'var(--r-sm)',background:solid?t.solid:t.soft,color:solid?'var(--text-on-signal)':t.fg,
+    border:solid?'1px solid transparent':`1px solid ${t.fg}33`,font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',
+    letterSpacing:'var(--ls-label)',textTransform:'uppercase',whiteSpace:'nowrap',...style}}>{icon}{children}</span>;
+}
+
+function StatPill({ label, value, emphasis=false, style={} }) {
+  return <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'2px',minWidth:'38px',
+    padding:'var(--sp-2) var(--sp-1)',background:'var(--surface-3)',borderRadius:'var(--r-sm)',
+    border:'1px solid var(--border-subtle)',...style}}>
+    <span style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
+      textTransform:'uppercase',color:'var(--text-tertiary)'}}>{label}</span>
+    <span style={{font:'var(--fw-semibold) var(--fs-h3)/1 var(--font-mono)',
+      color:emphasis?'var(--signal-400)':'var(--text-primary)',fontVariantNumeric:'tabular-nums'}}>{value}</span>
+  </div>;
+}
+
+const OUTCOMES = [
+  { key:'win',      label:"L'emporter",            color:'var(--out-win)' },
+  { key:'draw',     label:'Égalité',               color:'var(--out-draw)' },
+  { key:'give',     label:'Céder du terrain',      color:'var(--out-give)' },
+  { key:'fallback', label:'Reculer en bon ordre',  color:'var(--out-fallback)' },
+  { key:'flee',     label:'FUIR',                  color:'var(--out-flee)' },
+];
+
+function OutcomeBar({ dist, height=30, showInline=true, style={} }) {
+  const total = OUTCOMES.reduce((s,o)=>s+(dist[o.key]||0),0)||1;
+  const norm = OUTCOMES.map(o=>({...o,frac:(dist[o.key]||0)/total}));
+  return <div style={style}><div style={{display:'flex',height:`${height}px`,width:'100%',borderRadius:'var(--r-sm)',
+    overflow:'hidden',border:'1px solid var(--border-default)',background:'var(--surface-3)'}}>
+    {norm.map(o=>{const pct=Math.round(o.frac*100);const isFlee=o.key==='flee';if(o.frac<=0)return null;
+      return <div key={o.key} title={`${o.label} · ${pct} %`} style={{width:`${o.frac*100}%`,background:o.color,
+        display:'flex',alignItems:'center',justifyContent:'center',color:isFlee?'#fff':'#06090d',
+        font:'var(--fw-semibold) var(--fs-xs)/1 var(--font-mono)',
+        boxShadow:isFlee?'inset 0 0 0 2px var(--out-flee),0 0 12px var(--out-flee-glow)':'none',
+        position:'relative',zIndex:isFlee?1:0,transition:'width var(--dur-slow) var(--ease-out)',minWidth:0,overflow:'hidden'}}>
+        {showInline&&o.frac>0.12?`${pct}`:''}</div>;})}
+  </div></div>;
+}
+
+function OutcomeLegend({ dist=null, columns=1, style={} }) {
+  return <div style={{display:'grid',gridTemplateColumns:columns===2?'1fr 1fr':'1fr',gap:'var(--sp-1) var(--sp-4)',...style}}>
+    {OUTCOMES.map(o=>{const pct=dist?Math.round((dist[o.key]||0)*100):null;const isFlee=o.key==='flee';
+      return <div key={o.key} style={{display:'flex',alignItems:'center',gap:'var(--sp-2)',minHeight:'26px'}}>
+        <span style={{width:'10px',height:'10px',flex:'none',borderRadius:'3px',background:o.color,
+          boxShadow:isFlee?'0 0 8px var(--out-flee-glow)':'none'}}/>
+        <span style={{flex:1,font:`${isFlee?'var(--fw-semibold)':'var(--fw-regular)'} var(--fs-sm)/1.2 var(--font-ui)`,
+          color:isFlee?'var(--out-flee)':'var(--text-secondary)'}}>{o.label}</span>
+        {pct!==null&&<span style={{font:'var(--fw-semibold) var(--fs-sm)/1 var(--font-mono)',
+          color:isFlee?'var(--out-flee)':'var(--text-primary)',fontVariantNumeric:'tabular-nums'}}>{pct} %</span>}
+      </div>;})}
+  </div>;
+}
+
+const STATUS = {
+  full:{color:'var(--status-full)',label:'Pleine force'},
+  weak:{color:'var(--status-weak)',label:'Sous 25 % FU'},
+  fleeing:{color:'var(--status-fleeing)',label:'En fuite'},
+  destroyed:{color:'var(--status-destroyed)',label:'Détruite'},
+};
+function StatusDot({ status='full', showLabel=true, style={} }) {
+  const s=STATUS[status]||STATUS.full;
+  return <span style={{display:'inline-flex',alignItems:'center',gap:'var(--sp-2)',...style}}>
+    <span style={{width:'10px',height:'10px',flex:'none',borderRadius:'var(--r-pill)',background:s.color,
+      boxShadow:status==='fleeing'?'0 0 8px var(--out-flee-glow)':'none',
+      animation:status==='fleeing'?'augur-pulse 1.6s var(--ease-inout) infinite':'none'}}/>
+    {showLabel&&<span style={{font:'var(--fw-medium) var(--fs-sm)/1 var(--font-ui)',
+      color:status==='destroyed'?'var(--text-tertiary)':'var(--text-secondary)',
+      textDecoration:status==='destroyed'?'line-through':'none'}}>{s.label}</span>}
+  </span>;
+}
+
+function VPMeter({ value, range=null, size='hero', style={} }) {
+  const positive=value>=0;const color=positive?'var(--positive)':'var(--danger)';
+  const dir=positive?'en ta faveur':'en ta défaveur';const signed=`${positive?'+':'−'}${Math.abs(value)}`;
+  const fs=size==='hero'?'var(--fs-hero)':'var(--fs-display)';
+  return <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',...style}}>
+    <span style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-1)'}}>Gain net espéré · PV</span>
+    <span style={{font:`var(--fw-bold) ${fs}/var(--lh-tight) var(--font-display)`,letterSpacing:'var(--ls-tight)',
+      color,fontVariantNumeric:'tabular-nums'}}>{signed}</span>
+    <div style={{display:'flex',alignItems:'baseline',gap:'var(--sp-2)',marginTop:'var(--sp-1)'}}>
+      <span style={{font:'var(--fw-semibold) var(--fs-sm)/1 var(--font-ui)',color}}>{dir}</span>
+      {range&&<span style={{font:'var(--fw-regular) var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>
+        intervalle {range[0]>=0?'+':'−'}{Math.abs(range[0])} … {range[1]>=0?'+':'−'}{Math.abs(range[1])}</span>}
+    </div></div>;
+}
+
+/* ---- Shared screen bits ---- */
+function ScreenHeader({ title, eyebrow, right=null }) {
+  return <div style={{flex:'none',padding:'8px var(--screen-pad) 12px',display:'flex',alignItems:'flex-end',
+    justifyContent:'space-between',gap:12}}>
+    <div>{eyebrow&&<div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:4}}>{eyebrow}</div>}
+      <h1 style={{margin:0,font:'600 var(--fs-display)/var(--lh-snug) var(--font-display)',
+        color:'var(--text-primary)',letterSpacing:'var(--ls-tight)'}}>{title}</h1></div>
+    {right}</div>;
+}
+function Body({ children, style={} }) {
+  return <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',
+    padding:'0 var(--screen-pad) var(--screen-pad)',
+    display:'flex',flexDirection:'column',gap:'var(--sp-3)',...style}}>{children}</div>;
+}
+function SectionLabel({ children, style={} }) {
+  return <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
+    textTransform:'uppercase',color:'var(--text-tertiary)',margin:'6px 0 2px',...style}}>{children}</div>;
+}
+function BottomBar({ children }) {
+  return <div style={{flex:'none',padding:'12px var(--screen-pad) calc(16px + var(--safe-bottom))',
+    borderTop:'1px solid var(--border-default)',background:'rgba(12,15,20,0.9)',backdropFilter:'blur(12px)',
+    display:'flex',gap:10}}>{children}</div>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   3 · PHONE FRAME
+   ════════════════════════════════════════════════════════════════ */
+function StatusBar() {
+  const t = new Date();
+  const hh = String(t.getHours()).padStart(2,'0'), mm = String(t.getMinutes()).padStart(2,'0');
+  return <div style={{height:44,flex:'none',display:'flex',alignItems:'center',justifyContent:'space-between',
+    padding:'0 22px',font:'600 14px/1 var(--font-ui)',color:'var(--text-primary)'}}>
+    <span style={{fontVariantNumeric:'tabular-nums'}}>{hh}:{mm}</span>
+    <span style={{display:'flex',gap:6,alignItems:'center',opacity:0.9}}>
+      <Icon name="signal" size={16}/><Icon name="wifi" size={16}/><Icon name="battery-medium" size={20}/>
+    </span></div>;
+}
+const TABS = [
+  {key:'select',label:'Combat',icon:'swords'},
+  {key:'result',label:'Pronostic',icon:'dices'},
+  {key:'assistant',label:'Assistant',icon:'list-checks'},
+  {key:'tracker',label:'Partie',icon:'map'},
+];
+function TabBar({ active, onChange }) {
+  return <div style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
+    background:'rgba(8,10,14,0.82)',backdropFilter:'blur(16px)',borderTop:'1px solid var(--border-default)'}}>
+    {TABS.map(t=>{const on=t.key===active;
+      return <button key={t.key} type="button" onClick={()=>onChange(t.key)}
+        style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,background:'transparent',
+          border:'none',cursor:'pointer',padding:'6px 0',color:on?'var(--signal-400)':'var(--text-tertiary)'}}>
+        <Icon name={t.icon} size={22}/>
+        <span style={{font:`${on?600:500} 10px/1 var(--font-ui)`,letterSpacing:'0.02em'}}>{t.label}</span></button>;})}
+  </div>;
+}
+function PhoneFrame({ active, onTab, children }) {
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  return <div className="augur-frame" style={{width:'var(--screen-w)',height:'min(844px, calc(100vh - 48px))',position:'relative',
+    background:'var(--bg-app)',borderRadius:44,overflow:'hidden',border:'10px solid #000',
+    boxShadow:'var(--shadow-3),0 0 0 1px #2a2f38',display:'flex',flexDirection:'column'}}>
+    <StatusBar/>
+    <div style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
+    {onTab&&<TabBar active={active} onChange={onTab}/>}
+  </div>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   4 · APP STATE  (persisted to localStorage)
+   ════════════════════════════════════════════════════════════════ */
+const STORE_KEY = 'augur.game.v1';
+const DEFAULT_MY_ARMY = armyList().includes('kingdom-of-bretonnia') ? 'kingdom-of-bretonnia' : armyList()[0];
+const DEFAULT_FOE_ARMY = armyList().includes('orc-and-goblin-tribes') ? 'orc-and-goblin-tribes' : (armyList()[1] || armyList()[0]);
+
+function freshGame() {
+  const myA = DEFAULT_MY_ARMY, foeA = DEFAULT_FOE_ARMY;
+  const pick = (army, n) => armyUnits(army).slice(0, n).map(u => ({
+    ref: u.id, army, name: u.name, points: u.points, size: u.size,
+    fuCurrent: u.size, fuMax: u.size, status: 'full',
+  }));
+  return {
+    myArmy: myA, foeArmy: foeA,
+    myRoster: pick(myA, 5), foeRoster: pick(foeA, 5),
+    objectives: [
+      { id:'o1', name:'Centre du champ', holder:'none' },
+      { id:'o2', name:'Colline est',     holder:'none' },
+      { id:'o3', name:'Pont',            holder:'none' },
+    ],
+    turn: 1, mission: 'Bataille rangée', pointsCap: 2000,
+  };
+}
+function loadGame() {
+  let g = freshGame();
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) g = { ...g, ...JSON.parse(raw) }; }
+  catch (e) {}
+  // self-heal corrupted/stale army slugs so the catalog is never empty
+  if (!armyUnits(g.myArmy).length)  g.myArmy  = DEFAULT_MY_ARMY;
+  if (!armyUnits(g.foeArmy).length) g.foeArmy = DEFAULT_FOE_ARMY;
+  return g;
+}
+
+const unitByRef = (ref) => ROSTER.units.find(u => u.id === ref);
+
+/* ════════════════════════════════════════════════════════════════
+   5 · SCREEN 1 — Sélection du combat
+   ════════════════════════════════════════════════════════════════ */
+function ArmySelect({ value, onChange, accent }) {
+  return <select value={value} onChange={e=>onChange(e.target.value)}
+    style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
+      color:'var(--text-primary)',border:`1px solid ${accent||'var(--border-default)'}`,borderRadius:'var(--r-md)',
+      padding:'10px var(--sp-4)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+    {armyList().map(a=><option key={a} value={a} style={{background:'var(--surface-2)'}}>{FACTIONS[a]}</option>)}
+  </select>;
+}
+
+function MiniProfile({ unit }) {
+  if (!unit) return null;
+  const p = unit.profile;
+  const stats = [['CC',p.ws],['F',p.s],['E',p.t],['A',p.a],['Svg',unit.save>=7?'—':unit.save+'+'],['Cd',p.ld]];
+  return <div style={{display:'flex',gap:5,marginTop:8}}>
+    {stats.map(([k,v])=><StatPill key={k} label={k} value={v} style={{flex:1,minWidth:0}}/>)}
+  </div>;
+}
+
+/* Resolve the engine-ready candidate units for one side, in either source mode. */
+function listCandidates(list, sideKey) {
+  if (!list) return [];
+  return (list.units || []).map((u, ui) => {
+    const ppm = u.ppm || Math.round((u.pts || 0) / Math.max(1, u.count || 1));
+    const e = engineUnitFromSlug(u.slug, u.name, u.count, ppm);
+    if (!e) return null;
+    e.id = sideKey + ':' + ui;
+    e.sub = (u.pts ? u.pts + ' pts' : '') + (u.count ? ' · ' + u.count + ' fig.' : '');
+    return e;
+  }).filter(Boolean);
+}
+function candidatesFor(side, sel, game, lists) {
+  if (sel.source === 'lists') {
+    const li = side === 'me' ? sel.myList : sel.foeList;
+    return listCandidates(lists[li], side);
+  }
+  const army = side === 'me' ? game.myArmy : game.foeArmy;
+  return armyUnits(army).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + (u.category || '') }));
+}
+function resolveUnit(side, sel, game, lists) {
+  const cands = candidatesFor(side, sel, game, lists);
+  const id = side === 'me' ? sel.mine : sel.foe;
+  return cands.find(c => c.id === id) || cands[0] || null;
+}
+
+/* Toggle / radio row for a unit option (with its points). */
+function OptRow({ label, pts, on, radio, onClick }) {
+  return <button type="button" onClick={onClick} style={{display:'flex',alignItems:'center',gap:10,width:'100%',
+    textAlign:'left',cursor:'pointer',background:on?'var(--signal-soft)':'var(--surface-2)',
+    border:`1px solid ${on?'var(--signal-500)':'var(--border-subtle)'}`,borderRadius:'var(--r-sm)',padding:'8px var(--sp-3)'}}>
+    <span style={{width:18,height:18,flex:'none',borderRadius:radio?'50%':'4px',
+      border:`2px solid ${on?'var(--signal-500)':'var(--border-strong)'}`,background:on?'var(--signal-500)':'transparent',
+      display:'flex',alignItems:'center',justifyContent:'center'}}>
+      {on&&<Icon name="check" size={12} color="var(--text-on-signal)"/>}</span>
+    <span style={{flex:1,minWidth:0,font:'500 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',
+      overflow:'hidden',textOverflow:'ellipsis'}}>{label}</span>
+    {pts>0&&<span style={{font:'600 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>+{pts}</span>}
+  </button>;
+}
+
+/* Configure a catalog unit's options + count, then add it to a list. */
+function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
+  const owb = (typeof OWB_UNIT_DATA !== 'undefined' && OWB_UNIT_DATA[unit.id]) || {};
+  const eq = owb.equip || [], ar = owb.armor || [], mo = owb.mounts || [], op = owb.opts || [], cm = owb.command || [];
+  const defActive = (arr) => { const i = arr.findIndex(x => x.active); return i >= 0 ? i : (arr.length ? 0 : -1); };
+  const [count, setCount]   = useState(unit.size || 1);
+  const [ppm, setPpm]       = useState(owb.points || unit.points || 0);
+  const [equipI, setEquipI] = useState(defActive(eq));
+  const [armorI, setArmorI] = useState(defActive(ar));
+  const [mountI, setMountI] = useState(defActive(mo));
+  const [optsSet, setOptsSet] = useState(() => new Set(op.map((o,i)=>o.active?i:-1).filter(i=>i>=0)));
+  const [cmdSet, setCmdSet]   = useState(() => new Set());
+  const sideList = side==='me' ? null : null;
+  const [target, setTarget] = useState(() => {
+    const idx = side==='me' ? 0 : 0; return lists.length ? 0 : 'new';
+  });
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+
+  const perM  = (o) => (o.points||0) * count;                 // equip/armor/mount = per model
+  const optPM = (o) => o.perModel ? (o.points||0)*count : (o.points||0);
+  let total = count*ppm;
+  total += equipI>=0&&eq[equipI] ? perM(eq[equipI]) : 0;
+  total += armorI>=0&&ar[armorI] ? perM(ar[armorI]) : 0;
+  total += mountI>=0&&mo[mountI] ? perM(mo[mountI]) : 0;
+  total += [...optsSet].reduce((s,i)=>s+optPM(op[i]),0);
+  total += [...cmdSet].reduce((s,i)=>s+(cm[i].points||0),0);
+
+  const toggle = (set,setSet,i) => { const n=new Set(set); n.has(i)?n.delete(i):n.add(i); setSet(n); };
+
+  const buildEntry = () => {
+    const chosen = [];
+    if (eq[equipI]&&eq[equipI].points) chosen.push(eq[equipI].name_fr);
+    if (ar[armorI]&&ar[armorI].points) chosen.push(ar[armorI].name_fr);
+    if (mo[mountI]&&mo[mountI].points) chosen.push(mo[mountI].name_fr);
+    [...optsSet].forEach(i=>chosen.push(op[i].name_fr));
+    [...cmdSet].forEach(i=>chosen.push(cm[i].name_fr));
+    return { slug: unit.udbKey||unit.id, name: unit.name, cat: unit.category||'core',
+      count, ppm, optsPts: total-count*ppm, opts: chosen, pts: total };
+  };
+
+  const Group = ({ title, items, radio, sel, onSel }) => items.length ? <div>
+    <SectionLabel>{title}</SectionLabel>
+    <div style={{display:'flex',flexDirection:'column',gap:5}}>
+      {items.map((o,i)=><OptRow key={i} label={o.name_fr||o.name_en} radio={radio}
+        pts={o.points||0} on={radio?sel===i:sel.has(i)} onClick={()=>onSel(i)}/>)}
+    </div></div> : null;
+
+  const tgtOptions = [...lists.map((l,i)=>({value:String(i),label:l.name||('Liste '+(i+1))})),{value:'new',label:'➕ Nouvelle liste'}];
+
+  return <div onClick={onBack} style={{position:'absolute',inset:0,zIndex:51,display:'flex',flexDirection:'column',
+    justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
+    <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
+      borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
+      maxHeight:'90%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+        <button type="button" onClick={onBack} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="chevron-left" size={22}/></button>
+        <span style={{flex:1,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit.name}</span>
+        <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accent}}>{total} pts</span></div>
+      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+        <MiniProfile unit={unit}/>
+        <div style={{display:'flex',gap:10}}>
+          <Stepper label="Figurines" value={count} onChange={setCount} min={1} max={80} style={{flex:1}}/>
+          <Stepper label="Pts / figurine" value={ppm} onChange={setPpm} min={0} max={600} step={1} style={{flex:1}}/>
+        </div>
+        <Group title="Arme" items={eq} radio sel={equipI} onSel={setEquipI}/>
+        <Group title="Armure" items={ar} radio sel={armorI} onSel={setArmorI}/>
+        <Group title="Monture" items={mo} radio sel={mountI} onSel={setMountI}/>
+        <Group title="État-major" items={cm} sel={cmdSet} onSel={i=>toggle(cmdSet,setCmdSet,i)}/>
+        <Group title="Options" items={op} sel={optsSet} onSel={i=>toggle(optsSet,setOptsSet,i)}/>
+        {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
+          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Pas d'options répertoriées pour cette unité — ajuste les figurines et le coût.</div>}
+      </div>
+      <div style={{flex:'none',paddingTop:10,display:'flex',flexDirection:'column',gap:8}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',flex:'none'}}>Ajouter à</span>
+          <select value={String(target)} onChange={e=>setTarget(e.target.value)} style={{flex:1,appearance:'none',
+            background:'var(--surface-3)',color:'var(--text-primary)',border:'1px solid var(--border-default)',
+            borderRadius:'var(--r-sm)',padding:'8px var(--sp-3)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+            {tgtOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+        <div style={{display:'flex',gap:8}}>
+          <Button variant="secondary" onClick={onQuickUse} style={{flex:'none'}}>Tester (base)</Button>
+          <Button variant="primary" block onClick={()=>onAdd(buildEntry(), target==='new'?'new':+target)}
+            icon={<Icon name="plus" size={18}/>}>Ajouter à la liste</Button></div>
+      </div>
+    </div></div>;
+}
+
+/* Modal bottom-sheet unit picker with search — clearly shows the selected unit. */
+function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, configurable, side, lists, onAdd }) {
+  const [q, setQ] = useState('');
+  const [cfg, setCfg] = useState(null);
+  useEffect(() => { if (open) { setQ(''); setCfg(null); } }, [open]);
+  useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+  if (!open) return null;
+  const norm = (s) => String(s || '').toLowerCase();
+  const filtered = units.filter(u => norm(u.name).includes(norm(q)));
+  const rowClick = (u) => { if (configurable) setCfg(u); else { onPick(u.id); onClose(); } };
+  return <Fragment>
+    <div onClick={onClose} style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
+      justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
+        borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
+        maxHeight:'82%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>{title}</span>
+          <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',
+            color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
+        <div style={{display:'flex',alignItems:'center',gap:8,background:'var(--surface-3)',borderRadius:'var(--r-md)',
+          border:'1px solid var(--border-default)',padding:'0 var(--sp-3)',marginBottom:10}}>
+          <Icon name="search" size={16} color="var(--text-tertiary)"/>
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Rechercher une unité…" autoFocus
+            style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--text-primary)',
+              font:'400 var(--fs-sm)/1 var(--font-ui)',padding:'10px 0'}}/>
+          {q&&<button type="button" onClick={()=>setQ('')} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={14}/></button>}
+        </div>
+        {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
+          Tape une unité pour la configurer (options, figurines) et l'ajouter à une liste.</div>}
+        <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:6}}>
+          {filtered.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune unité.</div>}
+          {filtered.map(u=>{const on=u.id===selectedId;const p=u.profile;
+            return <button key={u.id} type="button" onClick={()=>rowClick(u)} style={{textAlign:'left',
+              cursor:'pointer',background:on?'var(--signal-soft)':'var(--surface-2)',borderRadius:'var(--r-md)',
+              border:`1px solid ${on?accent:'var(--border-subtle)'}`,padding:'10px var(--sp-3)',
+              display:'flex',alignItems:'center',gap:10,boxShadow:on?'var(--glow-signal)':'none'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
+                    textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</span>
+                  {u.unbreakable&&<Badge tone="caution">inébr.</Badge>}</div>
+                <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3,
+                  whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                  CC{p.ws} F{p.s} E{p.t} A{p.a} Cd{p.ld} · {u.sub||''}</div></div>
+              {configurable?<Icon name="settings-2" size={16} color="var(--text-tertiary)"/>:(on&&<Icon name="check" size={18} color={accent}/>)}
+            </button>;})}
+        </div>
+      </div></div>
+    {cfg&&<UnitConfig unit={cfg} side={side} lists={lists} accent={accent}
+      onBack={()=>setCfg(null)}
+      onQuickUse={()=>{onPick(cfg.id);onClose();}}
+      onAdd={(entry,target)=>{onAdd(entry,side,target);onClose();}}/>}
+  </Fragment>;
+}
+
+/* The big, always-visible "selected unit" card that opens the picker sheet. */
+function SideSelector({ label, accent, unit, onOpen }) {
+  return <div>
+    <SectionLabel style={{color:accent}}>{label}</SectionLabel>
+    <button type="button" onClick={onOpen} style={{width:'100%',textAlign:'left',cursor:'pointer',
+      background:'var(--surface-2)',border:`1px solid ${accent}`,borderRadius:'var(--r-lg)',padding:'var(--sp-3) var(--sp-4)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <span style={{flex:1,minWidth:0,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',
+          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit?unit.name:'— choisir une unité —'}</span>
+        {unit&&unit.unbreakable&&<Badge tone="caution">Inébranlable</Badge>}
+        <Icon name="chevron-down" size={18} color="var(--text-tertiary)"/></div>
+      {unit&&<MiniProfile unit={unit}/>}
+    </button></div>;
+}
+
+/* Collapsible factor section. */
+function Collapsible({ title, icon, accent, defaultOpen=false, summary=null, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  return <Card elevation={1} style={{padding:0,overflow:'hidden'}}>
+    <button type="button" onClick={()=>setOpen(o=>!o)} style={{width:'100%',display:'flex',alignItems:'center',
+      gap:10,background:'transparent',border:'none',cursor:'pointer',padding:'var(--sp-3) var(--sp-4)'}}>
+      {icon&&<Icon name={icon} size={18} color={accent||'var(--text-tertiary)'}/>}
+      <span style={{flex:1,textAlign:'left',font:'600 var(--fs-sm)/1.1 var(--font-ui)',color:'var(--text-primary)'}}>{title}</span>
+      {summary&&!open&&<span style={{font:'600 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>{summary}</span>}
+      <Icon name={open?'chevron-up':'chevron-down'} size={18} color="var(--text-tertiary)"/></button>
+    {open&&<div style={{padding:'0 var(--sp-4) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>{children}</div>}
+  </Card>;
+}
+
+/* All static + attack factors for one side. */
+function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }) {
+  return <Collapsible title={side==='me'?'Bonus — ton unité':'Bonus — unité adverse'} icon="shield" accent={accent}
+    defaultOpen={side==='me'} summary={`RC +${cr}`}>
+    <div style={{display:'flex',gap:10}}>
+      <Stepper label="Attaques (total)" value={attacks} onChange={setAttacks} min={1} max={120} style={{flex:1}}/>
+      <Stepper label="Rangs" value={f.ranks} onChange={v=>setF({ranks:v})} min={1} max={10} style={{flex:1}}/>
+    </div>
+    <div style={{display:'flex',gap:10}}>
+      <Stepper label="Blessures de charge / impact" value={f.impact} onChange={v=>setF({impact:v})} min={0} max={20} style={{flex:1}}/>
+    </div>
+    <div>
+      <SectionLabel>Flanc / arrière</SectionLabel>
+      <Segmented size="sm" value={f.flankRear} onChange={v=>setF({flankRear:v})}
+        options={[{value:0,label:'Front'},{value:1,label:'Flanc +1'},{value:2,label:'Arrière +2'}]}/>
+    </div>
+    <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
+      <Switch label="Bannière (+1)" checked={f.banner} onChange={v=>setF({banner:v})}/>
+      <div style={{height:1,background:'var(--border-subtle)'}}/>
+      <Switch label="Étendard de guerre (+1)" checked={f.warbanner} onChange={v=>setF({warbanner:v})}/>
+      <div style={{height:1,background:'var(--border-subtle)'}}/>
+      <Switch label="Position dominante (+1)" checked={f.highGround} onChange={v=>setF({highGround:v})}/>
+      <div style={{height:1,background:'var(--border-subtle)'}}/>
+      <Switch label="Inébranlable" checked={f.unbreakable} onChange={v=>setF({unbreakable:v})}/>
+    </Card>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',padding:'2px 2px 0'}}>
+      <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>
+        {charged?'Bénéficie de la charge (+1)':'Sans charge'}</span>
+      <span style={{font:'700 var(--fs-h3)/1 var(--font-mono)',color:accent}}>Résolution statique +{cr}</span></div>
+  </Collapsible>;
+}
+
+function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onSimulate }) {
+  const [sheet, setSheet] = useState(null); // 'me' | 'foe' | null
+  const set = (patch) => setSel(s => ({ ...s, ...patch }));
+  const setF = (side) => (patch) => setSel(s => ({ ...s, [side]: { ...s[side], ...patch } }));
+  const fileRef = useRef(null);
+
+  const myUnit  = resolveUnit('me', sel, game, lists);
+  const foeUnit = resolveUnit('foe', sel, game, lists);
+  const myCands  = candidatesFor('me', sel, game, lists);
+  const foeCands = candidatesFor('foe', sel, game, lists);
+
+  const myCharged  = sel.charger==='me'  || (sel.counterCharge && sel.charger==='foe');
+  const foeCharged = sel.charger==='foe' || (sel.counterCharge && sel.charger==='me');
+  const myCR  = sideStatic(sel.me,  sel.foe, myCharged);
+  const foeCR = sideStatic(sel.foe, sel.me,  foeCharged);
+
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+
+  const accentMe='var(--signal-500)', accentFoe='var(--out-flee)';
+
+  return <Fragment>
+    <ScreenHeader eyebrow="Sélection du combat" title="Engagement" right={
+      <span style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',textAlign:'right'}}>
+        <span style={{color:'var(--signal-400)'}}>toi +{myCR}</span><br/>
+        <span style={{color:'var(--out-flee)'}}>adv +{foeCR}</span></span>}/>
+    <Body>
+      {/* source mode */}
+      <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
+        options={[{value:'catalog',label:'Catalogue'},{value:'lists',label:'Listes importées'}]}/>
+
+      {sel.source==='catalog' ? (
+        <div style={{display:'flex',gap:8}}>
+          <div style={{flex:1}}><SectionLabel>Ton armée</SectionLabel>
+            <ArmySelect value={game.myArmy} accent="var(--signal-600)"
+              onChange={a=>{setGame(g=>({...g,myArmy:a}));set({mine:(armyUnits(a)[0]||{}).id});}}/></div>
+          <div style={{flex:1}}><SectionLabel>Armée adverse</SectionLabel>
+            <ArmySelect value={game.foeArmy} accent="var(--out-flee)"
+              onChange={a=>{setGame(g=>({...g,foeArmy:a}));set({foe:(armyUnits(a)[0]||{}).id});}}/></div>
+        </div>
+      ) : (
+        <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+          {lists.length===0 ? (
+            <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
+              Importe une liste exportée depuis TOW en 1 (bouton « ⬇ JSON » du constructeur).</div>
+          ) : (
+            <div style={{display:'flex',gap:8}}>
+              <div style={{flex:1}}><SectionLabel>Ta liste</SectionLabel>
+                <select value={sel.myList} onChange={e=>{const i=+e.target.value;set({myList:i,mine:'me:0'});}}
+                  style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
+                    border:'1px solid var(--signal-600)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
+                    font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('Liste '+(i+1))}</option>)}</select></div>
+              <div style={{flex:1}}><SectionLabel>Liste adverse</SectionLabel>
+                <select value={sel.foeList} onChange={e=>{const i=+e.target.value;set({foeList:i,foe:'foe:0'});}}
+                  style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
+                    border:'1px solid var(--out-flee)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
+                    font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('Liste '+(i+1))}</option>)}</select></div>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
+            onChange={e=>{const f=e.target.files[0];if(f)onImport(f);e.target.value='';}}/>
+          <Button variant="secondary" block onClick={()=>fileRef.current&&fileRef.current.click()}
+            icon={<Icon name="upload" size={18}/>}>Importer une liste (.json)</Button>
+        </Card>
+      )}
+
+      <SideSelector label="Ton unité" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+
+      <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
+        <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
+        <Icon name="swords" size={18} color="var(--text-tertiary)"/>
+        <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
+
+      <SideSelector label="Unité adverse" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+
+      {/* charge & reactions */}
+      <Collapsible title="Charge & réaction" icon="zap" accent="var(--caution)" defaultOpen={true}
+        summary={sel.charger==='me'?'tu charges':sel.charger==='foe'?'tu es chargé':'—'}>
+        <div><SectionLabel>Qui charge ?</SectionLabel>
+          <Segmented size="sm" value={sel.charger} onChange={v=>set({charger:v})}
+            options={[{value:'me',label:'Toi'},{value:'none',label:'Personne'},{value:'foe',label:'Adversaire'}]}/></div>
+        {sel.charger!=='none'&&<div><SectionLabel>Réaction du défenseur</SectionLabel>
+          <Segmented size="sm" value={sel.reaction} onChange={v=>set({reaction:v})}
+            options={[{value:'hold',label:'Maintien'},{value:'standshoot',label:'Tenir & tirer'},{value:'flee',label:'Fuite'}]}/></div>}
+        {sel.charger!=='none'&&sel.reaction==='standshoot'&&
+          <Stepper label="Pertes infligées par le tir (avant contact)" value={sel.standShootKills}
+            onChange={v=>set({standShootKills:v})} min={0} max={20}/>}
+        <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
+          <Switch label="Contre-charge (le défenseur charge aussi)" checked={sel.counterCharge} onChange={v=>set({counterCharge:v})}/>
+          <div style={{height:1,background:'var(--border-subtle)'}}/>
+          <Switch label="Cible déjà en fuite (écrasement)" checked={sel.fleeingTarget} onChange={v=>set({fleeingTarget:v})}/>
+        </Card>
+        {sel.charger!=='none'&&sel.reaction==='flee'&&
+          <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
+            Le défenseur tente de fuir : la charge peut échouer. Coche « cible en fuite » pour simuler la poursuite.</div>}
+      </Collapsible>
+
+      <FactorPanel side="me" accent={accentMe} f={sel.me} setF={setF('me')}
+        attacks={sel.myAttacks} setAttacks={v=>set({myAttacks:v})} charged={myCharged} cr={myCR}/>
+      <FactorPanel side="foe" accent={accentFoe} f={sel.foe} setF={setF('foe')}
+        attacks={sel.foeAttacks} setAttacks={v=>set({foeAttacks:v})} charged={foeCharged} cr={foeCR}/>
+
+      <div style={{height:4}}/>
+    </Body>
+    <BottomBar>
+      <Button variant="primary" size="lg" block disabled={!myUnit||!foeUnit} onClick={onSimulate}
+        icon={<Icon name="dices" size={22}/>}>Lancer la simulation</Button>
+    </BottomBar>
+
+    <UnitSheet open={sheet==='me'} title="Ton unité" accent={accentMe} units={myCands}
+      selectedId={sel.mine} onPick={id=>set({mine:id})} onClose={()=>setSheet(null)}
+      configurable={sel.source==='catalog'} side="me" lists={lists} onAdd={onAddUnit}/>
+    <UnitSheet open={sheet==='foe'} title="Unité adverse" accent={accentFoe} units={foeCands}
+      selectedId={sel.foe} onPick={id=>set({foe:id})} onClose={()=>setSheet(null)}
+      configurable={sel.source==='catalog'} side="foe" lists={lists} onAdd={onAddUnit}/>
+  </Fragment>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   6 · SCREEN 2 — Résultat probabiliste (HERO)
+   ════════════════════════════════════════════════════════════════ */
+function BadExchangeBanner({ text }) {
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  return <div style={{display:'flex',gap:10,alignItems:'flex-start',background:'var(--out-give-soft)',
+    border:'1px solid var(--caution)',borderRadius:'var(--r-md)',padding:'var(--sp-3) var(--sp-4)'}}>
+    <Icon name="triangle-alert" size={20} color="var(--caution)" style={{flex:'none',marginTop:1}}/>
+    <div><div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--caution)'}}>Mauvais échange probable</div>
+      <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>{text}</div></div>
+  </div>;
+}
+function UnitOutcomeRow({ label, dist }) {
+  const fleePct = Math.round((dist.flee||0)*100);
+  return <div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:6}}>
+      <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-secondary)',overflow:'hidden',
+        textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:170}}>{label}</span>
+      <span style={{font:'600 var(--fs-xs)/1 var(--font-mono)',color:fleePct>=30?'var(--out-flee)':'var(--text-tertiary)'}}>FUIR {fleePct} %</span>
+    </div><OutcomeBar dist={dist} height={26}/></div>;
+}
+function VariantVerdict({ res, names }) {
+  return <Fragment>
+    <Card elevation={2} style={{padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:'var(--sp-4)'}}>
+      <VPMeter value={res.expectedVP} range={res.range}/>
+      {res.badExchange&&<BadExchangeBanner text="Tu gagnes le combat dans la plupart des cas, mais l'adversaire ne se brise pas : peu de PV à la clé."/>}
+    </Card>
+    <Card elevation={1} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-4)'}}>
+      <UnitOutcomeRow label={names.me} dist={res.me}/>
+      <UnitOutcomeRow label={names.foe} dist={res.foe}/>
+      <div style={{height:1,background:'var(--border-subtle)'}}/>
+      <OutcomeLegend columns={2}/>
+    </Card></Fragment>;
+}
+function FleeDial({ label, value }) {
+  const pct=Math.round(value*100);const r=26,c=2*Math.PI*r;const danger=pct>=30;
+  const col=danger?'var(--out-flee)':'var(--out-draw)';
+  return <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+    <div style={{position:'relative',width:64,height:64}}>
+      <svg width="64" height="64" viewBox="0 0 64 64" style={{transform:'rotate(-90deg)'}}>
+        <circle cx="32" cy="32" r={r} fill="none" stroke="var(--surface-3)" strokeWidth="6"/>
+        <circle cx="32" cy="32" r={r} fill="none" stroke={col} strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c*(1-value)}
+          style={{filter:danger?'drop-shadow(0 0 5px var(--out-flee-glow))':'none',transition:'stroke-dashoffset var(--dur-slow) var(--ease-out)'}}/>
+      </svg>
+      <span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',
+        font:'700 var(--fs-h3)/1 var(--font-mono)',color:col}}>{pct}</span></div>
+    <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+      color:'var(--text-tertiary)',textAlign:'center'}}>FUIR · {label}</span></div>;
+}
+function VariantCadran({ res, names }) {
+  const span=220,clamp=v=>Math.max(-span,Math.min(span,v)),pct=v=>50+(clamp(v)/span)*50;
+  const value=res.expectedVP,positive=value>=0,color=positive?'var(--positive)':'var(--danger)',range=res.range;
+  return <Fragment>
+    <Card elevation={2} style={{padding:'var(--sp-5)'}}>
+      <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+        color:'var(--text-tertiary)',marginBottom:8}}>Gain net espéré · PV</div>
+      <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:12}}>
+        <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color,letterSpacing:'var(--ls-tight)',
+          fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(value)}</span>
+        <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color}}>{positive?'en ta faveur':'en ta défaveur'}</span></div>
+      <div style={{position:'relative',height:14,borderRadius:'var(--r-pill)',
+        background:'linear-gradient(90deg,var(--out-flee-soft),var(--surface-3) 50%,var(--out-win-soft))',
+        border:'1px solid var(--border-default)',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:0,bottom:0,left:`${pct(range[0])}%`,width:`${pct(range[1])-pct(range[0])}%`,
+          background:positive?'var(--out-win-soft)':'var(--out-flee-soft)'}}/>
+        <div style={{position:'absolute',left:'50%',top:-3,bottom:-3,width:2,background:'var(--text-tertiary)'}}/>
+        <div style={{position:'absolute',left:`${pct(value)}%`,top:'50%',width:14,height:14,transform:'translate(-50%,-50%)',
+          borderRadius:'50%',background:color,boxShadow:'0 0 10px '+(positive?'rgba(79,176,122,.5)':'var(--out-flee-glow)'),
+          border:'2px solid var(--bg-app)'}}/></div>
+      <div style={{display:'flex',justifyContent:'space-between',font:'400 var(--fs-xs)/1 var(--font-mono)',
+        color:'var(--text-tertiary)',marginTop:6}}><span>défaite</span><span>0</span><span>victoire</span></div>
+    </Card>
+    {res.badExchange&&<BadExchangeBanner text="Victoire probable mais faible gain de PV — l'adversaire encaisse sans se briser."/>}
+    <Card elevation={1} style={{padding:'var(--sp-4)'}}>
+      <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+        color:'var(--text-tertiary)',marginBottom:12}}>Risque de fuite</div>
+      <div style={{display:'flex',gap:16}}>
+        <FleeDial label={names.meShort} value={res.me.flee}/>
+        <div style={{width:1,background:'var(--border-subtle)'}}/>
+        <FleeDial label={names.foeShort} value={res.foe.flee}/></div></Card>
+    <Card elevation={1} style={{padding:'var(--sp-4)'}}>
+      <UnitOutcomeRow label={names.me} dist={res.me}/>
+      <div style={{height:12}}/>
+      <UnitOutcomeRow label={names.foe} dist={res.foe}/>
+      <div style={{height:1,background:'var(--border-subtle)',margin:'14px 0'}}/>
+      <OutcomeLegend columns={2}/></Card></Fragment>;
+}
+function OutcomeColumn({ name, dist, side }) {
+  return <div style={{flex:1,minWidth:0}}>
+    <div style={{font:'600 var(--fs-sm)/1.2 var(--font-display)',color:side==='enemy'?'var(--out-flee)':'var(--signal-400)',
+      marginBottom:8,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{name}</div>
+    <div style={{display:'flex',flexDirection:'column',gap:5}}>
+      {OUTCOMES.map(o=>{const pct=Math.round((dist[o.key]||0)*100);const flee=o.key==='flee';
+        return <div key={o.key} style={{display:'flex',alignItems:'center',gap:6}}>
+          <span style={{width:8,height:8,borderRadius:2,background:o.color,flex:'none',
+            boxShadow:flee&&pct>0?'0 0 6px var(--out-flee-glow)':'none'}}/>
+          <span style={{flex:1,height:6,borderRadius:3,background:'var(--surface-3)',overflow:'hidden'}}>
+            <span style={{display:'block',height:'100%',width:pct+'%',background:o.color,borderRadius:3}}/></span>
+          <span style={{width:30,textAlign:'right',font:`${flee?600:400} var(--fs-xs)/1 var(--font-mono)`,
+            color:flee&&pct>=20?'var(--out-flee)':'var(--text-tertiary)'}}>{pct}</span></div>;})}
+    </div></div>;
+}
+function VariantDuel({ res, names }) {
+  const positive=res.expectedVP>=0;const tug=50+Math.max(-46,Math.min(46,res.expectedVP/5));
+  return <Fragment>
+    <Card elevation={2} style={{padding:'var(--sp-4) var(--sp-5) var(--sp-5)'}}>
+      <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+        color:'var(--text-tertiary)',marginBottom:10,textAlign:'center'}}>Gain net espéré · PV</div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:14}}>
+        <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color:positive?'var(--positive)':'var(--danger)',
+          letterSpacing:'var(--ls-tight)',fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(res.expectedVP)}</span></div>
+      <div style={{position:'relative',height:8,borderRadius:'var(--r-pill)',background:'var(--surface-3)',overflow:'hidden'}}>
+        <div style={{position:'absolute',left:0,top:0,bottom:0,width:tug+'%',background:'var(--signal-600)'}}/>
+        <div style={{position:'absolute',right:0,top:0,bottom:0,width:(100-tug)+'%',background:'var(--out-flee)'}}/></div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:6,font:'600 var(--fs-xs)/1 var(--font-ui)'}}>
+        <span style={{color:'var(--signal-400)'}}>{names.meShort}</span>
+        <span style={{color:'var(--out-flee)'}}>{names.foeShort}</span></div></Card>
+    {res.badExchange&&<BadExchangeBanner text="Victoire probable mais faible gain de PV — l'adversaire encaisse sans se briser."/>}
+    <Card elevation={1} style={{padding:'var(--sp-4)'}}>
+      <div style={{display:'flex',gap:16}}>
+        <OutcomeColumn name={names.me} dist={res.me} side="friendly"/>
+        <div style={{width:1,background:'var(--border-subtle)'}}/>
+        <OutcomeColumn name={names.foe} dist={res.foe} side="enemy"/></div></Card></Fragment>;
+}
+function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
+  const [view, setView] = useState('verdict');
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  if (!result) return <Fragment>
+    <ScreenHeader eyebrow="Résultat probabiliste" title="Pronostic"/>
+    <Body><Card elevation={1} style={{padding:'var(--sp-6)',textAlign:'center'}}>
+      <Icon name="dices" size={28} color="var(--text-tertiary)"/>
+      <div style={{marginTop:10,font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
+        Sélectionne un engagement puis lance la simulation.</div></Card></Body></Fragment>;
+  return <Fragment>
+    <ScreenHeader eyebrow="Résultat probabiliste" title="Pronostic" right={
+      <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
+        Monte&nbsp;Carlo<br/>{result.N.toLocaleString('fr-FR')}&nbsp;tirages</span>}/>
+    <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
+      <Segmented value={view} onChange={setView} size="sm"
+        options={[{value:'verdict',label:'Verdict'},{value:'cadran',label:'Cadran'},{value:'duel',label:'Duel'}]}/></div>
+    <Body>
+      {view==='verdict'&&<VariantVerdict res={result} names={names}/>}
+      {view==='cadran'&&<VariantCadran res={result} names={names}/>}
+      {view==='duel'&&<VariantDuel res={result} names={names}/>}
+      <div style={{height:4}}/>
+    </Body>
+    <BottomBar>
+      <Button variant="secondary" size="lg" onClick={onAdjust} icon={<Icon name="rotate-ccw" size={20}/>}>Ajuster</Button>
+      <Button variant="primary" size="lg" block onClick={onResolve}
+        icon={<Icon name="list-checks" size={20}/>}>Résoudre le combat</Button>
+    </BottomBar></Fragment>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   7 · SCREEN 3 — Assistant de phase de combat
+   ════════════════════════════════════════════════════════════════ */
+const PHASES = [
+  {key:'fight',n:1,title:'Choisir & Combattre',icon:'swords',hint:'Désigne les figurines au contact, applique les attaques dans l’ordre d’Initiative.'},
+  {key:'result',n:2,title:'Calculer le résultat',icon:'calculator',hint:'Blessures infligées + bonus statiques de chaque camp. La différence est l’écart de résultat.'},
+  {key:'break',n:3,title:'Test de Break',icon:'dices',hint:'Le perdant teste sous son Commandement, modifié par l’écart de résultat.'},
+  {key:'pursue',n:4,title:'Poursuite',icon:'wind',hint:'Si l’unité fuit, le vainqueur poursuit. Une unité rattrapée est détruite.'},
+];
+function PhaseRail({ active }) {
+  return <div style={{display:'flex',gap:6,padding:'0 var(--screen-pad)'}}>
+    {PHASES.map((p,i)=><div key={p.key} style={{flex:1,height:4,borderRadius:'var(--r-pill)',
+      background:i<=active?'var(--signal-500)':'var(--surface-3)',
+      boxShadow:i===active?'var(--glow-signal)':'none',transition:'background var(--dur-base)'}}/>)}</div>;
+}
+function ResultTally({ me, setMe, foe, setFoe }) {
+  const diff=me-foe;const leader=diff===0?null:diff>0?'me':'foe';
+  return <Fragment>
+    <div style={{display:'flex',gap:10}}>
+      <Stepper label="Ton résultat" value={me} onChange={setMe} min={0} max={30} style={{flex:1}}/>
+      <Stepper label="Résultat adverse" value={foe} onChange={setFoe} min={0} max={30} style={{flex:1}}/></div>
+    <div style={{textAlign:'center',padding:'var(--sp-3)',background:'var(--surface-2)',borderRadius:'var(--r-md)',
+      border:'1px solid var(--border-subtle)'}}>
+      <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+        color:'var(--text-tertiary)'}}>Écart de résultat</div>
+      <div style={{font:'700 var(--fs-display)/1 var(--font-mono)',
+        color:leader==='me'?'var(--positive)':leader==='foe'?'var(--danger)':'var(--text-secondary)',marginTop:4}}>
+        {diff>0?'+':''}{diff}</div>
+      <div style={{font:'500 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-secondary)',marginTop:4}}>
+        {leader==='me'?'L’adversaire doit tester':leader==='foe'?'Ton unité doit tester':'Égalité — pas de test'}</div></div>
+  </Fragment>;
+}
+function BreakTest({ cd, modifier, rolled, setRolled, unbreakable }) {
+  const target=Math.max(2,cd-modifier);const passed=rolled!=null&&(unbreakable||rolled<=target);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const Stat=({label,value,color})=><div><div style={{font:'600 var(--fs-label)/1 var(--font-ui)',
+    letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>{label}</div>
+    <div style={{font:'700 var(--fs-h1)/1 var(--font-mono)',color,marginTop:4}}>{value}</div></div>;
+  return <Fragment>
+    <div style={{display:'flex',justifyContent:'space-around',textAlign:'center',padding:'var(--sp-3) 0'}}>
+      <Stat label="Cd" value={cd} color="var(--text-primary)"/>
+      <Stat label="Malus" value={'−'+modifier} color="var(--danger)"/>
+      <Stat label="Cible" value={unbreakable?'—':'≤'+target} color="var(--signal-400)"/></div>
+    {unbreakable?(
+      <div style={{textAlign:'center',padding:'var(--sp-4)',background:'var(--out-give-soft)',border:'1px solid var(--caution)',
+        borderRadius:'var(--r-md)',color:'var(--caution)',font:'600 var(--fs-body)/1.3 var(--font-ui)'}}>
+        Unité inébranlable — réussite automatique, elle tient.</div>
+    ):rolled==null?(
+      <Button variant="primary" size="lg" block onClick={()=>setRolled(roll2d6())} icon={<Icon name="dices" size={22}/>}>Lancer 2D6</Button>
+    ):(
+      <div style={{textAlign:'center',padding:'var(--sp-4)',borderRadius:'var(--r-md)',
+        background:passed?'var(--out-win-soft)':'var(--out-flee-soft)',
+        border:`1px solid ${passed?'var(--out-win)':'var(--out-flee)'}`,boxShadow:passed?'none':'var(--glow-flee)'}}>
+        <div style={{font:'700 var(--fs-hero)/1 var(--font-mono)',color:passed?'var(--out-win)':'var(--out-flee)'}}>{rolled}</div>
+        <div style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:passed?'var(--out-win)':'var(--out-flee)',marginTop:6}}>
+          {passed?'Test réussi — l’unité tient':'Test raté — L’UNITÉ FUIT'}</div>
+        <button type="button" onClick={()=>setRolled(null)} style={{marginTop:10,background:'transparent',border:'none',
+          color:'var(--text-tertiary)',font:'500 var(--fs-xs)/1 var(--font-ui)',cursor:'pointer',textDecoration:'underline'}}>relancer</button>
+      </div>)}
+  </Fragment>;
+}
+function CombatAssistant({ breakCd, breakUnbreakable, onDone }) {
+  const [step, setStep] = useState(0);
+  const [me, setMe] = useState(7);
+  const [foe, setFoe] = useState(3);
+  const [rolled, setRolled] = useState(null);
+  const phase = PHASES[step];
+  const modifier = Math.max(0, me - foe);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const next=()=>{ if(step<PHASES.length-1) setStep(step+1); else onDone&&onDone(); };
+  const back=()=>step>0&&setStep(step-1);
+  return <Fragment>
+    <ScreenHeader eyebrow={`Phase de combat · ${phase.n} / 4`} title="Assistant"/>
+    <PhaseRail active={step}/>
+    <Body style={{paddingTop:14}}>
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        <span style={{width:44,height:44,flex:'none',display:'flex',alignItems:'center',justifyContent:'center',
+          borderRadius:'var(--r-md)',background:'var(--signal-soft)',border:'1px solid var(--signal-600)'}}>
+          <Icon name={phase.icon} size={22} color="var(--signal-400)"/></span>
+        <div><div style={{font:'600 var(--fs-h2)/1.1 var(--font-display)',color:'var(--text-primary)'}}>{phase.title}</div></div></div>
+      <p style={{margin:'2px 0 6px',font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>{phase.hint}</p>
+      <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',
+        padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+        {phase.key==='fight'&&<div style={{font:'400 var(--fs-sm)/1.6 var(--font-ui)',color:'var(--text-secondary)'}}>
+          {['Initiative la plus haute frappe en premier','Touches → blessures → sauvegardes','Retire les pertes au contact']
+            .map((t,i)=><div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0'}}>
+              <Icon name="check" size={16} color="var(--out-win)"/>{t}</div>)}</div>}
+        {phase.key==='result'&&<ResultTally me={me} setMe={setMe} foe={foe} setFoe={setFoe}/>}
+        {phase.key==='break'&&<BreakTest cd={breakCd} modifier={modifier} rolled={rolled} setRolled={setRolled} unbreakable={breakUnbreakable}/>}
+        {phase.key==='pursue'&&<div style={{font:'400 var(--fs-sm)/1.6 var(--font-ui)',color:'var(--text-secondary)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--border-subtle)'}}>
+            <span>Distance de fuite</span><span style={{font:'600 var(--fs-body)/1 var(--font-mono)',color:'var(--text-primary)'}}>2D6 = {roll2d6()}"</span></div>
+          <div style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--border-subtle)'}}>
+            <span>Poursuite</span><span style={{font:'600 var(--fs-body)/1 var(--font-mono)',color:'var(--text-primary)'}}>2D6 = {roll2d6()}"</span></div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0 2px'}}>
+            <span style={{color:'var(--out-flee)',fontWeight:600}}>Unité rattrapée</span>
+            <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color:'var(--out-flee)'}}>détruite → PV adverse</span></div></div>}
+      </div>
+    </Body>
+    <BottomBar>
+      {step>0&&<Button variant="secondary" size="lg" onClick={back} icon={<Icon name="chevron-left" size={20}/>}>Retour</Button>}
+      <Button variant="primary" size="lg" block onClick={next}
+        icon={<Icon name={step===PHASES.length-1?'check':'chevron-right'} size={20}/>}>
+        {step===PHASES.length-1?'Appliquer & terminer':'Étape suivante'}</Button>
+    </BottomBar></Fragment>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   8 · SCREEN 4 — Tracker d'état de partie & PV
+   ════════════════════════════════════════════════════════════════ */
+function computeVP(game) {
+  const lost = (roster) => roster.filter(u=>u.status==='destroyed').reduce((s,u)=>s+(u.points*u.size),0);
+  const obj = (who) => game.objectives.filter(o=>o.holder===who).length * 100;
+  const myLost = lost(game.myRoster), foeLost = lost(game.foeRoster);
+  return { me: foeLost + obj('me'), foe: myLost + obj('foe') };
+}
+function VPScoreboard({ vp, players }) {
+  const lead=vp.me-vp.foe;const leading=lead>=0;
+  return <div style={{background:'var(--surface-2)',borderRadius:'var(--r-lg)',border:'1px solid var(--border-subtle)',
+    padding:'var(--sp-4)',boxShadow:'var(--shadow-2)'}}>
+    <div style={{display:'flex',alignItems:'stretch'}}>
+      {[['me',players.me,vp.me,'var(--signal-400)'],['foe',players.foe,vp.foe,'var(--out-flee)']].map(([k,name,score,col],i)=>(
+        <Fragment key={k}>
+          {i===1&&<div style={{width:1,background:'var(--border-default)',margin:'0 var(--sp-3)'}}/>}
+          <div style={{flex:1,textAlign:i===0?'left':'right'}}>
+            <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+              color:'var(--text-tertiary)'}}>{i===0?'Toi':'Adverse'}</div>
+            <div style={{font:'700 44px/1 var(--font-display)',color:col,marginTop:4,fontVariantNumeric:'tabular-nums'}}>{score}</div>
+            <div style={{font:'400 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',marginTop:2}}>{name}</div></div>
+        </Fragment>))}
+    </div>
+    <div style={{marginTop:'var(--sp-3)',padding:'var(--sp-2)',borderRadius:'var(--r-md)',
+      background:leading?'var(--out-win-soft)':'var(--out-flee-soft)',textAlign:'center',
+      font:'600 var(--fs-sm)/1 var(--font-ui)',color:leading?'var(--out-win)':'var(--out-flee)'}}>
+      {lead===0?'Égalité parfaite':leading?`Tu mènes de ${lead} PV`:`Tu es mené de ${Math.abs(lead)} PV`}</div></div>;
+}
+function UnitRow({ unit, onCycle }) {
+  const pct=unit.fuMax?unit.fuCurrent/unit.fuMax:0;const dead=unit.status==='destroyed';
+  const barCol=unit.status==='weak'?'var(--status-weak)':unit.status==='fleeing'?'var(--status-fleeing)':
+    dead?'var(--status-destroyed)':'var(--status-full)';
+  return <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',opacity:dead?0.5:1}}>
+    <div style={{flex:1,minWidth:0}}>
+      <div style={{display:'flex',alignItems:'center',gap:6}}>
+        <span style={{font:'600 var(--fs-body)/1.1 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
+          textOverflow:'ellipsis',whiteSpace:'nowrap',textDecoration:dead?'line-through':'none'}}>{unit.name}</span></div>
+      <div style={{marginTop:5,height:5,borderRadius:'var(--r-pill)',background:'var(--surface-3)',overflow:'hidden',position:'relative'}}>
+        <div style={{position:'absolute',inset:0,width:(pct*100)+'%',background:barCol,borderRadius:'var(--r-pill)'}}/>
+        <div style={{position:'absolute',left:'25%',top:-1,bottom:-1,width:2,background:'var(--bg-app)'}}/></div></div>
+    <button type="button" onClick={onCycle} style={{flex:'none',width:104,textAlign:'right',background:'transparent',
+      border:'none',cursor:'pointer',padding:0}}>
+      <StatusDot status={unit.status} showLabel={true} style={{justifyContent:'flex-end'}}/>
+      <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3}}>{unit.points*unit.size} pts</div></button></div>;
+}
+const STATUS_CYCLE = ['full','weak','fleeing','destroyed'];
+function ArmyPanel({ title, roster, side, onCycle }) {
+  const lost=roster.filter(u=>u.status==='destroyed').reduce((s,u)=>s+u.points*u.size,0);
+  return <div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',margin:'4px 0 2px'}}>
+      <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+        color:side==='enemy'?'var(--out-flee)':'var(--signal-400)'}}>{title}</span>
+      <span style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>perdu {lost} pts</span></div>
+    <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',padding:'0 var(--sp-4)'}}>
+      {roster.length===0&&<div style={{padding:'14px 0',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune unité.</div>}
+      {roster.map((u,i)=><Fragment key={u.ref+i}>
+        {i>0&&<div style={{height:1,background:'var(--border-subtle)'}}/>}
+        <UnitRow unit={u} onCycle={()=>onCycle(i)}/></Fragment>)}</div></div>;
+}
+function Objectives({ items, onSet }) {
+  return <div>
+    <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
+      color:'var(--text-tertiary)',margin:'4px 0 6px'}}>Objectifs du scénario · 100 PV ch.</div>
+    <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',
+      padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:10}}>
+      {items.map(o=><div key={o.id} style={{display:'flex',alignItems:'center',gap:10}}>
+        <span style={{flex:1,font:'500 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-secondary)'}}>{o.name}</span>
+        <Segmented size="sm" value={o.holder} onChange={v=>onSet(o.id,v)} style={{width:150}}
+          options={[{value:'me',label:'Toi'},{value:'none',label:'—'},{value:'foe',label:'Adv.'}]}/></div>)}</div></div>;
+}
+function GameTracker({ game, setGame }) {
+  const vp = computeVP(game);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const cycle = (sideKey) => (i) => setGame(g=>{
+    const roster=[...g[sideKey]];const u={...roster[i]};
+    const ni=(STATUS_CYCLE.indexOf(u.status)+1)%STATUS_CYCLE.length;u.status=STATUS_CYCLE[ni];
+    u.fuCurrent=u.status==='destroyed'?0:u.status==='weak'?Math.max(1,Math.round(u.fuMax*0.2)):
+      u.status==='fleeing'?Math.max(1,Math.round(u.fuMax*0.5)):u.fuMax;
+    roster[i]=u;return {...g,[sideKey]:roster};
+  });
+  const setObj=(id,holder)=>setGame(g=>({...g,objectives:g.objectives.map(o=>o.id===id?{...o,holder}:o)}));
+  return <Fragment>
+    <ScreenHeader eyebrow={`Tour ${game.turn} · Phase de mêlée`} title="Partie" right={
+      <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
+        {game.mission}<br/>{game.pointsCap} pts</span>}/>
+    <Body>
+      <VPScoreboard vp={vp} players={{me:FACTIONS[game.myArmy],foe:FACTIONS[game.foeArmy]}}/>
+      <Objectives items={game.objectives} onSet={setObj}/>
+      <ArmyPanel title={`Ton armée · ${FACTIONS[game.myArmy]}`} roster={game.myRoster} side="friendly" onCycle={cycle('myRoster')}/>
+      <ArmyPanel title={`Armée adverse · ${FACTIONS[game.foeArmy]}`} roster={game.foeRoster} side="enemy" onCycle={cycle('foeRoster')}/>
+      <div style={{display:'flex',gap:10}}>
+        <Button variant="secondary" onClick={()=>setGame(g=>({...g,turn:Math.min(8,g.turn+1)}))}
+          icon={<Icon name="chevron-right" size={18}/>} style={{flex:1}}>Tour suivant</Button>
+        <Button variant="ghost" onClick={()=>{ if(confirm('Réinitialiser la partie ?')){localStorage.removeItem(STORE_KEY);setGame(freshGame());} }}
+          icon={<Icon name="rotate-ccw" size={18}/>}>Reset</Button></div>
+      <div style={{height:4}}/>
+    </Body></Fragment>;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   9 · APP ROOT
+   ════════════════════════════════════════════════════════════════ */
+function NoData() {
+  return <PhoneFrame><div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',
+    justifyContent:'center',padding:24,textAlign:'center',gap:12}}>
+    <Icon name="database" size={32} color="var(--out-flee)"/>
+    <div style={{font:'600 var(--fs-h3)/1.3 var(--font-display)',color:'var(--text-primary)'}}>Données introuvables</div>
+    <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
+      Augur n'a pas pu charger <code style={{font:'var(--font-mono)'}}>unit_db.js</code> / <code style={{font:'var(--font-mono)'}}>owb_unit_data.js</code>.
+      Ces deux fichiers doivent se trouver dans le même dossier que <code style={{font:'var(--font-mono)'}}>index.html</code>.</div></div></PhoneFrame>;
+}
+
+const LISTS_KEY = 'augur.lists.v1';
+function normalizeImported(data) {
+  if (Array.isArray(data)) return { name: 'Liste importée', army: '', units: data };
+  return {
+    name: data.name || 'Liste importée',
+    army: data.army || '',
+    units: Array.isArray(data.units) ? data.units : [],
+  };
+}
+
+const freshFactors = (charger, ranks) => ({
+  source: 'catalog',
+  mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,
+  foe:  (armyUnits(DEFAULT_FOE_ARMY)[0]||{}).id,
+  myList: 0, foeList: 0,
+  charger: 'me', counterCharge: false, reaction: 'hold', fleeingTarget: false, standShootKills: 0,
+  myAttacks: 9, foeAttacks: 6,
+  me:  { ranks: 3, banner: true,  warbanner: false, flankRear: 0, highGround: false, impact: 0, unbreakable: false },
+  foe: { ranks: 4, banner: false, warbanner: false, flankRear: 0, highGround: false, impact: 0, unbreakable: false },
+});
+
+function App() {
+  const [tab, setTab] = useState('select');
+  const [game, setGame] = useState(loadGame);
+  const [lists, setLists] = useState(() => { try { return JSON.parse(localStorage.getItem(LISTS_KEY)) || []; } catch (e) { return []; } });
+  const [sel, setSel] = useState(freshFactors);
+  const [result, setResult] = useState(null);
+  const [names, setNames] = useState(null);
+
+  useEffect(()=>{ try{ localStorage.setItem(STORE_KEY, JSON.stringify(game)); }catch(e){} }, [game]);
+  useEffect(()=>{ try{ localStorage.setItem(LISTS_KEY, JSON.stringify(lists)); }catch(e){} }, [lists]);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); }, [tab, result]);
+
+  const myUnit  = resolveUnit('me', sel, game, lists);
+  const foeUnit = resolveUnit('foe', sel, game, lists);
+
+  // Auto-fill attacks / ranks / unbreakable from the chosen unit's real profile.
+  const defRanks = (u) => Math.max(1, Math.min(3, Math.ceil((u.size||1)/5)));
+  const defAtt   = (u) => Math.max(1, u.profile.a * Math.min(5, u.size||5));
+  useEffect(()=>{ if(myUnit) setSel(s=>({ ...s, myAttacks: defAtt(myUnit),
+    me:{ ...s.me, ranks: defRanks(myUnit), unbreakable: !!myUnit.unbreakable } })); }, [sel.mine, sel.source, sel.myList]);
+  useEffect(()=>{ if(foeUnit) setSel(s=>({ ...s, foeAttacks: defAtt(foeUnit),
+    foe:{ ...s.foe, ranks: defRanks(foeUnit), unbreakable: !!foeUnit.unbreakable } })); }, [sel.foe, sel.source, sel.foeList]);
+
+  if (ROSTER.coverage === 0) return <NoData/>;
+
+  const importList = (file) => {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const list = normalizeImported(JSON.parse(r.result));
+        if (!list.units.length) { alert('Aucune unité trouvée dans ce fichier.'); return; }
+        setLists(prev => {
+          const next = [...prev, list];
+          const idx = next.length - 1;
+          setSel(s => ({ ...s, source:'lists', myList: idx, foeList: prev.length ? s.foeList : idx,
+            mine: 'me:0', foe: prev.length ? s.foe : 'foe:0' }));
+          return next;
+        });
+      } catch (e) { alert('Fichier JSON invalide : ' + e.message); }
+    };
+    r.readAsText(file);
+  };
+
+  // Add a configured unit to a list (existing index, or 'new'), then select it.
+  const addUnit = (entry, side, target) => {
+    setLists(prev => {
+      let next, idx;
+      if (target === 'new' || prev.length === 0) {
+        const army = side==='me' ? game.myArmy : game.foeArmy;
+        next = [...prev, { name: side==='me' ? 'Mon armée' : 'Armée adverse', army, units: [entry] }];
+        idx = next.length - 1;
+      } else {
+        idx = target;
+        next = prev.map((l,i) => i===idx ? { ...l, units: [...l.units, entry] } : l);
+      }
+      const ui = next[idx].units.length - 1;
+      setSel(s => ({ ...s, source:'lists',
+        ...(side==='me' ? { myList: idx, mine: 'me:'+ui } : { foeList: idx, foe: 'foe:'+ui }) }));
+      return next;
+    });
+  };
+
+  const runSim = () => {
+    const me = resolveUnit('me', sel, game, lists), foe = resolveUnit('foe', sel, game, lists);
+    if (!me || !foe) return;
+    const myCharged  = sel.charger==='me'  || (sel.counterCharge && sel.charger==='foe');
+    const foeCharged = sel.charger==='foe' || (sel.counterCharge && sel.charger==='me');
+    const myStatic  = sideStatic(sel.me,  sel.foe, myCharged);
+    const foeStatic = sideStatic(sel.foe, sel.me,  foeCharged);
+    let myAttacks  = sel.myAttacks  + (myCharged  ? sel.me.impact  : 0);
+    let foeAttacks = sel.foeAttacks + (foeCharged ? sel.foe.impact : 0);
+    if (sel.charger!=='none' && sel.reaction==='standshoot' && sel.standShootKills>0) {
+      if (sel.charger==='me') myAttacks  = Math.max(1, myAttacks  - sel.standShootKills * me.profile.a);
+      else                    foeAttacks = Math.max(1, foeAttacks - sel.standShootKills * foe.profile.a);
+    }
+    const cfg = {
+      me:{ ...me, unbreakable: sel.me.unbreakable }, foe:{ ...foe, unbreakable: sel.foe.unbreakable },
+      myAttacks, foeAttacks, myStatic, foeStatic, fleeingTarget: sel.fleeingTarget,
+    };
+    setResult(monteCarlo(cfg));
+    setNames({ me: me.name, foe: foe.name, meShort: me.name.split(/[ ,]/)[0], foeShort: foe.name.split(/[ ,]/)[0] });
+    setTab('result');
+  };
+
+  let screen;
+  if (tab==='select') screen = <CombatSelect game={game} setGame={setGame} sel={sel} setSel={setSel}
+    lists={lists} onImport={importList} onAddUnit={addUnit} onSimulate={runSim}/>;
+  else if (tab==='result') screen = <ResultProbabilistic result={result} names={names}
+    onResolve={()=>setTab('assistant')} onAdjust={()=>setTab('select')}/>;
+  else if (tab==='assistant') screen = <CombatAssistant
+    breakCd={foeUnit?foeUnit.profile.ld:7} breakUnbreakable={sel.foe.unbreakable} onDone={()=>setTab('tracker')}/>;
+  else screen = <GameTracker game={game} setGame={setGame}/>;
+
+  return <PhoneFrame active={tab} onTab={setTab}>{screen}</PhoneFrame>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

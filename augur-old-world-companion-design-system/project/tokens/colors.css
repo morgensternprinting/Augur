@@ -1,0 +1,81 @@
+/* ──────────────────────────────────────────────────────────────
+   Augur — Color tokens
+   Dark-first tactical instrument. Cool slate neutrals, a single
+   cyan signal accent, and a 5-step outcome spectrum (good → bad)
+   that maps directly to Old World combat / break-test results.
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ---- Neutral slate ramp (cool charcoal) ---- */
+  --slate-950: #080A0E;
+  --slate-900: #0C0F14;
+  --slate-880: #11151C;
+  --slate-850: #151B24;
+  --slate-800: #1B232F;
+  --slate-750: #222C3A;
+  --slate-700: #2B3645;
+  --slate-600: #3B4859;
+  --slate-500: #556377;
+  --slate-400: #7C8CA3;
+  --slate-300: #A2B0C4;
+  --slate-200: #C9D3E0;
+  --slate-100: #E7ECF3;
+  --slate-50:  #F4F6FA;
+
+  /* ---- Brand signal — steel cyan (instrument readout) ---- */
+  --signal-700: #1E6E92;
+  --signal-600: #2A8DB8;
+  --signal-500: #3FA7D6;   /* primary brand accent */
+  --signal-400: #6BC1E4;
+  --signal-300: #9BD7EE;
+  --signal-soft: rgba(63, 167, 214, 0.14);
+  --signal-glow: rgba(63, 167, 214, 0.30);
+
+  /* ---- Outcome spectrum (5 steps, best → catastrophe) ---- */
+  --out-win:        #4FB07A;   /* l'emporter        */
+  --out-draw:       #6E83A6;   /* égalité           */
+  --out-give:       #C9A24B;   /* céder du terrain  */
+  --out-fallback:   #D98441;   /* reculer en bon ordre */
+  --out-flee:       #E4544E;   /* FUIR — catastrophe   */
+
+  --out-win-soft:      rgba(79, 176, 122, 0.16);
+  --out-give-soft:     rgba(201, 162, 75, 0.16);
+  --out-flee-soft:     rgba(228, 84, 78, 0.16);
+  --out-flee-glow:     rgba(228, 84, 78, 0.34);
+
+  /* ---- Status (unit state in tracker) ---- */
+  --status-full:      #4FB07A;   /* pleine force        */
+  --status-weak:      #C9A24B;   /* sous 25 % de FU     */
+  --status-fleeing:   #E4544E;   /* en fuite            */
+  --status-destroyed: #55657C;   /* détruite (muted)    */
+
+  /* ---- Semantic feedback ---- */
+  --positive: #4FB07A;
+  --caution:  #D9A441;
+  --danger:   #E4544E;
+  --info:     #3FA7D6;
+
+  /* ---- Surfaces (elevation by lightening) ---- */
+  --bg-app:        var(--slate-900);
+  --bg-sunken:     var(--slate-950);
+  --surface-1:     var(--slate-850);   /* base card           */
+  --surface-2:     var(--slate-800);   /* raised card / sheet */
+  --surface-3:     var(--slate-750);   /* control fill        */
+  --surface-hover: var(--slate-700);
+
+  /* ---- Borders / hairlines ---- */
+  --border-subtle:  rgba(162, 176, 196, 0.10);
+  --border-default: rgba(162, 176, 196, 0.16);
+  --border-strong:  rgba(162, 176, 196, 0.28);
+
+  /* ---- Text ---- */
+  --text-primary:   var(--slate-100);
+  --text-secondary: var(--slate-300);
+  --text-tertiary:  var(--slate-400);
+  --text-disabled:  var(--slate-500);
+  --text-on-signal: #051018;
+  --text-inverse:   var(--slate-900);
+
+  /* ---- Focus ring ---- */
+  --ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--signal-500);
+}

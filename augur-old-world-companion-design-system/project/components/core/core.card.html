@@ -1,0 +1,79 @@
+<!-- @dsCard group="Components" viewport="700x440" name="Core controls" subtitle="Button, Stepper, Switch, Segmented, Badge, StatPill" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); padding:20px; }
+  #root { display:flex; flex-direction:column; gap:18px; max-width:560px; }
+  .grp { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .lab { font:600 11px/1 var(--font-ui); letter-spacing:.1em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:8px; }
+  .col { display:flex; flex-direction:column; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const { Button, Stepper, Switch, Segmented, Badge, StatPill } = window.AugurOldWorldCompanionDesignSystem_b6c10f;
+  function Demo() {
+    const [n, setN] = React.useState(3);
+    const [rk, setRk] = React.useState(2);
+    const [unb, setUnb] = React.useState(true);
+    const [view, setView] = React.useState('bars');
+    return (
+      <React.Fragment>
+        <div className="col">
+          <div className="lab">Button — variants & sizes</div>
+          <div className="grp">
+            <Button variant="primary">Simuler</Button>
+            <Button variant="secondary">Relancer</Button>
+            <Button variant="ghost">Annuler</Button>
+            <Button variant="danger">En fuite</Button>
+            <Button variant="primary" size="lg">Action large</Button>
+            <Button variant="primary" disabled>Indispo</Button>
+          </div>
+        </div>
+        <div className="col">
+          <div className="lab">Stepper — keyboard-free numeric input</div>
+          <div className="grp">
+            <Stepper label="Attaques" value={n} onChange={setN} min={1} max={40} style={{width:150}} />
+            <Stepper label="Rangs" value={rk} onChange={setRk} signed style={{width:150}} />
+          </div>
+        </div>
+        <div className="col">
+          <div className="lab">Switch · Segmented</div>
+          <div className="grp" style={{gap:24}}>
+            <Switch label="Inébranlable" checked={unb} onChange={setUnb} style={{width:200}} />
+            <Segmented value={view} onChange={setView} style={{width:240}}
+              options={[{value:'bars',label:'Barres'},{value:'dial',label:'Cadran'},{value:'cards',label:'Cartes'}]} />
+          </div>
+        </div>
+        <div className="col">
+          <div className="lab">Badge · StatPill</div>
+          <div className="grp">
+            <Badge tone="signal">Général</Badge>
+            <Badge tone="signal">Grande bannière</Badge>
+            <Badge tone="caution">Mauvais échange</Badge>
+            <Badge tone="flee" solid>Fuir</Badge>
+            <div style={{display:'flex',gap:6,marginLeft:8}}>
+              <StatPill label="CC" value={4} />
+              <StatPill label="F" value={3} />
+              <StatPill label="E" value={4} />
+              <StatPill label="A" value={2} emphasis />
+              <StatPill label="Svg" value="4+" />
+              <StatPill label="Cd" value={8} />
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

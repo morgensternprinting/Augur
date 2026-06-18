@@ -1,0 +1,30 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Neutral slate ramp" subtitle="Cool charcoal — app bg through hairlines" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; background:var(--bg-app); font-family:var(--font-mono); color:var(--text-secondary); padding:18px; }
+  .row { display:flex; gap:6px; }
+  .sw { flex:1; height:64px; border-radius:var(--r-sm); border:1px solid var(--border-subtle); display:flex; align-items:flex-end; padding:6px; box-sizing:border-box; }
+  .sw span { font-size:9px; letter-spacing:.04em; }
+  .dark span { color:var(--slate-300); }
+  .light span { color:var(--slate-900); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw dark" style="background:var(--slate-950)"><span>950</span></div>
+    <div class="sw dark" style="background:var(--slate-900)"><span>900</span></div>
+    <div class="sw dark" style="background:var(--slate-800)"><span>800</span></div>
+    <div class="sw dark" style="background:var(--slate-700)"><span>700</span></div>
+    <div class="sw dark" style="background:var(--slate-600)"><span>600</span></div>
+    <div class="sw dark" style="background:var(--slate-500)"><span>500</span></div>
+    <div class="sw light" style="background:var(--slate-400)"><span>400</span></div>
+    <div class="sw light" style="background:var(--slate-300)"><span>300</span></div>
+    <div class="sw light" style="background:var(--slate-200)"><span>200</span></div>
+    <div class="sw light" style="background:var(--slate-100)"><span>100</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!-- @dsCard group="Augur app" viewport="390x844" name="Augur — companion app" subtitle="Interactive click-through · 4 screens + 3 result variations" -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Augur — UI kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 0%, #14181f 0%, var(--slate-950) 70%);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px; box-sizing: border-box; font-family: var(--font-ui);
+  }
+  /* hide scrollbars inside the phone body for a cleaner kit */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  * { scrollbar-width: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="data.js"></script>
+
+<script type="text/babel" src="_shared.jsx"></script>
+<script type="text/babel" src="PhoneFrame.jsx"></script>
+<script type="text/babel" src="CombatSelect.jsx"></script>
+<script type="text/babel" src="ResultProbabilistic.jsx"></script>
+<script type="text/babel" src="CombatAssistant.jsx"></script>
+<script type="text/babel" src="GameTracker.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  // Alias the generated namespace to a short handle the screens use.
+  window.AugurNS = window.AugurOldWorldCompanionDesignSystem_b6c10f;
+
+  function App() {
+    const [tab, setTab] = React.useState('select');
+    React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [tab]);
+
+    let screen;
+    if (tab === 'select')    screen = <CombatSelect onSimulate={() => setTab('result')} />;
+    else if (tab === 'result')    screen = <ResultProbabilistic onResolve={() => setTab('assistant')} />;
+    else if (tab === 'assistant') screen = <CombatAssistant onDone={() => setTab('tracker')} />;
+    else screen = <GameTracker />;
+
+    return <PhoneFrame active={tab} onTab={setTab}>{screen}</PhoneFrame>;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

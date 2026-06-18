@@ -1,0 +1,47 @@
+/* ──────────────────────────────────────────────────────────────
+   Augur — Typography tokens
+   Display = Plex Sans Condensed (headers, big numerals)
+   UI/body = Plex Sans
+   Data    = Plex Mono (stat lines, profiles, tabular readouts)
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ---- Families ---- */
+  --font-display: 'IBM Plex Sans Condensed', 'Arial Narrow', sans-serif;
+  --font-ui:      'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* ---- Type scale (mobile, glanceable) ---- */
+  --fs-hero:    56px;   /* the VP expectation number          */
+  --fs-display: 34px;   /* screen titles                      */
+  --fs-h1:      26px;
+  --fs-h2:      21px;
+  --fs-h3:      18px;
+  --fs-body:    16px;   /* default reading size at the table  */
+  --fs-sm:      14px;
+  --fs-xs:      12px;
+  --fs-label:   11px;   /* uppercase eyebrow / stat labels    */
+
+  /* ---- Weights ---- */
+  --fw-regular:  400;   /* @kind font */
+  --fw-medium:   500;   /* @kind font */
+  --fw-semibold: 600;   /* @kind font */
+  --fw-bold:     700;   /* @kind font */
+
+  /* ---- Line heights ---- */
+  --lh-tight:   1.04;   /* @kind font */
+  --lh-snug:    1.2;    /* @kind font */
+  --lh-normal:  1.45;   /* @kind font */
+
+  /* ---- Tracking ---- */
+  --ls-tight:   -0.02em;  /* @kind font */
+  --ls-normal:  0;        /* @kind font */
+  --ls-label:   0.10em;   /* @kind font */ /* eyebrow / uppercase labels */
+
+  /* ---- Semantic roles ---- */
+  --text-hero:        var(--fw-bold) var(--fs-hero)/var(--lh-tight) var(--font-display);
+  --text-title:       var(--fw-semibold) var(--fs-display)/var(--lh-snug) var(--font-display);
+  --text-heading:     var(--fw-semibold) var(--fs-h2)/var(--lh-snug) var(--font-display);
+  --text-body:        var(--fw-regular) var(--fs-body)/var(--lh-normal) var(--font-ui);
+  --text-stat:        var(--fw-600) var(--fs-body)/var(--lh-snug) var(--font-mono);
+}

@@ -1,0 +1,9 @@
+# OS / editor cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.tmp
+*~
+
+# Local preview server logs (the server script + launch.json ARE tracked)
+*.log
