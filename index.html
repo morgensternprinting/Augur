@@ -199,6 +199,82 @@ function engineUnitFromSlug(slug, name, count, ppm) {
   };
 }
 
+/* ════════════════════════════════════════════════════════════════
+   EQUIPMENT / MOUNT → STATS  (generic Old World rules, all armies)
+   Equipment effects are shared across armies, so one rule set covers
+   every faction. Magic items / unique gear fall through to the manual
+   overrides in the config sheet.
+   ════════════════════════════════════════════════════════════════ */
+
+// Find a mount's stat profile in UNIT_DB by its (FR/EN) name.
+function findMountProfile(name) {
+  if (!name || typeof UNIT_DB === 'undefined') return null;
+  const nn = normName(name).replace(/^(a pied|on foot)$/, '');
+  if (!nn || /^(a pied|on foot)$/.test(normName(name))) return null;
+  let best = null;
+  for (const k in UNIT_DB) {
+    const un = normName(UNIT_DB[k].name);
+    if (un === nn || nn.includes(un) || un.includes(nn)) {
+      const p = pickCombatProfile(UNIT_DB[k].profiles);
+      if (p) { best = profileFromRaw(p); if (un === nn) break; }
+    }
+  }
+  return best;
+}
+
+// Apply selected option NAMES (+ optional mount name) on top of a base
+// { profile, save } → modified engine stats. Returns deltas + notes.
+function resolveEquipment(base, chosenNames, mountName) {
+  const all = (chosenNames || []).map(normName);
+  const has = (re) => all.some(s => re.test(s));
+  const prof = { ...base.profile };
+  let strikeLast = false, strikeFirst = false, chargeS = 0;
+  const notes = [];
+  const mountedName = mountName && !/^(a pied|on foot)$/.test(normName(mountName)) ? mountName : null;
+
+  // ── Melee weapons ──
+  if (has(/arme de base additionnelle|additional hand weapon|second hand weapon|deux armes|paire d|paired weapons/)) {
+    prof.a += 1; notes.push('+1 A · arme additionnelle');
+  }
+  if (has(/arme lourde|great weapon|grande arme/)) {
+    prof.s += 2; strikeLast = true; notes.push('+2 F · frappe en dernier · arme lourde');
+  }
+  if (has(/hallebarde|halberd/)) { prof.s += 1; notes.push('+1 F · hallebarde'); }
+  if (has(/fleau|flail/)) { prof.s += 2; notes.push('+2 F (1er round) · fléau'); }
+  if (has(/lance de joute|lance de cavalerie|cavalry spear|^lance$|\blance\b/) && mountedName) {
+    chargeS += 2; notes.push('+2 F en charge · lance');
+  }
+  if (has(/morning star|etoile du matin|masse a deux mains/)) { prof.s += 1; notes.push('+1 F'); }
+
+  // ── Armour save (recomputed from selected pieces, never worse than base) ──
+  let armourBase = 7;
+  if (has(/plate|plates|caparacon complet/)) armourBase = 4;
+  else if (has(/lourde|heavy/)) armourBase = 5;
+  else if (has(/legere|light/)) armourBase = 6;
+  let save = armourBase;
+  const improve = (s) => (s >= 7 ? 6 : s - 1);
+  if (has(/bouclier|shield/)) save = improve(save);
+  if (mountedName) save = save >= 7 ? 7 : save - 1;
+  if (mountedName && /caparac|barded|barding/.test(normName(mountName))) save = save >= 7 ? 7 : save - 1;
+  save = save >= 7 ? 7 : Math.max(2, save);
+  const hadArmourOpt = has(/plate|lourde|heavy|legere|light|bouclier|shield/) || !!mountedName;
+  // keep the better (lower) of computed vs curated base save
+  let finalSave = hadArmourOpt ? Math.min(save, base.save === 7 ? save : base.save) : base.save;
+
+  // ── Mount: movement + extra attacks (approx: added at the rider's Strength) ──
+  if (mountedName) {
+    const mp = findMountProfile(mountName);
+    if (mp) {
+      if (mp.M > prof.M) prof.M = mp.M;
+      if (mp.a > 0) { prof.a += mp.a; notes.push('+' + mp.a + ' A · monture'); }
+    } else {
+      prof.a += 1; notes.push('+1 A · monture');
+    }
+  }
+
+  return { profile: prof, save: finalSave, strikeLast, strikeFirst, chargeS, notes };
+}
+
 // Build the playable roster: iterate OWB (fieldable units w/ points & FR names),
 // attach stats from UNIT_DB via exact key → suffix-strip → normalized name match.
 function buildRoster() {
@@ -270,6 +346,8 @@ function buildRoster() {
         rules,
         unbreakable: rules.includes('unbreakable'),
         fearsome: rules.includes('terror') || rules.includes('fear'),
+        strikeFirst: rules.some(r=>/strike-first|always-strikes-first/.test(r)),
+        strikeLast: rules.some(r=>/always-strikes-last/.test(r)),
       });
     }
   } else if (hasUDB) {
@@ -367,9 +445,26 @@ function simulateOnce(cfg) {
     };
   }
 
-  // simultaneous-ish: both deal wounds based on starting profiles
-  const myWounds  = resolveAttacks(me.profile, { ...foe.profile, save: foe.save }, cfg.myAttacks);
-  const foeWounds = resolveAttacks(foe.profile, { ...me.profile, save: me.save }, cfg.foeAttacks);
+  // Effective profiles (charge adds Strength for lance-armed chargers).
+  const meEff  = { ...me.profile,  s: me.profile.s  + (cfg.myCharged  ? (me.chargeS  || 0) : 0) };
+  const foeEff = { ...foe.profile, s: foe.profile.s + (cfg.foeCharged ? (foe.chargeS || 0) : 0) };
+  const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
+  // Strike order from Initiative (+ "strikes first / last").
+  const ei = (u) => u.profile.i + (u.strikeFirst ? 20 : 0) - (u.strikeLast ? 20 : 0);
+  const eiMe = ei(me), eiFoe = ei(foe);
+  let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
+  if (eiMe === eiFoe) {                       // simultaneous
+    myWounds  = resolveAttacks(meEff,  { ...foeEff, save: foe.save }, myAtt);
+    foeWounds = resolveAttacks(foeEff, { ...meEff,  save: me.save },  foeAtt);
+  } else if (eiMe > eiFoe) {                  // I strike first → my casualties cut the foe's return
+    myWounds  = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt);
+    foeAtt = Math.max(0, foeAtt - Math.floor(myWounds / Math.max(1, foe.profile.w)) * foeAPM);
+    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt);
+  } else {                                    // foe strikes first
+    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt);
+    myAtt = Math.max(0, myAtt - Math.floor(foeWounds / Math.max(1, me.profile.w)) * meAPM);
+    myWounds = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt);
+  }
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
@@ -782,6 +877,18 @@ function listCandidates(list, sideKey) {
     if (!e) return null;
     e.id = sideKey + ':' + ui;
     e.sub = (u.pts ? u.pts + ' pts' : '') + (u.count ? ' · ' + u.count + ' fig.' : '');
+    // Apply equipment → stats: baked from the config sheet (u.eng), or parsed
+    // from an imported list's option labels as a best effort.
+    if (u.eng) {
+      e.profile = { ...e.profile, ...u.eng.profile };
+      e.save = u.eng.save; e.strikeLast = u.eng.strikeLast;
+      e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0;
+    } else if (u.opts && u.opts.length) {
+      const mount = u.opts.find(o => /mont|cheval|destrier|warhorse|pegas|griffon|dragon|char|sanglier|loup/i.test(o));
+      const r = resolveEquipment({ profile: e.profile, save: e.save }, u.opts, mount || null);
+      e.profile = r.profile; e.save = r.save;
+      e.strikeLast = r.strikeLast; e.strikeFirst = r.strikeFirst; e.chargeS = r.chargeS;
+    }
     return e;
   }).filter(Boolean);
 }
@@ -826,10 +933,10 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
   const [mountI, setMountI] = useState(defActive(mo));
   const [optsSet, setOptsSet] = useState(() => new Set(op.map((o,i)=>o.active?i:-1).filter(i=>i>=0)));
   const [cmdSet, setCmdSet]   = useState(() => new Set());
-  const sideList = side==='me' ? null : null;
-  const [target, setTarget] = useState(() => {
-    const idx = side==='me' ? 0 : 0; return lists.length ? 0 : 'new';
-  });
+  const [dSave, setDSave]     = useState(0);  // manual: +1 = save améliorée d'1
+  const [dA, setDA]           = useState(0);  // manual: attaques en plus / figurine
+  const [dS, setDS]           = useState(0);  // manual: Force +/-
+  const [target, setTarget]   = useState(() => lists.length ? 0 : 'new');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
 
   const perM  = (o) => (o.points||0) * count;                 // equip/armor/mount = per model
@@ -843,6 +950,25 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
 
   const toggle = (set,setSet,i) => { const n=new Set(set); n.has(i)?n.delete(i):n.add(i); setSet(n); };
 
+  // ── Resolve the real combat profile from the selected equipment + mount ──
+  const names = (o) => o ? [o.name_fr, o.name_en] : [];
+  const chosenNames = [
+    ...names(eq[equipI]), ...names(ar[armorI]),
+    ...[...optsSet].flatMap(i=>names(op[i])), ...[...cmdSet].flatMap(i=>names(cm[i])),
+  ];
+  const mountName = (mountI>=0 && mo[mountI]) ? (mo[mountI].name_fr || mo[mountI].name_en) : null;
+  const eqRes = resolveEquipment({ profile: unit.profile, save: unit.save }, chosenNames, mountName);
+  const applySave = (base, d) => d ? Math.max(2, Math.min(7, (base===7 && d>0 ? 7 : base) - d)) : base;
+  const eng = {
+    profile: { ...eqRes.profile, a: Math.max(1, eqRes.profile.a + dA), s: Math.max(1, eqRes.profile.s + dS) },
+    save: applySave(eqRes.save, dSave),
+    strikeLast: eqRes.strikeLast || (unit.rules||[]).includes('always-strikes-last'),
+    strikeFirst: eqRes.strikeFirst || (unit.rules||[]).some(r=>/strike-first|always-strikes-first/.test(r)),
+    chargeS: eqRes.chargeS,
+  };
+  const engNotes = eqRes.notes.slice();
+  if (eng.strikeFirst) engNotes.push('frappe en premier');
+
   const buildEntry = () => {
     const chosen = [];
     if (eq[equipI]&&eq[equipI].points) chosen.push(eq[equipI].name_fr);
@@ -851,7 +977,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
     [...optsSet].forEach(i=>chosen.push(op[i].name_fr));
     [...cmdSet].forEach(i=>chosen.push(cm[i].name_fr));
     return { slug: unit.udbKey||unit.id, name: unit.name, cat: unit.category||'core',
-      count, ppm, optsPts: total-count*ppm, opts: chosen, pts: total };
+      count, ppm, optsPts: total-count*ppm, opts: chosen, pts: total, eng };
   };
 
   const Group = ({ title, items, radio, sel, onSel }) => items.length ? <div>
@@ -873,7 +999,13 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         <span style={{flex:1,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit.name}</span>
         <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accent}}>{total} pts</span></div>
       <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
-        <MiniProfile unit={unit}/>
+        <div>
+          <SectionLabel style={{color:accent}}>Profil de combat · avec options</SectionLabel>
+          <MiniProfile unit={{profile:eng.profile, save:eng.save}}/>
+          {(engNotes.length>0 || eng.strikeLast || eng.chargeS>0) &&
+            <div style={{marginTop:6,font:'500 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
+              {[...engNotes, eng.strikeLast?'frappe en dernier':null, eng.chargeS>0?('+'+eng.chargeS+' F en charge'):null].filter(Boolean).join(' · ')}</div>}
+        </div>
         <div style={{display:'flex',gap:10}}>
           <Stepper label="Figurines" value={count} onChange={setCount} min={1} max={80} style={{flex:1}}/>
           <Stepper label="Pts / figurine" value={ppm} onChange={setPpm} min={0} max={600} step={1} style={{flex:1}}/>
@@ -883,8 +1015,16 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         <Group title="Monture" items={mo} radio sel={mountI} onSel={setMountI}/>
         <Group title="État-major" items={cm} sel={cmdSet} onSel={i=>toggle(cmdSet,setCmdSet,i)}/>
         <Group title="Options" items={op} sel={optsSet} onSel={i=>toggle(optsSet,setOptsSet,i)}/>
+        <div>
+          <SectionLabel>Ajustement manuel · objets, règles spéciales</SectionLabel>
+          <div style={{display:'flex',gap:8}}>
+            <Stepper label="Svg" value={dSave} onChange={setDSave} min={-2} max={4} signed style={{flex:1}}/>
+            <Stepper label="Attaques" value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
+            <Stepper label="Force" value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
+          </div>
+        </div>
         {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
-          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Pas d'options répertoriées pour cette unité — ajuste les figurines et le coût.</div>}
+          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Pas d'options répertoriées — utilise les ajustements manuels.</div>}
       </div>
       <div style={{flex:'none',paddingTop:10,display:'flex',flexDirection:'column',gap:8}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1611,6 +1751,7 @@ function App() {
     const cfg = {
       me:{ ...me, unbreakable: sel.me.unbreakable }, foe:{ ...foe, unbreakable: sel.foe.unbreakable },
       myAttacks, foeAttacks, myStatic, foeStatic, fleeingTarget: sel.fleeingTarget,
+      myCharged, foeCharged,
     };
     setResult(monteCarlo(cfg));
     setNames({ me: me.name, foe: foe.name, meShort: me.name.split(/[ ,]/)[0], foeShort: foe.name.split(/[ ,]/)[0] });
