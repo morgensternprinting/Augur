@@ -7,7 +7,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Augur — Compagnon Old World</title>
+<meta name="description" content="Décrypte les signes que les dieux du Vieux Monde t'envoient pour t'assurer la victoire — le compagnon devin de tes batailles Warhammer: The Old World.">
+<meta name="application-name" content="Augur">
+<meta name="apple-mobile-web-app-title" content="Augur">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Augur — Les présages du champ de bataille</title>
 
 <!-- ══════════════════════════════════════════════════════════════
      Augur — table-side companion for Warhammer: The Old World.
@@ -94,6 +99,10 @@ button{font-family:inherit;}
 
 @media (min-width:431px){ body{padding:24px;box-sizing:border-box;} }
 
+/* Floating dice button — above the tab bar, bottom-right. */
+.augur-fab{position:absolute;right:16px;bottom:90px;z-index:45;transition:transform var(--dur-fast) var(--ease-out);}
+.augur-fab:active{transform:scale(0.92);}
+
 /* ── Real phone / any touch device: drop the fixed-height device shell and
    let the document scroll naturally (bulletproof on iOS Safari). The tab bar
    is pinned with position:fixed; content reserves space for it. Triggered by a
@@ -114,6 +123,8 @@ button{font-family:inherit;}
   .augur-content{padding-bottom:calc(64px + var(--safe-bottom))!important;}
   /* modal sheets must cover the viewport, not the (now tall) frame */
   .augur-sheet{position:fixed!important;}
+  /* floating dice button pinned above the fixed tab bar */
+  .augur-fab{position:fixed!important;right:16px;bottom:calc(74px + var(--safe-bottom))!important;}
 }
 </style>
 </head>
@@ -386,6 +397,22 @@ const armyList = () => Object.keys(FACTIONS).filter(a => (ROSTER.byArmy[a] || []
 
 const d6 = () => (Math.random() * 6 | 0) + 1;
 const roll2d6 = () => d6() + d6();
+
+// Generic dice roll with Old World mechanics: N dice of X sides, keep the
+// highest/lowest K (drop the rest), an arithmetic modifier, and reroll-1s.
+function rollDiceSet({ count = 2, sides = 6, keep = 0, keepMode = 'all', mod = 0, rerollOnes = false }) {
+  count = Math.max(1, count | 0); sides = Math.max(2, sides | 0);
+  let dice = Array.from({ length: count }, () => (Math.random() * sides | 0) + 1);
+  if (rerollOnes) dice = dice.map(d => d === 1 ? (Math.random() * sides | 0) + 1 : d);
+  let keptSet;
+  if (keepMode !== 'all' && keep > 0 && keep < count) {
+    const order = dice.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
+    const chosen = keepMode === 'highest' ? order.slice(count - keep) : order.slice(0, keep);
+    keptSet = new Set(chosen.map(o => o.i));
+  } else keptSet = new Set(dice.map((_, i) => i));
+  const total = dice.reduce((s, v, i) => keptSet.has(i) ? s + v : s, 0) + (mod || 0);
+  return { dice, kept: [...keptSet], total };
+}
 
 // To-hit: attacker WS vs defender WS (classic table)
 function toHitTarget(aWS, dWS) {
@@ -777,6 +804,73 @@ function BottomBar({ children }) {
 /* ════════════════════════════════════════════════════════════════
    3 · PHONE FRAME
    ════════════════════════════════════════════════════════════════ */
+/* Reusable dice roller — manual or in-app, with keep/drop, modifier, reroll-1s.
+   Opened from the floating dice button on any screen. */
+const DICE_PRESETS = [
+  { key:'2d6',  label:'2D6',        cfg:{count:2,sides:6,keep:2,keepMode:'all',    mod:0,rerollOnes:false} },
+  { key:'cold', label:'Sang-froid', cfg:{count:3,sides:6,keep:2,keepMode:'lowest', mod:0,rerollOnes:false} },
+  { key:'1d6',  label:'1D6',        cfg:{count:1,sides:6,keep:1,keepMode:'all',    mod:0,rerollOnes:false} },
+  { key:'3h2',  label:'3D6 ↑2',     cfg:{count:3,sides:6,keep:2,keepMode:'highest',mod:0,rerollOnes:false} },
+  { key:'low',  label:'2D6 ↓1',     cfg:{count:2,sides:6,keep:1,keepMode:'lowest', mod:0,rerollOnes:false} },
+];
+function DiceRoller({ open, onClose }) {
+  const [cfg, setCfg] = useState({ count:2, sides:6, keep:2, keepMode:'all', mod:0, rerollOnes:false });
+  const [result, setResult] = useState(null);
+  useEffect(()=>{ if(open) setResult(null); }, [open]);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  if (!open) return null;
+  const set = (p) => { setCfg(c => ({ ...c, ...p })); setResult(null); };
+  const roll = () => setResult(rollDiceSet(cfg));
+  const keepLabel = { all:'Tous', highest:'+ hauts', lowest:'+ bas' };
+  return <div className="augur-sheet" onClick={onClose} style={{position:'absolute',inset:0,zIndex:60,display:'flex',
+    flexDirection:'column',justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
+    <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
+      borderTopRightRadius:'var(--r-xl)',borderTop:'2px solid var(--signal-500)',boxShadow:'var(--shadow-sheet)',
+      maxHeight:'88%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+        <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>Lancer les dés</span>
+        <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
+      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {DICE_PRESETS.map(p=><ChipToggle key={p.key} label={p.label}
+            on={cfg.count===p.cfg.count&&cfg.keepMode===p.cfg.keepMode&&cfg.keep===p.cfg.keep&&cfg.sides===p.cfg.sides}
+            onClick={()=>{ setCfg({...p.cfg}); setResult(null); }}/>)}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <Stepper label="Dés" value={cfg.count} onChange={v=>set({count:v})} min={1} max={12} style={{flex:1}}/>
+          <Stepper label="Faces" value={cfg.sides} onChange={v=>set({sides:v})} min={2} max={20} style={{flex:1}}/>
+          <Stepper label="Modif." value={cfg.mod} onChange={v=>set({mod:v})} min={-12} max={12} signed style={{flex:1}}/>
+        </div>
+        <div><SectionLabel>Garder les dés</SectionLabel>
+          <Segmented size="sm" value={cfg.keepMode} onChange={v=>set({keepMode:v})}
+            options={[{value:'all',label:'Tous'},{value:'highest',label:'+ hauts'},{value:'lowest',label:'+ bas'}]}/></div>
+        {cfg.keepMode!=='all' && <Stepper label={'Combien garder ('+keepLabel[cfg.keepMode]+')'} value={cfg.keep}
+          onChange={v=>set({keep:v})} min={1} max={Math.max(1,cfg.count-1)}/>}
+        <div style={{display:'flex',gap:6}}>
+          <ChipToggle label="Relancer les 1" on={cfg.rerollOnes} onClick={()=>set({rerollOnes:!cfg.rerollOnes})}/>
+        </div>
+        {result && <div style={{background:'var(--surface-2)',border:'1px solid var(--border-default)',borderRadius:'var(--r-md)',
+          padding:'var(--sp-4)',display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'center'}}>
+            {result.dice.map((v,i)=>{const kept=result.kept.includes(i);
+              return <span key={i} style={{width:40,height:40,display:'flex',alignItems:'center',justifyContent:'center',
+                borderRadius:'var(--r-sm)',font:'700 var(--fs-h2)/1 var(--font-mono)',
+                background:kept?'var(--signal-soft)':'var(--surface-3)',
+                border:`1px solid ${kept?'var(--signal-500)':'var(--border-subtle)'}`,
+                color:kept?'var(--signal-300)':'var(--text-disabled)',
+                opacity:kept?1:0.5,textDecoration:kept?'none':'line-through'}}>{v}</span>;})}
+            {cfg.mod!==0 && <span style={{alignSelf:'center',font:'600 var(--fs-h3)/1 var(--font-mono)',color:'var(--text-secondary)'}}>{cfg.mod>0?'+':'−'}{Math.abs(cfg.mod)}</span>}
+          </div>
+          <div style={{font:'700 var(--fs-hero)/1 var(--font-display)',color:'var(--signal-400)',fontVariantNumeric:'tabular-nums'}}>{result.total}</div>
+        </div>}
+      </div>
+      <div style={{flex:'none',paddingTop:10}}>
+        <Button variant="primary" size="lg" block onClick={roll} icon={<Icon name="dices" size={22}/>}>
+          {result ? 'Relancer' : 'Lancer'}</Button>
+      </div>
+    </div></div>;
+}
+
 function StatusBar() {
   const t = new Date();
   const hh = String(t.getHours()).padStart(2,'0'), mm = String(t.getMinutes()).padStart(2,'0');
@@ -805,6 +899,7 @@ function TabBar({ active, onChange }) {
   </div>;
 }
 function PhoneFrame({ active, onTab, children }) {
+  const [dice, setDice] = useState(false);
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   return <div className="augur-frame" style={{width:'var(--screen-w)',height:'min(844px, calc(100vh - 48px))',position:'relative',
     background:'var(--bg-app)',borderRadius:44,overflow:'hidden',border:'10px solid #000',
@@ -812,6 +907,12 @@ function PhoneFrame({ active, onTab, children }) {
     <StatusBar/>
     <div className="augur-content" style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
     {onTab&&<TabBar active={active} onChange={onTab}/>}
+    {onTab&&<button type="button" className="augur-fab" aria-label="Lancer les dés" onClick={()=>setDice(true)}
+      style={{width:52,height:52,borderRadius:'var(--r-pill)',background:'var(--signal-500)',color:'var(--text-on-signal)',
+        border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+        boxShadow:'var(--glow-signal), var(--shadow-2)'}}>
+      <Icon name="dices" size={24}/></button>}
+    {onTab&&<DiceRoller open={dice} onClose={()=>setDice(false)}/>}
   </div>;
 }
 
