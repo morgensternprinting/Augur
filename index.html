@@ -444,17 +444,51 @@ function effectiveSave(save, s) {
   return eff > 6 ? 7 : eff;
 }
 
+// Combat-relevant special-rule flags derived from a unit's rule slugs.
+function combatFlags(u) {
+  const r = (u && u.rules) || [];
+  const has = (...s) => s.some(x => r.includes(x));
+  return {
+    hatred:        has('hatred', 'eternal-hatred'),
+    poisoned:      has('poisoned-attacks'),
+    killingBlow:   has('killing-blow', 'heroic-killing-blow'),
+    regen:         has('regeneration'),
+    flaming:       has('flaming-attacks'),
+    frenzy:        has('frenzy', 'blood-rage', 'primal-fury'),
+    furiousCharge: has('furious-charge', 'daemonic-charge'),
+    swiftstride:   has('swiftstride'),
+    fear:          has('fear'),
+    terror:        has('terror'),
+    immunePsych:   has('immune-to-psychology', 'daemonic', 'necromantic-undead', 'nehekharan-undead', 'unstable'),
+    stubborn:      has('stubborn', 'resolute', 'immovable-object'),
+    unbreakable:   has('unbreakable'),
+    coldBlooded:   has('cold-blooded'),
+    strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge'),
+    strikeLast:    has('strike-last', 'cumbersome', 'ponderous'),
+    ward:          0, // filled from manual/ward later if needed
+  };
+}
+
 // Roll a unit's attacks against a defender → unsaved wounds inflicted.
-function resolveAttacks(att, def, nAttacks) {
+// `o` carries the attacker's offensive rule flags + the defender's regen/ward.
+function resolveAttacks(att, def, nAttacks, o = {}) {
   const hitT = toHitTarget(att.ws, def.ws);
   const woundT = toWoundTarget(att.s, def.t);
-  if (woundT === 7) return 0;
   const saveT = effectiveSave(def.save, att.s);
+  const regenNegated = o.flaming;   // flaming attacks negate regeneration
   let unsaved = 0;
   for (let i = 0; i < nAttacks; i++) {
-    if (d6() < hitT) continue;            // missed
-    if (d6() < woundT) continue;          // failed to wound
-    if (saveT <= 6 && d6() >= saveT) continue; // saved
+    let hit = d6();
+    if (hit < hitT) { if (o.hatred) hit = d6(); if (hit < hitT) continue; } // Hatred: reroll a miss
+    let killing = false, autoWound = o.poisoned && hit === 6; // Poisoned: natural 6 to hit auto-wounds
+    if (!autoWound) {
+      if (woundT === 7) continue;
+      const wr = d6();
+      if (wr < woundT) continue;
+      if (o.killingBlow && wr === 6) killing = true;          // Killing Blow: ignore armour save
+    }
+    if (!killing && saveT <= 6 && d6() >= saveT) continue;    // armour save
+    if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
     unsaved++;
   }
   return unsaved;
@@ -483,67 +517,68 @@ function simulateOnce(cfg) {
     };
   }
 
-  // Effective profiles (charge adds Strength for lance-armed chargers).
-  const meEff  = { ...me.profile,  s: me.profile.s  + (cfg.myCharged  ? (me.chargeS  || 0) : 0) };
-  const foeEff = { ...foe.profile, s: foe.profile.s + (cfg.foeCharged ? (foe.chargeS || 0) : 0) };
+  // Special-rule flags for both sides.
+  const fm = combatFlags(me), ff = combatFlags(foe);
+  // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge.
+  const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
+    s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0)) : 0) };
+  const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
+    s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
-  // Strike order from Initiative (+ "strikes first / last").
-  const ei = (u) => u.profile.i + (u.strikeFirst ? 20 : 0) - (u.strikeLast ? 20 : 0);
-  const eiMe = ei(me), eiFoe = ei(foe);
+  // Offensive rule packs (defender's regen travels with the attacker call).
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen };
+  // Strike order from Initiative (+ strike first/last from rules).
+  const ei = (u, f) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0) - ((u.strikeLast || f.strikeLast) ? 20 : 0);
+  const eiMe = ei(me, fm), eiFoe = ei(foe, ff);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
-    myWounds  = resolveAttacks(meEff,  { ...foeEff, save: foe.save }, myAtt);
-    foeWounds = resolveAttacks(foeEff, { ...meEff,  save: me.save },  foeAtt);
+    myWounds  = resolveAttacks(meEff,  { ...foeEff, save: foe.save }, myAtt, offMe);
+    foeWounds = resolveAttacks(foeEff, { ...meEff,  save: me.save },  foeAtt, offFoe);
   } else if (eiMe > eiFoe) {                  // I strike first → my casualties cut the foe's return
-    myWounds  = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt);
+    myWounds  = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt, offMe);
     foeAtt = Math.max(0, foeAtt - Math.floor(myWounds / Math.max(1, foe.profile.w)) * foeAPM);
-    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt);
+    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt, offFoe);
   } else {                                    // foe strikes first
-    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt);
+    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt, offFoe);
     myAtt = Math.max(0, myAtt - Math.floor(foeWounds / Math.max(1, me.profile.w)) * meAPM);
-    myWounds = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt);
+    myWounds = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt, offMe);
   }
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
-
-  // Break tests on the loser (Old World: 2D6 ≤ Ld − combat-result-difference)
   const diff = Math.abs(myRes - foeRes);
+
+  // Break test: Stubborn ignores the result modifier, Cold-Blooded rolls 3D6
+  // and drops the highest, Unbreakable auto-holds, double-1 always holds.
+  const coldRoll = () => { const d = [d6(), d6(), d6()].sort((a, b) => a - b); return d[0] + d[1]; };
+  const doBreak = (loser, lf, winnerSwift) => {
+    if (loser.unbreakable || lf.unbreakable) return { broke: false, caught: false };
+    const target = Math.max(2, lf.stubborn ? loser.profile.ld : loser.profile.ld - diff);
+    const roll = lf.coldBlooded ? coldRoll() : roll2d6();
+    const broke = roll !== 2 && roll > target;
+    return { broke, caught: broke ? pursuitCatch(winnerSwift, lf.swiftstride) : false };
+  };
   let meBroke = false, foeBroke = false, meCaught = false, foeCaught = false;
-  if (myRes > foeRes) {
-    if (foe.unbreakable) { foeBroke = false; }
-    else {
-      const target = foe.profile.ld - diff;
-      foeBroke = roll2d6() > target;
-      if (foeBroke) foeCaught = caughtInPursuit(me.profile, foe.profile);
-    }
-  } else if (foeRes > myRes) {
-    if (me.unbreakable) { meBroke = false; }
-    else {
-      const target = me.profile.ld - diff;
-      meBroke = roll2d6() > target;
-      if (meBroke) meCaught = caughtInPursuit(foe.profile, me.profile);
-    }
-  }
+  if (myRes > foeRes)      { const b = doBreak(foe, ff, fm.swiftstride); foeBroke = b.broke; foeCaught = b.caught; }
+  else if (foeRes > myRes) { const b = doBreak(me, fm, ff.swiftstride); meBroke = b.broke; meCaught = b.caught; }
 
   const meOut  = classify(myRes, foeRes, meBroke, meCaught);
   const foeOut = classify(foeRes, myRes, foeBroke, foeCaught);
 
-  // VP swing = enemy points lost − my points lost.
-  // The foe's casualties come from the wounds I inflicted (myWounds), and
-  // vice-versa — plus the whole unit if it is caught fleeing.
+  // VP swing = enemy points lost − my points lost. The foe's casualties come
+  // from the wounds I inflicted (myWounds) and vice-versa, plus the whole unit
+  // if it is caught fleeing.
   const foeLost = lossPoints(foe, myWounds, foeCaught);
   const myLost  = lossPoints(me, foeWounds, meCaught);
   return { meOut, foeOut, vpSwing: foeLost - myLost };
 }
 
-// Pursuit catch: fleeing unit rolls flee (2D6), pursuer rolls pursuit (2D6),
-// Swiftstride uses 3D6-pick-2. Caught if pursuit ≥ flee.
-function caughtInPursuit(pursuer, fleer) {
-  const swift = (u) => u && u.swiftstride;
-  const flee = roll2d6();
-  const pur = roll2d6();
-  return pur >= flee;
+// Pursuit catch: both roll 2D6 (Swiftstride rolls 3D6 and keeps the best two).
+// The fleeing unit is run down if the pursuit roll ≥ the flee roll.
+function pursuitCatch(pursuerSwift, fleerSwift) {
+  const mv = (sw) => sw ? (() => { const d = [d6(), d6(), d6()].sort((a, b) => b - a); return d[0] + d[1]; })() : roll2d6();
+  return mv(pursuerSwift) >= mv(fleerSwift);
 }
 
 // Points lost: unsaved wounds × points-per-wound, capped at the unit's value.
@@ -1154,14 +1189,29 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
 }
 
 /* Modal bottom-sheet unit picker with search — clearly shows the selected unit. */
+const UNIT_TYPES = [
+  { key:'all',        label:'Tout' },
+  { key:'characters', label:'Personnages' },
+  { key:'core',       label:'Base' },
+  { key:'special',    label:'Spéciale' },
+  { key:'rare',       label:'Rare' },
+];
+const catOf = (u) => { const c = String(u.category||'').toLowerCase();
+  if (/charact|personn|hero|lord|seigneur/.test(c)) return 'characters';
+  if (/core|base/.test(c)) return 'core';
+  if (/special|spécia/.test(c)) return 'special';
+  if (/rare/.test(c)) return 'rare';
+  return 'core'; };
 function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, configurable, side, lists, onAdd }) {
   const [q, setQ] = useState('');
+  const [typeF, setTypeF] = useState('all');
   const [cfg, setCfg] = useState(null);
-  useEffect(() => { if (open) { setQ(''); setCfg(null); } }, [open]);
+  useEffect(() => { if (open) { setQ(''); setTypeF('all'); setCfg(null); } }, [open]);
   useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
   if (!open) return null;
   const norm = (s) => String(s || '').toLowerCase();
-  const filtered = units.filter(u => norm(u.name).includes(norm(q)));
+  const counts = {}; units.forEach(u => { const c = catOf(u); counts[c] = (counts[c]||0)+1; });
+  const filtered = units.filter(u => norm(u.name).includes(norm(q)) && (typeF==='all' || catOf(u)===typeF));
   const rowClick = (u) => { if (configurable) setCfg(u); else { onPick(u.id); onClose(); } };
   return <Fragment>
     <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:50,display:'flex',flexDirection:'column',
@@ -1180,6 +1230,14 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
             style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--text-primary)',
               font:'400 var(--fs-sm)/1 var(--font-ui)',padding:'10px 0'}}/>
           {q&&<button type="button" onClick={()=>setQ('')} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={14}/></button>}
+        </div>
+        <div style={{display:'flex',gap:6,overflowX:'auto',marginBottom:10,paddingBottom:2}}>
+          {UNIT_TYPES.filter(t=>t.key==='all'||counts[t.key]).map(t=>{const on=typeF===t.key;
+            return <button key={t.key} type="button" onClick={()=>setTypeF(t.key)} style={{flex:'none',cursor:'pointer',
+              whiteSpace:'nowrap',background:on?'var(--signal-soft)':'var(--surface-3)',
+              border:`1px solid ${on?accent:'var(--border-default)'}`,borderRadius:'var(--r-pill)',padding:'7px 12px',
+              font:`${on?600:500} var(--fs-xs)/1 var(--font-ui)`,color:on?'var(--signal-300)':'var(--text-secondary)'}}>
+              {t.label}{t.key!=='all'&&counts[t.key]?' ('+counts[t.key]+')':''}</button>;})}
         </div>
         {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
           Tape une unité pour la configurer (options, figurines) et l'ajouter à une liste.</div>}
@@ -1271,6 +1329,26 @@ function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }
   </Collapsible>;
 }
 
+// Special rules that visibly drive the combat engine, with short effect labels.
+const RULE_LABELS = {
+  strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance touche',
+  frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F charge', poisoned:'Empoisonné · 6 = blessure',
+  killingBlow:'Coup fatal · ignore svg', regen:'Régénération · svg 4+', swiftstride:'Foulée véloce',
+  fear:'Peur', terror:'Terreur', immunePsych:'Immunité psychologie', stubborn:'Tenace · ignore malus',
+  unbreakable:'Inébranlable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
+};
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','regen','swiftstride','coldBlooded','stubborn','unbreakable','immunePsych','fear','terror','flaming'];
+function RuleChips({ unit, accent }) {
+  if (!unit) return null;
+  const f = combatFlags(unit);
+  const active = ORDER_RULES.filter(k => f[k]);
+  if (!active.length) return <span style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune règle de combat notable détectée.</span>;
+  return <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+    {active.map(k => <span key={k} style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.02em',
+      background:'var(--surface-3)',border:`1px solid ${accent}55`,color:accent,borderRadius:'var(--r-pill)',padding:'5px 9px',whiteSpace:'nowrap'}}>{RULE_LABELS[k]}</span>)}
+  </div>;
+}
+
 function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onSimulate }) {
   const [sheet, setSheet] = useState(null); // 'me' | 'foe' | null
   const set = (patch) => setSel(s => ({ ...s, ...patch }));
@@ -1346,6 +1424,17 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
 
       <SideSelector label="Unité adverse" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+
+      {/* auto-detected combat rules from both units' special rules */}
+      <Collapsible title="Règles de combat actives" icon="sparkles" accent="var(--signal-400)" defaultOpen={false}
+        summary="auto">
+        <div><SectionLabel style={{color:accentMe}}>{myUnit?myUnit.name:'Ton unité'}</SectionLabel>
+          <RuleChips unit={myUnit} accent="var(--signal-400)"/></div>
+        <div><SectionLabel style={{color:accentFoe}}>{foeUnit?foeUnit.name:'Unité adverse'}</SectionLabel>
+          <RuleChips unit={foeUnit} accent="var(--out-flee)"/></div>
+        <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
+          Détectées depuis les règles spéciales de l'unité (tow.whfb.app) et appliquées automatiquement par le moteur.</div>
+      </Collapsible>
 
       {/* charge & reactions */}
       <Collapsible title="Charge & réaction" icon="zap" accent="var(--caution)" defaultOpen={true}
