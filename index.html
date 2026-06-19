@@ -465,17 +465,22 @@ function combatFlags(u) {
     coldBlooded:   has('cold-blooded'),
     strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge'),
     strikeLast:    has('strike-last', 'cumbersome', 'ponderous'),
-    ward:          0, // filled from manual/ward later if needed
+    unstable:      has('unstable', 'daemonic-instability', 'necromantic-undead', 'nehekharan-undead'),
+    multiWounds:   has('multiple-wounds'),
+    impactHits:    has('impact-hits'),
+    stomp:         has('stomp-attacks'),
   };
 }
 
 // Roll a unit's attacks against a defender → unsaved wounds inflicted.
 // `o` carries the attacker's offensive rule flags + the defender's regen/ward.
 function resolveAttacks(att, def, nAttacks, o = {}) {
-  const hitT = toHitTarget(att.ws, def.ws);
+  const hitT = Math.min(6, toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0)); // Fear: −1 to hit
   const woundT = toWoundTarget(att.s, def.t);
   const saveT = effectiveSave(def.save, att.s);
-  const regenNegated = o.flaming;   // flaming attacks negate regeneration
+  const wardT = def.ward || 0;        // invulnerable save (magic items), 0 = none
+  const regenNegated = o.flaming;     // flaming attacks negate regeneration
+  const multi = o.multiWounds && def.w > 1; // multiple wounds only matter vs multi-wound models
   let unsaved = 0;
   for (let i = 0; i < nAttacks; i++) {
     let hit = d6();
@@ -488,7 +493,26 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
       if (o.killingBlow && wr === 6) killing = true;          // Killing Blow: ignore armour save
     }
     if (!killing && saveT <= 6 && d6() >= saveT) continue;    // armour save
+    if (wardT && d6() >= wardT) continue;                     // invulnerable / ward save
     if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
+    unsaved += multi ? Math.min(def.w, 1 + (Math.random() * 3 | 0)) : 1; // Multiple Wounds (≈D3)
+  }
+  return unsaved;
+}
+
+// Auto-hits (Impact Hits on the charge, Stomp each round): N hits at the
+// attacker's Strength that skip the to-hit roll. Returns unsaved wounds.
+function autoHits(att, def, n, o = {}) {
+  const woundT = toWoundTarget(att.s, def.t);
+  if (woundT === 7 || n <= 0) return 0;
+  const saveT = effectiveSave(def.save, att.s);
+  const wardT = def.ward || 0;
+  let unsaved = 0;
+  for (let i = 0; i < n; i++) {
+    if (d6() < woundT) continue;
+    if (saveT <= 6 && d6() >= saveT) continue;
+    if (wardT && d6() >= wardT) continue;
+    if (o.regen && !o.flaming && d6() >= 4) continue;
     unsaved++;
   }
   return unsaved;
@@ -519,58 +543,87 @@ function simulateOnce(cfg) {
 
   // Special-rule flags for both sides.
   const fm = combatFlags(me), ff = combatFlags(foe);
+  const meImm  = fm.immunePsych || fm.frenzy || fm.unstable;   // ignores Fear/Terror
+  const foeImm = ff.immunePsych || ff.frenzy || ff.unstable;
+
+  // Terror: a unit charged by a terror-causer it isn't immune to tests Ld; on a
+  // fail it flees before contact — no melee, the charger may run it down.
+  const terrorFlee = (def, charged, cf, imm) => charged && cf.terror && !imm && roll2d6() > def.profile.ld;
+  if (terrorFlee(foe, cfg.myCharged, fm, foeImm)) {
+    const caught = pursuitCatch(fm.swiftstride, ff.swiftstride);
+    return { meOut:'win', foeOut: caught?'flee':'fallback', vpSwing: caught ? lossPoints(foe, foe.size*foe.profile.w, true) : 0 };
+  }
+  if (terrorFlee(me, cfg.foeCharged, ff, meImm)) {
+    const caught = pursuitCatch(ff.swiftstride, fm.swiftstride);
+    return { meOut: caught?'flee':'fallback', foeOut:'win', vpSwing: caught ? -lossPoints(me, me.size*me.profile.w, true) : 0 };
+  }
+  // Fear: a unit facing a fear/terror-causer (not immune) tests Ld; a failure
+  // leaves it shaken → −1 to hit this combat.
+  const fearPen = (def, imm, cf) => (cf.fear || cf.terror) && !imm && roll2d6() > def.profile.ld ? 1 : 0;
+  const myHitPen = fearPen(me, meImm, ff), foeHitPen = fearPen(foe, foeImm, fm);
+
   // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge.
   const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
     s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0)) : 0) };
   const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
+  // Defender packs carry save + invulnerable ward + wounds-per-model.
+  const dMe  = { ...meEff,  save: me.save,  ward: me.ward || 0,  w: me.profile.w };
+  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || 0, w: foe.profile.w };
   // Offensive rule packs (defender's regen travels with the attacker call).
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen };
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen, multiWounds:fm.multiWounds, hitPenalty:myHitPen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen, multiWounds:ff.multiWounds, hitPenalty:foeHitPen };
   // Strike order from Initiative (+ strike first/last from rules).
   const ei = (u, f) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0) - ((u.strikeLast || f.strikeLast) ? 20 : 0);
   const eiMe = ei(me, fm), eiFoe = ei(foe, ff);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
-    myWounds  = resolveAttacks(meEff,  { ...foeEff, save: foe.save }, myAtt, offMe);
-    foeWounds = resolveAttacks(foeEff, { ...meEff,  save: me.save },  foeAtt, offFoe);
+    myWounds  = resolveAttacks(meEff,  dFoe, myAtt, offMe);
+    foeWounds = resolveAttacks(foeEff, dMe,  foeAtt, offFoe);
   } else if (eiMe > eiFoe) {                  // I strike first → my casualties cut the foe's return
-    myWounds  = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt, offMe);
+    myWounds  = resolveAttacks(meEff, dFoe, myAtt, offMe);
     foeAtt = Math.max(0, foeAtt - Math.floor(myWounds / Math.max(1, foe.profile.w)) * foeAPM);
-    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt, offFoe);
+    foeWounds = resolveAttacks(foeEff, dMe, foeAtt, offFoe);
   } else {                                    // foe strikes first
-    foeWounds = resolveAttacks(foeEff, { ...meEff, save: me.save }, foeAtt, offFoe);
+    foeWounds = resolveAttacks(foeEff, dMe, foeAtt, offFoe);
     myAtt = Math.max(0, myAtt - Math.floor(foeWounds / Math.max(1, me.profile.w)) * meAPM);
-    myWounds = resolveAttacks(meEff, { ...foeEff, save: foe.save }, myAtt, offMe);
+    myWounds = resolveAttacks(meEff, dFoe, myAtt, offMe);
   }
+  // Impact Hits (on the charge) + Stomp (large creatures, every round) → auto-hits.
+  if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, 1 + (Math.random()*6|0), offMe);
+  if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  1 + (Math.random()*6|0), offFoe);
+  if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, 1 + (Math.random()*3|0), offMe);
+  if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  1 + (Math.random()*3|0), offFoe);
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
   const diff = Math.abs(myRes - foeRes);
 
-  // Break test: Stubborn ignores the result modifier, Cold-Blooded rolls 3D6
-  // and drops the highest, Unbreakable auto-holds, double-1 always holds.
+  // Loser resolution: Unstable units crumble (extra wounds = the result
+  // difference, no save, no flee) instead of testing; others take a break test
+  // (Stubborn ignores the modifier, Cold-Blooded rolls 3D6 dropping the highest,
+  // Unbreakable auto-holds, double-1 always holds).
   const coldRoll = () => { const d = [d6(), d6(), d6()].sort((a, b) => a - b); return d[0] + d[1]; };
-  const doBreak = (loser, lf, winnerSwift) => {
-    if (loser.unbreakable || lf.unbreakable) return { broke: false, caught: false };
+  const resolveLoser = (loser, lf, winnerSwift) => {
+    if (lf.unstable) return { broke: false, caught: false, crumble: diff };
+    if (loser.unbreakable || lf.unbreakable) return { broke: false, caught: false, crumble: 0 };
     const target = Math.max(2, lf.stubborn ? loser.profile.ld : loser.profile.ld - diff);
     const roll = lf.coldBlooded ? coldRoll() : roll2d6();
     const broke = roll !== 2 && roll > target;
-    return { broke, caught: broke ? pursuitCatch(winnerSwift, lf.swiftstride) : false };
+    return { broke, caught: broke ? pursuitCatch(winnerSwift, lf.swiftstride) : false, crumble: 0 };
   };
-  let meBroke = false, foeBroke = false, meCaught = false, foeCaught = false;
-  if (myRes > foeRes)      { const b = doBreak(foe, ff, fm.swiftstride); foeBroke = b.broke; foeCaught = b.caught; }
-  else if (foeRes > myRes) { const b = doBreak(me, fm, ff.swiftstride); meBroke = b.broke; meCaught = b.caught; }
+  let meBroke=false, foeBroke=false, meCaught=false, foeCaught=false, meCrumble=0, foeCrumble=0;
+  if (myRes > foeRes)      { const b = resolveLoser(foe, ff, fm.swiftstride); foeBroke=b.broke; foeCaught=b.caught; foeCrumble=b.crumble; }
+  else if (foeRes > myRes) { const b = resolveLoser(me, fm, ff.swiftstride); meBroke=b.broke; meCaught=b.caught; meCrumble=b.crumble; }
 
   const meOut  = classify(myRes, foeRes, meBroke, meCaught);
   const foeOut = classify(foeRes, myRes, foeBroke, foeCaught);
 
-  // VP swing = enemy points lost − my points lost. The foe's casualties come
-  // from the wounds I inflicted (myWounds) and vice-versa, plus the whole unit
-  // if it is caught fleeing.
-  const foeLost = lossPoints(foe, myWounds, foeCaught);
-  const myLost  = lossPoints(me, foeWounds, meCaught);
+  // VP swing = enemy points lost − my points lost (combat wounds + crumble, or
+  // the whole unit if caught fleeing).
+  const foeLost = lossPoints(foe, myWounds + foeCrumble, foeCaught);
+  const myLost  = lossPoints(me, foeWounds + meCrumble, meCaught);
   return { meOut, foeOut, vpSwing: foeLost - myLost };
 }
 
@@ -1029,7 +1082,7 @@ function listCandidates(list, sideKey) {
     if (u.eng) {
       e.profile = { ...e.profile, ...u.eng.profile };
       e.save = u.eng.save; e.strikeLast = u.eng.strikeLast;
-      e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0;
+      e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0; e.ward = u.eng.ward || 0;
     } else if (u.opts && u.opts.length) {
       const mount = u.opts.find(o => /mont|cheval|destrier|warhorse|pegas|griffon|dragon|char|sanglier|loup/i.test(o));
       const r = resolveEquipment({ profile: e.profile, save: e.save }, u.opts, mount || null);
@@ -1083,6 +1136,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
   const [dSave, setDSave]     = useState(0);  // manual: +1 = save améliorée d'1
   const [dA, setDA]           = useState(0);  // manual: attaques en plus / figurine
   const [dS, setDS]           = useState(0);  // manual: Force +/-
+  const [ward, setWard]       = useState(0);  // manual: invulnerable save target (0/1 = none)
   const [target, setTarget]   = useState(() => lists.length ? 0 : 'new');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
 
@@ -1112,8 +1166,10 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
     strikeLast: eqRes.strikeLast || (unit.rules||[]).includes('always-strikes-last'),
     strikeFirst: eqRes.strikeFirst || (unit.rules||[]).some(r=>/strike-first|always-strikes-first/.test(r)),
     chargeS: eqRes.chargeS,
+    ward: ward >= 2 ? ward : 0,
   };
   const engNotes = eqRes.notes.slice();
+  if (eng.ward) engNotes.push('svg invu. ' + eng.ward + '+');
   if (eng.strikeFirst) engNotes.push('frappe en premier');
 
   const buildEntry = () => {
@@ -1169,6 +1225,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
             <Stepper label="Attaques" value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
             <Stepper label="Force" value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
           </div>
+          <Stepper label="Svg invulnérable (0 = aucune)" value={ward} onChange={setWard} min={0} max={6}/>
         </div>
         {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
           <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Pas d'options répertoriées — utilise les ajustements manuels.</div>}
@@ -1334,10 +1391,11 @@ const RULE_LABELS = {
   strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance touche',
   frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F charge', poisoned:'Empoisonné · 6 = blessure',
   killingBlow:'Coup fatal · ignore svg', regen:'Régénération · svg 4+', swiftstride:'Foulée véloce',
-  fear:'Peur', terror:'Terreur', immunePsych:'Immunité psychologie', stubborn:'Tenace · ignore malus',
-  unbreakable:'Inébranlable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
+  impactHits:'Charges d’impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
+  fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité psychologie',
+  stubborn:'Tenace · ignore malus', unbreakable:'Inébranlable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
 };
-const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','regen','swiftstride','coldBlooded','stubborn','unbreakable','immunePsych','fear','terror','flaming'];
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','regen','multiWounds','impactHits','stomp','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
 function RuleChips({ unit, accent }) {
   if (!unit) return null;
   const f = combatFlags(unit);
