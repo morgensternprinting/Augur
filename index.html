@@ -147,6 +147,9 @@ button{font-family:inherit;}
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, Fragment } = React;
+// Render modal overlays at <body> level so position:fixed always resolves to
+// the viewport (never to the tall mobile frame) — fixes sheet scroll & buttons.
+const Portal = ({ children }) => ReactDOM.createPortal(children, document.body);
 
 /* ════════════════════════════════════════════════════════════════
    0 · DATA ADAPTER
@@ -826,11 +829,11 @@ function DiceRoller({ open, onClose }) {
   const set = (p) => { setCfg(c => ({ ...c, ...p })); setResult(null); };
   const roll = () => setResult(rollDiceSet(cfg));
   const keepLabel = { all:'Tous', highest:'+ hauts', lowest:'+ bas' };
-  return <div className="augur-sheet" onClick={onClose} style={{position:'absolute',inset:0,zIndex:60,display:'flex',
+  return <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:60,display:'flex',
     flexDirection:'column',justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:'2px solid var(--signal-500)',boxShadow:'var(--shadow-sheet)',
-      maxHeight:'88%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      maxHeight:'88dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
         <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>Lancer les dés</span>
         <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
@@ -872,7 +875,7 @@ function DiceRoller({ open, onClose }) {
         <Button variant="primary" size="lg" block onClick={roll} icon={<Icon name="dices" size={22}/>}>
           {result ? 'Relancer' : 'Lancer'}</Button>
       </div>
-    </div></div>;
+    </div></div></Portal>;
 }
 
 function StatusBar() {
@@ -1098,11 +1101,11 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
 
   const tgtOptions = [...lists.map((l,i)=>({value:String(i),label:l.name||('Liste '+(i+1))})),{value:'new',label:'➕ Nouvelle liste'}];
 
-  return <div className="augur-sheet" onClick={onBack} style={{position:'absolute',inset:0,zIndex:51,display:'flex',flexDirection:'column',
+  return <Portal><div className="augur-sheet" onClick={onBack} style={{position:'fixed',inset:0,zIndex:51,display:'flex',flexDirection:'column',
     justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
-      maxHeight:'90%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      maxHeight:'90dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
         <button type="button" onClick={onBack} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="chevron-left" size={22}/></button>
         <span style={{flex:1,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit.name}</span>
@@ -1147,7 +1150,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
           <Button variant="primary" block onClick={()=>onAdd(buildEntry(), target==='new'?'new':+target)}
             icon={<Icon name="plus" size={18}/>}>Ajouter à la liste</Button></div>
       </div>
-    </div></div>;
+    </div></div></Portal>;
 }
 
 /* Modal bottom-sheet unit picker with search — clearly shows the selected unit. */
@@ -1161,11 +1164,11 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
   const filtered = units.filter(u => norm(u.name).includes(norm(q)));
   const rowClick = (u) => { if (configurable) setCfg(u); else { onPick(u.id); onClose(); } };
   return <Fragment>
-    <div className="augur-sheet" onClick={onClose} style={{position:'absolute',inset:0,zIndex:50,display:'flex',flexDirection:'column',
+    <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:50,display:'flex',flexDirection:'column',
       justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
       <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
         borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
-        maxHeight:'82%',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+        maxHeight:'82dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
           <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>{title}</span>
           <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',
@@ -1198,7 +1201,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
               {configurable?<Icon name="settings-2" size={16} color="var(--text-tertiary)"/>:(on&&<Icon name="check" size={18} color={accent}/>)}
             </button>;})}
         </div>
-      </div></div>
+      </div></div></Portal>
     {cfg&&<UnitConfig unit={cfg} side={side} lists={lists} accent={accent}
       onBack={()=>setCfg(null)}
       onQuickUse={()=>{onPick(cfg.id);onClose();}}
