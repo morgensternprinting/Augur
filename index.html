@@ -684,6 +684,7 @@ function sideStatic(s, o, charged) {
   cr += (s.flankRear || 0);          // flank +1, rear +2
   if (s.highGround) cr += 1;
   if (charged) cr += 1;              // charge bonus
+  cr += Math.min(5, s.overkill || 0); // overkill in a challenge, max +5
   return cr;
 }
 
@@ -1364,6 +1365,7 @@ function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }
     </div>
     <div style={{display:'flex',gap:10}}>
       <Stepper label="Blessures de charge / impact" value={f.impact} onChange={v=>setF({impact:v})} min={0} max={20} style={{flex:1}}/>
+      <Stepper label="Overkill (défi, max +5)" value={f.overkill||0} onChange={v=>setF({overkill:v})} min={0} max={5} style={{flex:1}}/>
     </div>
     <div>
       <SectionLabel>Flanc / arrière</SectionLabel>
@@ -1504,8 +1506,10 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
           <Segmented size="sm" value={sel.reaction} onChange={v=>set({reaction:v})}
             options={[{value:'hold',label:'Maintien'},{value:'standshoot',label:'Tenir & tirer'},{value:'flee',label:'Fuite'}]}/></div>}
         {sel.charger!=='none'&&sel.reaction==='standshoot'&&
-          <Stepper label="Pertes infligées par le tir (avant contact)" value={sel.standShootKills}
-            onChange={v=>set({standShootKills:v})} min={0} max={20}/>}
+          <div><Stepper label="Blessures du tir de réaction (−attaques chargeur, +CR défenseur)" value={sel.standShootKills}
+            onChange={v=>set({standShootKills:v})} min={0} max={20}/>
+            <div style={{marginTop:4,font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
+              Lance le tir en vrai (CT −1) puis saisis les blessures : elles retirent des attaques au chargeur et s'ajoutent au résultat du défenseur.</div></div>}
         <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
           <Switch label="Contre-charge (le défenseur charge aussi)" checked={sel.counterCharge} onChange={v=>set({counterCharge:v})}/>
           <div style={{height:1,background:'var(--border-subtle)'}}/>
@@ -2015,8 +2019,9 @@ const freshFactors = (charger, ranks) => ({
   myList: 0, foeList: 0,
   charger: 'me', counterCharge: false, reaction: 'hold', fleeingTarget: false, standShootKills: 0,
   myAttacks: 9, foeAttacks: 6,
-  me:  { ranks: 3, banner: true,  warbanner: false, flankRear: 0, highGround: false, impact: 0, unbreakable: false },
-  foe: { ranks: 4, banner: false, warbanner: false, flankRear: 0, highGround: false, impact: 0, unbreakable: false },
+  challenge: false,
+  me:  { ranks: 3, banner: true,  warbanner: false, flankRear: 0, highGround: false, impact: 0, overkill: 0, unbreakable: false },
+  foe: { ranks: 4, banner: false, warbanner: false, flankRear: 0, highGround: false, impact: 0, overkill: 0, unbreakable: false },
 });
 
 function App() {
@@ -2086,13 +2091,15 @@ function App() {
     if (!me || !foe) return;
     const myCharged  = sel.charger==='me'  || (sel.counterCharge && sel.charger==='foe');
     const foeCharged = sel.charger==='foe' || (sel.counterCharge && sel.charger==='me');
-    const myStatic  = sideStatic(sel.me,  sel.foe, myCharged);
-    const foeStatic = sideStatic(sel.foe, sel.me,  foeCharged);
+    let myStatic  = sideStatic(sel.me,  sel.foe, myCharged);
+    let foeStatic = sideStatic(sel.foe, sel.me,  foeCharged);
     let myAttacks  = sel.myAttacks  + (myCharged  ? sel.me.impact  : 0);
     let foeAttacks = sel.foeAttacks + (foeCharged ? sel.foe.impact : 0);
+    // Stand & Shoot (charge reaction): the defender shoots the charger — the
+    // wounds reduce the charger's attacks AND count toward the defender's CR.
     if (sel.charger!=='none' && sel.reaction==='standshoot' && sel.standShootKills>0) {
-      if (sel.charger==='me') myAttacks  = Math.max(1, myAttacks  - sel.standShootKills * me.profile.a);
-      else                    foeAttacks = Math.max(1, foeAttacks - sel.standShootKills * foe.profile.a);
+      if (sel.charger==='me') { myAttacks  = Math.max(1, myAttacks  - sel.standShootKills * me.profile.a);  foeStatic += sel.standShootKills; }
+      else                    { foeAttacks = Math.max(1, foeAttacks - sel.standShootKills * foe.profile.a); myStatic  += sel.standShootKills; }
     }
     const cfg = {
       me:{ ...me, unbreakable: sel.me.unbreakable }, foe:{ ...foe, unbreakable: sel.foe.unbreakable },
