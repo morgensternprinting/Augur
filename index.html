@@ -360,6 +360,53 @@ const ROSTER = buildRoster();
 const armyUnits = (army) => ROSTER.byArmy[army] || [];
 const armyList = () => Object.keys(FACTIONS).filter(a => (ROSTER.byArmy[a] || []).length);
 
+/* ── Army-list variants: Armies of Infamy + Renegade (Legacy) ── */
+const slugifyRule = (n) => String(n||'').toLowerCase().replace(/\([^)]*\)/g,'').trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function variantsFor(army) {
+  const out = [{ key:'standard', name:'Standard' }];
+  if (typeof AUGUR_INFAMY !== 'undefined' && AUGUR_INFAMY[army] && Array.isArray(AUGUR_INFAMY[army].lists))
+    AUGUR_INFAMY[army].lists.forEach(l => out.push({ key:'inf:'+l.key, name:l.name }));
+  if (typeof AUGUR_RENEGADE_ARMIES !== 'undefined' && AUGUR_RENEGADE_ARMIES.indexOf(army) >= 0)
+    out.push({ key:'renegade', name:'Renegade (Legacy)' });
+  return out;
+}
+// Apply a Renegade unit override (stat changes + added/removed rules) to a roster unit.
+function applyRenegade(unit, ov) {
+  if (!ov) return unit;
+  const p = { ...unit.profile };
+  if (ov.stats) { const map = { M:'M', W:'w', I:'i', WS:'ws', BS:'bs', S:'s', T:'t', A:'a', Ld:'ld' };
+    for (const k in ov.stats) { const tk = map[k]; if (tk) p[tk] = num(ov.stats[k]); } }
+  let rules = [...unit.rules];
+  if (Array.isArray(ov.removeRules)) rules = rules.filter(r => !ov.removeRules.some(rr => slugifyRule(rr) === r));
+  if (Array.isArray(ov.addRules)) ov.addRules.forEach(r => { const s = slugifyRule(r.name); if (s && !rules.includes(s)) rules.push(s); });
+  return { ...unit, profile: p, rules,
+    unbreakable: rules.includes('unbreakable'),
+    strikeFirst: rules.some(r => /strike-first|always-strikes-first/.test(r)),
+    strikeLast: rules.some(r => /always-strikes-last/.test(r)) };
+}
+// Roster for an army under a given variant key ('standard' | 'renegade' | 'inf:<key>').
+function armyRoster(army, variant) {
+  variant = variant || 'standard';
+  const base = ROSTER.byArmy[army] || [];
+  if (variant === 'standard') return base;
+  if (variant === 'renegade') {
+    const ov = (typeof AUGUR_RENEGADE !== 'undefined' && AUGUR_RENEGADE[army] && AUGUR_RENEGADE[army].units) || {};
+    return base.map(u => applyRenegade(u, ov[u.slug] || ov[u.udbKey]));
+  }
+  if (variant.indexOf('inf:') === 0 && typeof AUGUR_INFAMY !== 'undefined') {
+    const key = variant.slice(4);
+    const list = ((AUGUR_INFAMY[army] && AUGUR_INFAMY[army].lists) || []).find(l => l.key === key);
+    if (!list || !list.roster) return base;
+    const units = [], seen = new Set();
+    for (const cat of ROSTER_CATS) {
+      const arr = list.roster[cat]; if (!Array.isArray(arr)) continue;
+      for (const slug of arr) { const u = rosterUnitFromUDB(army, cat, slug, null); if (!u || seen.has(u.id)) continue; seen.add(u.id); units.push(u); }
+    }
+    return units.length ? units : base;
+  }
+  return base;
+}
+
 /* ════════════════════════════════════════════════════════════════
    1 · COMBAT ENGINE  (Monte-Carlo, Old World close combat)
    A model, not a full rules engine — the README flags stat/prob
@@ -999,7 +1046,7 @@ function freshGame() {
     fuCurrent: u.size, fuMax: u.size, status: 'full',
   }));
   return {
-    myArmy: myA, foeArmy: foeA,
+    myArmy: myA, foeArmy: foeA, myVariant: 'standard', foeVariant: 'standard',
     myRoster: pick(myA, 5), foeRoster: pick(foeA, 5),
     objectives: [
       { id:'o1', name:'Centre field', holder:'none' },
@@ -1072,7 +1119,8 @@ function candidatesFor(side, sel, game, lists) {
     return listCandidates(lists[li], side);
   }
   const army = side === 'me' ? game.myArmy : game.foeArmy;
-  return armyUnits(army).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + (u.category || '') }));
+  const variant = side === 'me' ? game.myVariant : game.foeVariant;
+  return armyRoster(army, variant).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + (u.category || '') }));
 }
 function resolveUnit(side, sel, game, lists) {
   const cands = candidatesFor(side, sel, game, lists);
@@ -1415,12 +1463,22 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
 
       {sel.source==='catalog' ? (
         <div style={{display:'flex',gap:8}}>
-          <div style={{flex:1}}><SectionLabel>Your army</SectionLabel>
-            <ArmySelect value={game.myArmy} accent="var(--signal-600)"
-              onChange={a=>{setGame(g=>({...g,myArmy:a}));set({mine:(armyUnits(a)[0]||{}).id});}}/></div>
-          <div style={{flex:1}}><SectionLabel>Enemy army</SectionLabel>
-            <ArmySelect value={game.foeArmy} accent="var(--out-flee)"
-              onChange={a=>{setGame(g=>({...g,foeArmy:a}));set({foe:(armyUnits(a)[0]||{}).id});}}/></div>
+          {['me','foe'].map(sd=>{
+            const aKey=sd==='me'?'myArmy':'foeArmy', vKey=sd==='me'?'myVariant':'foeVariant';
+            const army=game[aKey], variant=game[vKey], accent=sd==='me'?'var(--signal-600)':'var(--out-flee)';
+            const vars=variantsFor(army);
+            const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(sd==='me'?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
+            const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(sd==='me'?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
+            return <div key={sd} style={{flex:1,display:'flex',flexDirection:'column',gap:6}}>
+              <SectionLabel>{sd==='me'?'Your army':'Enemy army'}</SectionLabel>
+              <ArmySelect value={army} accent={accent} onChange={setArmy}/>
+              {vars.length>1 && <select value={variant} onChange={e=>setVar(e.target.value)}
+                style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
+                  color:variant==='standard'?'var(--text-secondary)':accent,border:`1px solid ${variant==='standard'?'var(--border-default)':accent}`,
+                  borderRadius:'var(--r-md)',padding:'8px var(--sp-3)',font:'600 var(--fs-xs)/1 var(--font-ui)',cursor:'pointer'}}>
+                {vars.map(v=><option key={v.key} value={v.key} style={{background:'var(--surface-2)',color:'var(--text-primary)'}}>{v.name}</option>)}</select>}
+            </div>;
+          })}
         </div>
       ) : (
         <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
