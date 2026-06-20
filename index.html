@@ -7,12 +7,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="description" content="Décrypte les signes que les dieux du Vieux Monde t'envoient pour t'assurer la victoire — le compagnon devin de tes batailles Warhammer: The Old World.">
+<meta name="description" content="Read the omens the gods of the Old World send you and secure your victory — the diviner's companion for your Warhammer: The Old World battles.">
 <meta name="application-name" content="Augur">
 <meta name="apple-mobile-web-app-title" content="Augur">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Augur — Les présages du champ de bataille</title>
+<title>Augur — Omens of the Battlefield</title>
 
 <!-- ══════════════════════════════════════════════════════════════
      Augur — table-side companion for Warhammer: The Old World.
@@ -159,16 +159,16 @@ const Portal = ({ children }) => ReactDOM.createPortal(children, document.body);
    ════════════════════════════════════════════════════════════════ */
 
 const FACTIONS = {
-  'beastmen-brayherds':'Hommes-bêtes', 'chaos-dwarfs':'Nains du Chaos',
-  'daemons-of-chaos':'Démons du Chaos', 'dark-elves':'Elfes Noirs',
-  'dwarfen-mountain-holds':'Nains', 'empire-of-man':'Empire',
-  'grand-cathay':'Grand Cathay', 'high-elf-realms':'Hauts Elfes',
-  'kingdom-of-bretonnia':'Bretonnie', 'lizardmen':'Hommes-lézards',
-  'ogre-kingdoms':'Royaumes Ogres', 'orc-and-goblin-tribes':'Peaux-Vertes',
-  'skaven':'Skavens', 'tomb-kings-of-khemri':'Rois des Tombes',
-  'vampire-counts':'Comtes Vampires', 'warriors-of-chaos':'Guerriers du Chaos',
-  'wood-elf-realms':'Elfes Sylvains', 'realms-of-men':'Royaumes des Hommes',
-  'regiments-of-renown':'Régiments de Renom',
+  'beastmen-brayherds':'Beastmen Brayherds', 'chaos-dwarfs':'Chaos Dwarfs',
+  'daemons-of-chaos':'Daemons of Chaos', 'dark-elves':'Dark Elves',
+  'dwarfen-mountain-holds':'Dwarfen Mountain Holds', 'empire-of-man':'Empire of Man',
+  'grand-cathay':'Grand Cathay', 'high-elf-realms':'High Elf Realms',
+  'kingdom-of-bretonnia':'Kingdom of Bretonnia', 'lizardmen':'Lizardmen',
+  'ogre-kingdoms':'Ogre Kingdoms', 'orc-and-goblin-tribes':'Orc & Goblin Tribes',
+  'skaven':'Skaven', 'tomb-kings-of-khemri':'Tomb Kings of Khemri',
+  'vampire-counts':'Vampire Counts', 'warriors-of-chaos':'Warriors of Chaos',
+  'wood-elf-realms':'Wood Elf Realms', 'realms-of-men':'Realms of Men',
+  'regiments-of-renown':'Regiments of Renown',
 };
 
 const num = (x) => {
@@ -258,17 +258,17 @@ function resolveEquipment(base, chosenNames, mountName) {
 
   // ── Melee weapons ──
   if (has(/arme de base additionnelle|additional hand weapon|second hand weapon|deux armes|paire d|paired weapons/)) {
-    prof.a += 1; notes.push('+1 A · arme additionnelle');
+    prof.a += 1; notes.push('+1 A · additional hand weapon');
   }
   if (has(/arme lourde|great weapon|grande arme/)) {
-    prof.s += 2; strikeLast = true; notes.push('+2 F · frappe en dernier · arme lourde');
+    prof.s += 2; strikeLast = true; notes.push('+2 S · strikes last · great weapon');
   }
-  if (has(/hallebarde|halberd/)) { prof.s += 1; notes.push('+1 F · hallebarde'); }
-  if (has(/fleau|flail/)) { prof.s += 2; notes.push('+2 F (1er round) · fléau'); }
+  if (has(/hallebarde|halberd/)) { prof.s += 1; notes.push('+1 S · halberd'); }
+  if (has(/fleau|flail/)) { prof.s += 2; notes.push('+2 S (1st round) · flail'); }
   if (has(/lance de joute|lance de cavalerie|cavalry spear|^lance$|\blance\b/) && mountedName) {
-    chargeS += 2; notes.push('+2 F en charge · lance');
+    chargeS += 2; notes.push('+2 S on the charge · lance');
   }
-  if (has(/morning star|etoile du matin|masse a deux mains/)) { prof.s += 1; notes.push('+1 F'); }
+  if (has(/morning star|etoile du matin|masse a deux mains/)) { prof.s += 1; notes.push('+1 S'); }
 
   // ── Armour save (recomputed from selected pieces, never worse than base) ──
   let armourBase = 7;
@@ -290,9 +290,9 @@ function resolveEquipment(base, chosenNames, mountName) {
     const mp = findMountProfile(mountName);
     if (mp) {
       if (mp.M > prof.M) prof.M = mp.M;
-      if (mp.a > 0) { prof.a += mp.a; notes.push('+' + mp.a + ' A · monture'); }
+      if (mp.a > 0) { prof.a += mp.a; notes.push('+' + mp.a + ' A · mount'); }
     } else {
-      prof.a += 1; notes.push('+1 A · monture');
+      prof.a += 1; notes.push('+1 A · mount');
     }
   }
 
@@ -315,7 +315,7 @@ function rosterUnitFromUDB(army, cat, slug, displayName) {
   const rules = rulesOf(u);
   return {
     id: army + '/' + slug, udbKey: key, slug,
-    name: (owb && owb.name_fr) || clean(displayName) || u.name,
+    name: clean(displayName) || u.name,
     army, category: cat,
     points: (owb && owb.points) || 0,
     size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
@@ -768,11 +768,11 @@ function StatPill({ label, value, emphasis=false, style={} }) {
 }
 
 const OUTCOMES = [
-  { key:'win',      label:"L'emporter",            color:'var(--out-win)' },
-  { key:'draw',     label:'Égalité',               color:'var(--out-draw)' },
-  { key:'give',     label:'Céder du terrain',      color:'var(--out-give)' },
-  { key:'fallback', label:'Reculer en bon ordre',  color:'var(--out-fallback)' },
-  { key:'flee',     label:'FUIR',                  color:'var(--out-flee)' },
+  { key:'win',      label:'Win the combat',        color:'var(--out-win)' },
+  { key:'draw',     label:'Draw',                  color:'var(--out-draw)' },
+  { key:'give',     label:'Give ground',           color:'var(--out-give)' },
+  { key:'fallback', label:'Fall back in good order',color:'var(--out-fallback)' },
+  { key:'flee',     label:'FLEE',                  color:'var(--out-flee)' },
 ];
 
 function OutcomeBar({ dist, height=30, showInline=true, style={} }) {
@@ -805,10 +805,10 @@ function OutcomeLegend({ dist=null, columns=1, style={} }) {
 }
 
 const STATUS = {
-  full:{color:'var(--status-full)',label:'Pleine force'},
-  weak:{color:'var(--status-weak)',label:'Sous 25 % FU'},
-  fleeing:{color:'var(--status-fleeing)',label:'En fuite'},
-  destroyed:{color:'var(--status-destroyed)',label:'Détruite'},
+  full:{color:'var(--status-full)',label:'Full strength'},
+  weak:{color:'var(--status-weak)',label:'Below 25% US'},
+  fleeing:{color:'var(--status-fleeing)',label:'Fleeing'},
+  destroyed:{color:'var(--status-destroyed)',label:'Destroyed'},
 };
 function StatusDot({ status='full', showLabel=true, style={} }) {
   const s=STATUS[status]||STATUS.full;
@@ -824,17 +824,17 @@ function StatusDot({ status='full', showLabel=true, style={} }) {
 
 function VPMeter({ value, range=null, size='hero', style={} }) {
   const positive=value>=0;const color=positive?'var(--positive)':'var(--danger)';
-  const dir=positive?'en ta faveur':'en ta défaveur';const signed=`${positive?'+':'−'}${Math.abs(value)}`;
+  const dir=positive?'in your favour':'against you';const signed=`${positive?'+':'−'}${Math.abs(value)}`;
   const fs=size==='hero'?'var(--fs-hero)':'var(--fs-display)';
   return <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',...style}}>
     <span style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
-      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-1)'}}>Gain net espéré · PV</span>
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-1)'}}>Expected net VP swing</span>
     <span style={{font:`var(--fw-bold) ${fs}/var(--lh-tight) var(--font-display)`,letterSpacing:'var(--ls-tight)',
       color,fontVariantNumeric:'tabular-nums'}}>{signed}</span>
     <div style={{display:'flex',alignItems:'baseline',gap:'var(--sp-2)',marginTop:'var(--sp-1)'}}>
       <span style={{font:'var(--fw-semibold) var(--fs-sm)/1 var(--font-ui)',color}}>{dir}</span>
       {range&&<span style={{font:'var(--fw-regular) var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>
-        intervalle {range[0]>=0?'+':'−'}{Math.abs(range[0])} … {range[1]>=0?'+':'−'}{Math.abs(range[1])}</span>}
+        range {range[0]>=0?'+':'−'}{Math.abs(range[0])} … {range[1]>=0?'+':'−'}{Math.abs(range[1])}</span>}
     </div></div>;
 }
 
@@ -890,14 +890,14 @@ function DiceRoller({ open, onClose }) {
   if (!open) return null;
   const set = (p) => { setCfg(c => ({ ...c, ...p })); setResult(null); };
   const roll = () => setResult(rollDiceSet(cfg));
-  const keepLabel = { all:'Tous', highest:'+ hauts', lowest:'+ bas' };
+  const keepLabel = { all:'all', highest:'highest', lowest:'lowest' };
   return <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:60,display:'flex',
     flexDirection:'column',justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:'2px solid var(--signal-500)',boxShadow:'var(--shadow-sheet)',
       maxHeight:'88dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-        <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>Lancer les dés</span>
+        <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>Roll dice</span>
         <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
       <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -906,17 +906,17 @@ function DiceRoller({ open, onClose }) {
             onClick={()=>{ setCfg({...p.cfg}); setResult(null); }}/>)}
         </div>
         <div style={{display:'flex',gap:8}}>
-          <Stepper label="Dés" value={cfg.count} onChange={v=>set({count:v})} min={1} max={12} style={{flex:1}}/>
-          <Stepper label="Faces" value={cfg.sides} onChange={v=>set({sides:v})} min={2} max={20} style={{flex:1}}/>
-          <Stepper label="Modif." value={cfg.mod} onChange={v=>set({mod:v})} min={-12} max={12} signed style={{flex:1}}/>
+          <Stepper label="Dice" value={cfg.count} onChange={v=>set({count:v})} min={1} max={12} style={{flex:1}}/>
+          <Stepper label="Sides" value={cfg.sides} onChange={v=>set({sides:v})} min={2} max={20} style={{flex:1}}/>
+          <Stepper label="Modifier" value={cfg.mod} onChange={v=>set({mod:v})} min={-12} max={12} signed style={{flex:1}}/>
         </div>
-        <div><SectionLabel>Garder les dés</SectionLabel>
+        <div><SectionLabel>Keep dice</SectionLabel>
           <Segmented size="sm" value={cfg.keepMode} onChange={v=>set({keepMode:v})}
-            options={[{value:'all',label:'Tous'},{value:'highest',label:'+ hauts'},{value:'lowest',label:'+ bas'}]}/></div>
-        {cfg.keepMode!=='all' && <Stepper label={'Combien garder ('+keepLabel[cfg.keepMode]+')'} value={cfg.keep}
+            options={[{value:'all',label:'All'},{value:'highest',label:'Highest'},{value:'lowest',label:'Lowest'}]}/></div>
+        {cfg.keepMode!=='all' && <Stepper label={'How many to keep ('+keepLabel[cfg.keepMode]+')'} value={cfg.keep}
           onChange={v=>set({keep:v})} min={1} max={Math.max(1,cfg.count-1)}/>}
         <div style={{display:'flex',gap:6}}>
-          <ChipToggle label="Relancer les 1" on={cfg.rerollOnes} onClick={()=>set({rerollOnes:!cfg.rerollOnes})}/>
+          <ChipToggle label="Reroll 1s" on={cfg.rerollOnes} onClick={()=>set({rerollOnes:!cfg.rerollOnes})}/>
         </div>
         {result && <div style={{background:'var(--surface-2)',border:'1px solid var(--border-default)',borderRadius:'var(--r-md)',
           padding:'var(--sp-4)',display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
@@ -935,7 +935,7 @@ function DiceRoller({ open, onClose }) {
       </div>
       <div style={{flex:'none',paddingTop:10}}>
         <Button variant="primary" size="lg" block onClick={roll} icon={<Icon name="dices" size={22}/>}>
-          {result ? 'Relancer' : 'Lancer'}</Button>
+          {result ? 'Reroll' : 'Roll'}</Button>
       </div>
     </div></div></Portal>;
 }
@@ -952,9 +952,9 @@ function StatusBar() {
 }
 const TABS = [
   {key:'select',label:'Combat',icon:'swords'},
-  {key:'result',label:'Pronostic',icon:'dices'},
+  {key:'result',label:'Forecast',icon:'dices'},
   {key:'assistant',label:'Assistant',icon:'list-checks'},
-  {key:'tracker',label:'Partie',icon:'map'},
+  {key:'tracker',label:'Game',icon:'map'},
 ];
 function TabBar({ active, onChange }) {
   return <div className="augur-tabbar" style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
@@ -976,7 +976,7 @@ function PhoneFrame({ active, onTab, children }) {
     <StatusBar/>
     <div className="augur-content" style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
     {onTab&&<TabBar active={active} onChange={onTab}/>}
-    {onTab&&<button type="button" className="augur-fab" aria-label="Lancer les dés" onClick={()=>setDice(true)}
+    {onTab&&<button type="button" className="augur-fab" aria-label="Roll dice" onClick={()=>setDice(true)}
       style={{width:52,height:52,borderRadius:'var(--r-pill)',background:'var(--signal-500)',color:'var(--text-on-signal)',
         border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
         boxShadow:'var(--glow-signal), var(--shadow-2)'}}>
@@ -1002,11 +1002,11 @@ function freshGame() {
     myArmy: myA, foeArmy: foeA,
     myRoster: pick(myA, 5), foeRoster: pick(foeA, 5),
     objectives: [
-      { id:'o1', name:'Centre du champ', holder:'none' },
-      { id:'o2', name:'Colline est',     holder:'none' },
-      { id:'o3', name:'Pont',            holder:'none' },
+      { id:'o1', name:'Centre field', holder:'none' },
+      { id:'o2', name:'East hill',    holder:'none' },
+      { id:'o3', name:'Bridge',       holder:'none' },
     ],
-    turn: 1, mission: 'Bataille rangée', pointsCap: 2000,
+    turn: 1, mission: 'Pitched Battle', pointsCap: 2000,
   };
 }
 function loadGame() {
@@ -1143,8 +1143,8 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
     ward: ward >= 2 ? ward : 0,
   };
   const engNotes = eqRes.notes.slice();
-  if (eng.ward) engNotes.push('svg invu. ' + eng.ward + '+');
-  if (eng.strikeFirst) engNotes.push('frappe en premier');
+  if (eng.ward) engNotes.push('ward ' + eng.ward + '+');
+  if (eng.strikeFirst) engNotes.push('strikes first');
 
   const buildEntry = () => {
     const chosen = [];
@@ -1164,7 +1164,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         pts={o.points||0} on={radio?sel===i:sel.has(i)} onClick={()=>onSel(i)}/>)}
     </div></div> : null;
 
-  const tgtOptions = [...lists.map((l,i)=>({value:String(i),label:l.name||('Liste '+(i+1))})),{value:'new',label:'➕ Nouvelle liste'}];
+  const tgtOptions = [...lists.map((l,i)=>({value:String(i),label:l.name||('List '+(i+1))})),{value:'new',label:'➕ New list'}];
 
   return <Portal><div className="augur-sheet" onClick={onBack} style={{position:'fixed',inset:0,zIndex:51,display:'flex',flexDirection:'column',
     justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
@@ -1177,56 +1177,56 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accent}}>{total} pts</span></div>
       <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
         <div>
-          <SectionLabel style={{color:accent}}>Profil de combat · avec options</SectionLabel>
+          <SectionLabel style={{color:accent}}>Combat profile · with options</SectionLabel>
           <MiniProfile unit={{profile:eng.profile, save:eng.save}}/>
           {(engNotes.length>0 || eng.strikeLast || eng.chargeS>0) &&
             <div style={{marginTop:6,font:'500 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
-              {[...engNotes, eng.strikeLast?'frappe en dernier':null, eng.chargeS>0?('+'+eng.chargeS+' F en charge'):null].filter(Boolean).join(' · ')}</div>}
+              {[...engNotes, eng.strikeLast?'strikes last':null, eng.chargeS>0?('+'+eng.chargeS+' S on charge'):null].filter(Boolean).join(' · ')}</div>}
         </div>
         <div style={{display:'flex',gap:10}}>
-          <Stepper label="Figurines" value={count} onChange={setCount} min={1} max={80} style={{flex:1}}/>
-          <Stepper label="Pts / figurine" value={ppm} onChange={setPpm} min={0} max={600} step={1} style={{flex:1}}/>
+          <Stepper label="Models" value={count} onChange={setCount} min={1} max={80} style={{flex:1}}/>
+          <Stepper label="Pts / model" value={ppm} onChange={setPpm} min={0} max={600} step={1} style={{flex:1}}/>
         </div>
-        <Group title="Arme" items={eq} radio sel={equipI} onSel={setEquipI}/>
-        <Group title="Armure" items={ar} radio sel={armorI} onSel={setArmorI}/>
-        <Group title="Monture" items={mo} radio sel={mountI} onSel={setMountI}/>
-        <Group title="État-major" items={cm} sel={cmdSet} onSel={i=>toggle(cmdSet,setCmdSet,i)}/>
+        <Group title="Weapon" items={eq} radio sel={equipI} onSel={setEquipI}/>
+        <Group title="Armour" items={ar} radio sel={armorI} onSel={setArmorI}/>
+        <Group title="Mount" items={mo} radio sel={mountI} onSel={setMountI}/>
+        <Group title="Command" items={cm} sel={cmdSet} onSel={i=>toggle(cmdSet,setCmdSet,i)}/>
         <Group title="Options" items={op} sel={optsSet} onSel={i=>toggle(optsSet,setOptsSet,i)}/>
         <div>
-          <SectionLabel>Ajustement manuel · objets, règles spéciales</SectionLabel>
+          <SectionLabel>Manual adjustment · items, special rules</SectionLabel>
           <div style={{display:'flex',gap:8}}>
-            <Stepper label="Svg" value={dSave} onChange={setDSave} min={-2} max={4} signed style={{flex:1}}/>
-            <Stepper label="Attaques" value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
-            <Stepper label="Force" value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
+            <Stepper label="Save" value={dSave} onChange={setDSave} min={-2} max={4} signed style={{flex:1}}/>
+            <Stepper label="Attacks" value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
+            <Stepper label="Strength" value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
           </div>
-          <Stepper label="Svg invulnérable (0 = aucune)" value={ward} onChange={setWard} min={0} max={6}/>
+          <Stepper label="Ward save (0 = none)" value={ward} onChange={setWard} min={0} max={6}/>
         </div>
         {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
-          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Pas d'options répertoriées — utilise les ajustements manuels.</div>}
+          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>No options listed — use the manual adjustments.</div>}
       </div>
       <div style={{flex:'none',paddingTop:10,display:'flex',flexDirection:'column',gap:8}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',flex:'none'}}>Ajouter à</span>
+          <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',flex:'none'}}>Add to</span>
           <select value={String(target)} onChange={e=>setTarget(e.target.value)} style={{flex:1,appearance:'none',
             background:'var(--surface-3)',color:'var(--text-primary)',border:'1px solid var(--border-default)',
             borderRadius:'var(--r-sm)',padding:'8px var(--sp-3)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
             {tgtOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
         <div style={{display:'flex',gap:8}}>
-          <Button variant="secondary" onClick={onQuickUse} style={{flex:'none'}}>Tester (base)</Button>
+          <Button variant="secondary" onClick={onQuickUse} style={{flex:'none'}}>Use (base)</Button>
           <Button variant="primary" block onClick={()=>onAdd(buildEntry(), target==='new'?'new':+target)}
-            icon={<Icon name="plus" size={18}/>}>Ajouter à la liste</Button></div>
+            icon={<Icon name="plus" size={18}/>}>Add to list</Button></div>
       </div>
     </div></div></Portal>;
 }
 
 /* Modal bottom-sheet unit picker with search — clearly shows the selected unit. */
 const UNIT_TYPES = [
-  { key:'all',         label:'Tout' },
-  { key:'characters',  label:'Personnages' },
-  { key:'core',        label:'Base' },
-  { key:'special',     label:'Spéciale' },
+  { key:'all',         label:'All' },
+  { key:'characters',  label:'Characters' },
+  { key:'core',        label:'Core' },
+  { key:'special',     label:'Special' },
   { key:'rare',        label:'Rare' },
-  { key:'mercenaries', label:'Mercenaires' },
+  { key:'mercenaries', label:'Mercenaries' },
 ];
 const catOf = (u) => { const c = String(u.category||'').toLowerCase();
   if (/charact|personn|hero|lord|seigneur/.test(c)) return 'characters';
@@ -1258,7 +1258,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
         <div style={{display:'flex',alignItems:'center',gap:8,background:'var(--surface-3)',borderRadius:'var(--r-md)',
           border:'1px solid var(--border-default)',padding:'0 var(--sp-3)',marginBottom:10}}>
           <Icon name="search" size={16} color="var(--text-tertiary)"/>
-          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Rechercher une unité…" autoFocus
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search a unit…" autoFocus
             style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--text-primary)',
               font:'400 var(--fs-sm)/1 var(--font-ui)',padding:'10px 0'}}/>
           {q&&<button type="button" onClick={()=>setQ('')} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={14}/></button>}
@@ -1272,9 +1272,9 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
               {t.label}{t.key!=='all'&&counts[t.key]?' ('+counts[t.key]+')':''}</button>;})}
         </div>
         {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
-          Tape une unité pour la configurer (options, figurines) et l'ajouter à une liste.</div>}
+          Tap a unit to configure it (options, models) and add it to a list.</div>}
         <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:6}}>
-          {filtered.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune unité.</div>}
+          {filtered.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>No unit.</div>}
           {filtered.map(u=>{const on=u.id===selectedId;const p=u.profile;
             return <button key={u.id} type="button" onClick={()=>rowClick(u)} style={{textAlign:'left',
               cursor:'pointer',background:on?'var(--signal-soft)':'var(--surface-2)',borderRadius:'var(--r-md)',
@@ -1284,7 +1284,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
                   <span style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
                     textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</span>
-                  {u.unbreakable&&<Badge tone="caution">inébr.</Badge>}</div>
+                  {u.unbreakable&&<Badge tone="caution">unbr.</Badge>}</div>
                 <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3,
                   whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
                   CC{p.ws} F{p.s} E{p.t} A{p.a} Cd{p.ld} · {u.sub||''}</div></div>
@@ -1307,8 +1307,8 @@ function SideSelector({ label, accent, unit, onOpen }) {
       background:'var(--surface-2)',border:`1px solid ${accent}`,borderRadius:'var(--r-lg)',padding:'var(--sp-3) var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
         <span style={{flex:1,minWidth:0,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',
-          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit?unit.name:'— choisir une unité —'}</span>
-        {unit&&unit.unbreakable&&<Badge tone="caution">Inébranlable</Badge>}
+          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit?unit.name:'— choose a unit —'}</span>
+        {unit&&unit.unbreakable&&<Badge tone="caution">Unbreakable</Badge>}
         <Icon name="chevron-down" size={18} color="var(--text-tertiary)"/></div>
       {unit&&<MiniProfile unit={unit}/>}
     </button></div>;
@@ -1331,52 +1331,52 @@ function Collapsible({ title, icon, accent, defaultOpen=false, summary=null, chi
 
 /* All static + attack factors for one side. */
 function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }) {
-  return <Collapsible title={side==='me'?'Bonus — ton unité':'Bonus — unité adverse'} icon="shield" accent={accent}
-    defaultOpen={side==='me'} summary={`RC +${cr}`}>
+  return <Collapsible title={side==='me'?'Bonuses — your unit':'Bonuses — enemy unit'} icon="shield" accent={accent}
+    defaultOpen={side==='me'} summary={`CR +${cr}`}>
     <div style={{display:'flex',gap:10}}>
-      <Stepper label="Attaques (total)" value={attacks} onChange={setAttacks} min={1} max={120} style={{flex:1}}/>
-      <Stepper label="Rangs" value={f.ranks} onChange={v=>setF({ranks:v})} min={1} max={10} style={{flex:1}}/>
+      <Stepper label="Attacks (total)" value={attacks} onChange={setAttacks} min={1} max={120} style={{flex:1}}/>
+      <Stepper label="Ranks" value={f.ranks} onChange={v=>setF({ranks:v})} min={1} max={10} style={{flex:1}}/>
     </div>
     <div style={{display:'flex',gap:10}}>
-      <Stepper label="Blessures de charge / impact" value={f.impact} onChange={v=>setF({impact:v})} min={0} max={20} style={{flex:1}}/>
-      <Stepper label="Overkill (défi, max +5)" value={f.overkill||0} onChange={v=>setF({overkill:v})} min={0} max={5} style={{flex:1}}/>
+      <Stepper label="Charge / impact wounds" value={f.impact} onChange={v=>setF({impact:v})} min={0} max={20} style={{flex:1}}/>
+      <Stepper label="Overkill (challenge, max +5)" value={f.overkill||0} onChange={v=>setF({overkill:v})} min={0} max={5} style={{flex:1}}/>
     </div>
     <div>
-      <SectionLabel>Flanc / arrière</SectionLabel>
+      <SectionLabel>Flank / rear</SectionLabel>
       <Segmented size="sm" value={f.flankRear} onChange={v=>setF({flankRear:v})}
-        options={[{value:0,label:'Front'},{value:1,label:'Flanc +1'},{value:2,label:'Arrière +2'}]}/>
+        options={[{value:0,label:'Front'},{value:1,label:'Flank +1'},{value:2,label:'Rear +2'}]}/>
     </div>
     <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
-      <Switch label="Bannière (+1)" checked={f.banner} onChange={v=>setF({banner:v})}/>
+      <Switch label="Standard (+1)" checked={f.banner} onChange={v=>setF({banner:v})}/>
       <div style={{height:1,background:'var(--border-subtle)'}}/>
-      <Switch label="Étendard de guerre (+1)" checked={f.warbanner} onChange={v=>setF({warbanner:v})}/>
+      <Switch label="Battle Standard (+1)" checked={f.warbanner} onChange={v=>setF({warbanner:v})}/>
       <div style={{height:1,background:'var(--border-subtle)'}}/>
-      <Switch label="Position dominante (+1)" checked={f.highGround} onChange={v=>setF({highGround:v})}/>
+      <Switch label="High ground (+1)" checked={f.highGround} onChange={v=>setF({highGround:v})}/>
       <div style={{height:1,background:'var(--border-subtle)'}}/>
-      <Switch label="Inébranlable" checked={f.unbreakable} onChange={v=>setF({unbreakable:v})}/>
+      <Switch label="Unbreakable" checked={f.unbreakable} onChange={v=>setF({unbreakable:v})}/>
     </Card>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',padding:'2px 2px 0'}}>
       <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>
-        {charged?'Bénéficie de la charge (+1)':'Sans charge'}</span>
-      <span style={{font:'700 var(--fs-h3)/1 var(--font-mono)',color:accent}}>Résolution statique +{cr}</span></div>
+        {charged?'Has the charge (+1)':'No charge'}</span>
+      <span style={{font:'700 var(--fs-h3)/1 var(--font-mono)',color:accent}}>Static result +{cr}</span></div>
   </Collapsible>;
 }
 
 // Special rules that visibly drive the combat engine, with short effect labels.
 const RULE_LABELS = {
-  strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance touche',
-  frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F charge', poisoned:'Empoisonné · 6 = blessure',
-  killingBlow:'Coup fatal · ignore svg', regen:'Régénération · svg 4+', swiftstride:'Foulée véloce',
-  impactHits:'Charges d’impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
-  fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité psychologie',
-  stubborn:'Tenace · ignore malus', unbreakable:'Inébranlable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
+  strikeFirst:'Strikes first', strikeLast:'Strikes last', hatred:'Hatred · reroll to hit',
+  frenzy:'Frenzy · +1 A', furiousCharge:'Furious Charge · +1 S charge', poisoned:'Poisoned · 6 = wound',
+  killingBlow:'Killing Blow · ignore save', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
+  impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds',
+  fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
+  stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks',
 };
 const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','regen','multiWounds','impactHits','stomp','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
 function RuleChips({ unit, accent }) {
   if (!unit) return null;
   const f = combatFlags(unit);
   const active = ORDER_RULES.filter(k => f[k]);
-  if (!active.length) return <span style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune règle de combat notable détectée.</span>;
+  if (!active.length) return <span style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>No notable combat rule detected.</span>;
   return <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
     {active.map(k => <span key={k} style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.02em',
       background:'var(--surface-3)',border:`1px solid ${accent}55`,color:accent,borderRadius:'var(--r-pill)',padding:'5px 9px',whiteSpace:'nowrap'}}>{RULE_LABELS[k]}</span>)}
@@ -1404,21 +1404,21 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
   const accentMe='var(--signal-500)', accentFoe='var(--out-flee)';
 
   return <Fragment>
-    <ScreenHeader eyebrow="Sélection du combat" title="Engagement" right={
+    <ScreenHeader eyebrow="Combat selection" title="Engagement" right={
       <span style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',textAlign:'right'}}>
-        <span style={{color:'var(--signal-400)'}}>toi +{myCR}</span><br/>
-        <span style={{color:'var(--out-flee)'}}>adv +{foeCR}</span></span>}/>
+        <span style={{color:'var(--signal-400)'}}>you +{myCR}</span><br/>
+        <span style={{color:'var(--out-flee)'}}>foe +{foeCR}</span></span>}/>
     <Body>
       {/* source mode */}
       <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
-        options={[{value:'catalog',label:'Catalogue'},{value:'lists',label:'Listes importées'}]}/>
+        options={[{value:'catalog',label:'Catalogue'},{value:'lists',label:'Imported lists'}]}/>
 
       {sel.source==='catalog' ? (
         <div style={{display:'flex',gap:8}}>
-          <div style={{flex:1}}><SectionLabel>Ton armée</SectionLabel>
+          <div style={{flex:1}}><SectionLabel>Your army</SectionLabel>
             <ArmySelect value={game.myArmy} accent="var(--signal-600)"
               onChange={a=>{setGame(g=>({...g,myArmy:a}));set({mine:(armyUnits(a)[0]||{}).id});}}/></div>
-          <div style={{flex:1}}><SectionLabel>Armée adverse</SectionLabel>
+          <div style={{flex:1}}><SectionLabel>Enemy army</SectionLabel>
             <ArmySelect value={game.foeArmy} accent="var(--out-flee)"
               onChange={a=>{setGame(g=>({...g,foeArmy:a}));set({foe:(armyUnits(a)[0]||{}).id});}}/></div>
         </div>
@@ -1426,72 +1426,72 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
           {lists.length===0 ? (
             <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-              Importe une liste exportée depuis TOW en 1 (bouton « ⬇ JSON » du constructeur).</div>
+              Import a list exported from TOW en 1 (the builder's « ⬇ JSON » button).</div>
           ) : (
             <div style={{display:'flex',gap:8}}>
-              <div style={{flex:1}}><SectionLabel>Ta liste</SectionLabel>
+              <div style={{flex:1}}><SectionLabel>Your list</SectionLabel>
                 <select value={sel.myList} onChange={e=>{const i=+e.target.value;set({myList:i,mine:'me:0'});}}
                   style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
                     border:'1px solid var(--signal-600)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
                     font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('Liste '+(i+1))}</option>)}</select></div>
-              <div style={{flex:1}}><SectionLabel>Liste adverse</SectionLabel>
+                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('List '+(i+1))}</option>)}</select></div>
+              <div style={{flex:1}}><SectionLabel>Enemy list</SectionLabel>
                 <select value={sel.foeList} onChange={e=>{const i=+e.target.value;set({foeList:i,foe:'foe:0'});}}
                   style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
                     border:'1px solid var(--out-flee)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
                     font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('Liste '+(i+1))}</option>)}</select></div>
+                  {lists.map((l,i)=><option key={i} value={i}>{l.name||('List '+(i+1))}</option>)}</select></div>
             </div>
           )}
           <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
             onChange={e=>{const f=e.target.files[0];if(f)onImport(f);e.target.value='';}}/>
           <Button variant="secondary" block onClick={()=>fileRef.current&&fileRef.current.click()}
-            icon={<Icon name="upload" size={18}/>}>Importer une liste (.json)</Button>
+            icon={<Icon name="upload" size={18}/>}>Import a list (.json)</Button>
         </Card>
       )}
 
-      <SideSelector label="Ton unité" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+      <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
 
       <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
         <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
         <Icon name="swords" size={18} color="var(--text-tertiary)"/>
         <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
 
-      <SideSelector label="Unité adverse" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+      <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
 
       {/* auto-detected combat rules from both units' special rules */}
-      <Collapsible title="Règles de combat actives" icon="sparkles" accent="var(--signal-400)" defaultOpen={false}
+      <Collapsible title="Active combat rules" icon="sparkles" accent="var(--signal-400)" defaultOpen={false}
         summary="auto">
-        <div><SectionLabel style={{color:accentMe}}>{myUnit?myUnit.name:'Ton unité'}</SectionLabel>
+        <div><SectionLabel style={{color:accentMe}}>{myUnit?myUnit.name:'Your unit'}</SectionLabel>
           <RuleChips unit={myUnit} accent="var(--signal-400)"/></div>
-        <div><SectionLabel style={{color:accentFoe}}>{foeUnit?foeUnit.name:'Unité adverse'}</SectionLabel>
+        <div><SectionLabel style={{color:accentFoe}}>{foeUnit?foeUnit.name:'Enemy unit'}</SectionLabel>
           <RuleChips unit={foeUnit} accent="var(--out-flee)"/></div>
         <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
-          Détectées depuis les règles spéciales de l'unité (tow.whfb.app) et appliquées automatiquement par le moteur.</div>
+          Detected from the unit's special rules (tow.whfb.app) and applied automatically by the engine.</div>
       </Collapsible>
 
       {/* charge & reactions */}
-      <Collapsible title="Charge & réaction" icon="zap" accent="var(--caution)" defaultOpen={true}
-        summary={sel.charger==='me'?'tu charges':sel.charger==='foe'?'tu es chargé':'—'}>
-        <div><SectionLabel>Qui charge ?</SectionLabel>
+      <Collapsible title="Charge & reaction" icon="zap" accent="var(--caution)" defaultOpen={true}
+        summary={sel.charger==='me'?'you charge':sel.charger==='foe'?'you are charged':'—'}>
+        <div><SectionLabel>Who charges?</SectionLabel>
           <Segmented size="sm" value={sel.charger} onChange={v=>set({charger:v})}
-            options={[{value:'me',label:'Toi'},{value:'none',label:'Personne'},{value:'foe',label:'Adversaire'}]}/></div>
-        {sel.charger!=='none'&&<div><SectionLabel>Réaction du défenseur</SectionLabel>
+            options={[{value:'me',label:'You'},{value:'none',label:'Nobody'},{value:'foe',label:'Enemy'}]}/></div>
+        {sel.charger!=='none'&&<div><SectionLabel>Defender's reaction</SectionLabel>
           <Segmented size="sm" value={sel.reaction} onChange={v=>set({reaction:v})}
-            options={[{value:'hold',label:'Maintien'},{value:'standshoot',label:'Tenir & tirer'},{value:'flee',label:'Fuite'}]}/></div>}
+            options={[{value:'hold',label:'Hold'},{value:'standshoot',label:'Stand & shoot'},{value:'flee',label:'Flee'}]}/></div>}
         {sel.charger!=='none'&&sel.reaction==='standshoot'&&
-          <div><Stepper label="Blessures du tir de réaction (−attaques chargeur, +CR défenseur)" value={sel.standShootKills}
+          <div><Stepper label="Stand & shoot wounds (−charger attacks, +defender CR)" value={sel.standShootKills}
             onChange={v=>set({standShootKills:v})} min={0} max={20}/>
             <div style={{marginTop:4,font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
-              Lance le tir en vrai (CT −1) puis saisis les blessures : elles retirent des attaques au chargeur et s'ajoutent au résultat du défenseur.</div></div>}
+              Roll the shooting for real (BS −1), then enter the wounds: they remove attacks from the charger and add to the defender's result.</div></div>}
         <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
-          <Switch label="Contre-charge (le défenseur charge aussi)" checked={sel.counterCharge} onChange={v=>set({counterCharge:v})}/>
+          <Switch label="Counter-charge (defender also charges)" checked={sel.counterCharge} onChange={v=>set({counterCharge:v})}/>
           <div style={{height:1,background:'var(--border-subtle)'}}/>
-          <Switch label="Cible déjà en fuite (écrasement)" checked={sel.fleeingTarget} onChange={v=>set({fleeingTarget:v})}/>
+          <Switch label="Target already fleeing (overrun)" checked={sel.fleeingTarget} onChange={v=>set({fleeingTarget:v})}/>
         </Card>
         {sel.charger!=='none'&&sel.reaction==='flee'&&
           <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
-            Le défenseur tente de fuir : la charge peut échouer. Coche « cible en fuite » pour simuler la poursuite.</div>}
+            The defender tries to flee: the charge may fail. Tick « target already fleeing » to simulate the pursuit.</div>}
       </Collapsible>
 
       <FactorPanel side="me" accent={accentMe} f={sel.me} setF={setF('me')}
@@ -1503,13 +1503,13 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
     </Body>
     <BottomBar>
       <Button variant="primary" size="lg" block disabled={!myUnit||!foeUnit} onClick={onSimulate}
-        icon={<Icon name="dices" size={22}/>}>Lancer la simulation</Button>
+        icon={<Icon name="dices" size={22}/>}>Run the simulation</Button>
     </BottomBar>
 
-    <UnitSheet open={sheet==='me'} title="Ton unité" accent={accentMe} units={myCands}
+    <UnitSheet open={sheet==='me'} title="Your unit" accent={accentMe} units={myCands}
       selectedId={sel.mine} onPick={id=>set({mine:id})} onClose={()=>setSheet(null)}
       configurable={sel.source==='catalog'} side="me" lists={lists} onAdd={onAddUnit}/>
-    <UnitSheet open={sheet==='foe'} title="Unité adverse" accent={accentFoe} units={foeCands}
+    <UnitSheet open={sheet==='foe'} title="Enemy unit" accent={accentFoe} units={foeCands}
       selectedId={sel.foe} onPick={id=>set({foe:id})} onClose={()=>setSheet(null)}
       configurable={sel.source==='catalog'} side="foe" lists={lists} onAdd={onAddUnit}/>
   </Fragment>;
@@ -1523,7 +1523,7 @@ function BadExchangeBanner({ text }) {
   return <div style={{display:'flex',gap:10,alignItems:'flex-start',background:'var(--out-give-soft)',
     border:'1px solid var(--caution)',borderRadius:'var(--r-md)',padding:'var(--sp-3) var(--sp-4)'}}>
     <Icon name="triangle-alert" size={20} color="var(--caution)" style={{flex:'none',marginTop:1}}/>
-    <div><div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--caution)'}}>Mauvais échange probable</div>
+    <div><div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--caution)'}}>Likely bad exchange</div>
       <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>{text}</div></div>
   </div>;
 }
@@ -1533,14 +1533,14 @@ function UnitOutcomeRow({ label, dist }) {
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:6}}>
       <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-secondary)',overflow:'hidden',
         textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:170}}>{label}</span>
-      <span style={{font:'600 var(--fs-xs)/1 var(--font-mono)',color:fleePct>=30?'var(--out-flee)':'var(--text-tertiary)'}}>FUIR {fleePct} %</span>
+      <span style={{font:'600 var(--fs-xs)/1 var(--font-mono)',color:fleePct>=30?'var(--out-flee)':'var(--text-tertiary)'}}>FLEE {fleePct} %</span>
     </div><OutcomeBar dist={dist} height={26}/></div>;
 }
 function VariantVerdict({ res, names }) {
   return <Fragment>
     <Card elevation={2} style={{padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:'var(--sp-4)'}}>
       <VPMeter value={res.expectedVP} range={res.range}/>
-      {res.badExchange&&<BadExchangeBanner text="Tu gagnes le combat dans la plupart des cas, mais l'adversaire ne se brise pas : peu de PV à la clé."/>}
+      {res.badExchange&&<BadExchangeBanner text="You win the combat most of the time, but the enemy won't break: few VP to gain."/>}
     </Card>
     <Card elevation={1} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-4)'}}>
       <UnitOutcomeRow label={names.me} dist={res.me}/>
@@ -1563,7 +1563,7 @@ function FleeDial({ label, value }) {
       <span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',
         font:'700 var(--fs-h3)/1 var(--font-mono)',color:col}}>{pct}</span></div>
     <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-      color:'var(--text-tertiary)',textAlign:'center'}}>FUIR · {label}</span></div>;
+      color:'var(--text-tertiary)',textAlign:'center'}}>FLEE · {label}</span></div>;
 }
 function VariantCadran({ res, names }) {
   const span=220,clamp=v=>Math.max(-span,Math.min(span,v)),pct=v=>50+(clamp(v)/span)*50;
@@ -1571,11 +1571,11 @@ function VariantCadran({ res, names }) {
   return <Fragment>
     <Card elevation={2} style={{padding:'var(--sp-5)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:8}}>Gain net espéré · PV</div>
+        color:'var(--text-tertiary)',marginBottom:8}}>Expected net VP swing</div>
       <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:12}}>
         <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color,letterSpacing:'var(--ls-tight)',
           fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(value)}</span>
-        <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color}}>{positive?'en ta faveur':'en ta défaveur'}</span></div>
+        <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color}}>{positive?'in your favour':'against you'}</span></div>
       <div style={{position:'relative',height:14,borderRadius:'var(--r-pill)',
         background:'linear-gradient(90deg,var(--out-flee-soft),var(--surface-3) 50%,var(--out-win-soft))',
         border:'1px solid var(--border-default)',overflow:'hidden'}}>
@@ -1586,12 +1586,12 @@ function VariantCadran({ res, names }) {
           borderRadius:'50%',background:color,boxShadow:'0 0 10px '+(positive?'rgba(79,176,122,.5)':'var(--out-flee-glow)'),
           border:'2px solid var(--bg-app)'}}/></div>
       <div style={{display:'flex',justifyContent:'space-between',font:'400 var(--fs-xs)/1 var(--font-mono)',
-        color:'var(--text-tertiary)',marginTop:6}}><span>défaite</span><span>0</span><span>victoire</span></div>
+        color:'var(--text-tertiary)',marginTop:6}}><span>defeat</span><span>0</span><span>victory</span></div>
     </Card>
-    {res.badExchange&&<BadExchangeBanner text="Victoire probable mais faible gain de PV — l'adversaire encaisse sans se briser."/>}
+    {res.badExchange&&<BadExchangeBanner text="Likely win but low VP gain — the enemy holds without breaking."/>}
     <Card elevation={1} style={{padding:'var(--sp-4)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:12}}>Risque de fuite</div>
+        color:'var(--text-tertiary)',marginBottom:12}}>Flee risk</div>
       <div style={{display:'flex',gap:16}}>
         <FleeDial label={names.meShort} value={res.me.flee}/>
         <div style={{width:1,background:'var(--border-subtle)'}}/>
@@ -1623,7 +1623,7 @@ function VariantDuel({ res, names }) {
   return <Fragment>
     <Card elevation={2} style={{padding:'var(--sp-4) var(--sp-5) var(--sp-5)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:10,textAlign:'center'}}>Gain net espéré · PV</div>
+        color:'var(--text-tertiary)',marginBottom:10,textAlign:'center'}}>Expected net VP swing</div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:14}}>
         <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color:positive?'var(--positive)':'var(--danger)',
           letterSpacing:'var(--ls-tight)',fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(res.expectedVP)}</span></div>
@@ -1633,7 +1633,7 @@ function VariantDuel({ res, names }) {
       <div style={{display:'flex',justifyContent:'space-between',marginTop:6,font:'600 var(--fs-xs)/1 var(--font-ui)'}}>
         <span style={{color:'var(--signal-400)'}}>{names.meShort}</span>
         <span style={{color:'var(--out-flee)'}}>{names.foeShort}</span></div></Card>
-    {res.badExchange&&<BadExchangeBanner text="Victoire probable mais faible gain de PV — l'adversaire encaisse sans se briser."/>}
+    {res.badExchange&&<BadExchangeBanner text="Likely win but low VP gain — the enemy holds without breaking."/>}
     <Card elevation={1} style={{padding:'var(--sp-4)'}}>
       <div style={{display:'flex',gap:16}}>
         <OutcomeColumn name={names.me} dist={res.me} side="friendly"/>
@@ -1644,18 +1644,18 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
   const [view, setView] = useState('verdict');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   if (!result) return <Fragment>
-    <ScreenHeader eyebrow="Résultat probabiliste" title="Pronostic"/>
+    <ScreenHeader eyebrow="Probabilistic result" title="Forecast"/>
     <Body><Card elevation={1} style={{padding:'var(--sp-6)',textAlign:'center'}}>
       <Icon name="dices" size={28} color="var(--text-tertiary)"/>
       <div style={{marginTop:10,font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-        Sélectionne un engagement puis lance la simulation.</div></Card></Body></Fragment>;
+        Select an engagement, then run the simulation.</div></Card></Body></Fragment>;
   return <Fragment>
-    <ScreenHeader eyebrow="Résultat probabiliste" title="Pronostic" right={
+    <ScreenHeader eyebrow="Probabilistic result" title="Forecast" right={
       <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
-        Monte&nbsp;Carlo<br/>{result.N.toLocaleString('fr-FR')}&nbsp;tirages</span>}/>
+        Monte&nbsp;Carlo<br/>{result.N.toLocaleString('en-GB')}&nbsp;rolls</span>}/>
     <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
       <Segmented value={view} onChange={setView} size="sm"
-        options={[{value:'verdict',label:'Verdict'},{value:'cadran',label:'Cadran'},{value:'duel',label:'Duel'}]}/></div>
+        options={[{value:'verdict',label:'Verdict'},{value:'cadran',label:'Dial'},{value:'duel',label:'Duel'}]}/></div>
     <Body>
       {view==='verdict'&&<VariantVerdict res={result} names={names}/>}
       {view==='cadran'&&<VariantCadran res={result} names={names}/>}
@@ -1663,9 +1663,9 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
       <div style={{height:4}}/>
     </Body>
     <BottomBar>
-      <Button variant="secondary" size="lg" onClick={onAdjust} icon={<Icon name="rotate-ccw" size={20}/>}>Ajuster</Button>
+      <Button variant="secondary" size="lg" onClick={onAdjust} icon={<Icon name="rotate-ccw" size={20}/>}>Adjust</Button>
       <Button variant="primary" size="lg" block onClick={onResolve}
-        icon={<Icon name="list-checks" size={20}/>}>Résoudre le combat</Button>
+        icon={<Icon name="list-checks" size={20}/>}>Resolve the combat</Button>
     </BottomBar></Fragment>;
 }
 
@@ -1673,10 +1673,10 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
    7 · SCREEN 3 — Assistant de phase de combat
    ════════════════════════════════════════════════════════════════ */
 const PHASES = [
-  {key:'charge', n:1, title:'Charge & réaction', icon:'zap'},
-  {key:'result', n:2, title:'Résultat du combat', icon:'calculator'},
-  {key:'break',  n:3, title:'Test de Break', icon:'dices'},
-  {key:'pursue', n:4, title:'Poursuite', icon:'wind'},
+  {key:'charge', n:1, title:'Charge & reaction', icon:'zap'},
+  {key:'result', n:2, title:'Combat result', icon:'calculator'},
+  {key:'break',  n:3, title:'Break test', icon:'dices'},
+  {key:'pursue', n:4, title:'Pursuit', icon:'wind'},
 ];
 function PhaseRail({ active }) {
   return <div style={{display:'flex',gap:6,padding:'0 var(--screen-pad)'}}>
@@ -1701,22 +1701,22 @@ function BonusEditor({ bon, setBon, charged }) {
   const set=(p)=>setBon(b=>({...b,...p}));
   return <div style={{display:'flex',flexDirection:'column',gap:8}}>
     <div style={{display:'flex',gap:8}}>
-      <Stepper label="Rangs" value={bon.ranks} onChange={v=>set({ranks:v})} min={1} max={10} style={{flex:1}}/>
-      <Stepper label="Autre (surnombre, overkill…)" value={bon.extra||0} onChange={v=>set({extra:v})} min={0} max={12} signed style={{flex:1}}/>
+      <Stepper label="Ranks" value={bon.ranks} onChange={v=>set({ranks:v})} min={1} max={10} style={{flex:1}}/>
+      <Stepper label="Other (outnumber, overkill…)" value={bon.extra||0} onChange={v=>set({extra:v})} min={0} max={12} signed style={{flex:1}}/>
     </div>
     <Segmented size="sm" value={bon.flankRear||0} onChange={v=>set({flankRear:v})}
-      options={[{value:0,label:'Front'},{value:1,label:'Flanc +1'},{value:2,label:'Arrière +2'}]}/>
+      options={[{value:0,label:'Front'},{value:1,label:'Flank +1'},{value:2,label:'Rear +2'}]}/>
     <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-      <ChipToggle label="Bannière +1" on={bon.banner} onClick={()=>set({banner:!bon.banner})}/>
-      <ChipToggle label="Étendard de guerre +1" on={bon.warbanner} onClick={()=>set({warbanner:!bon.warbanner})}/>
-      <ChipToggle label="Position dominante +1" on={bon.highGround} onClick={()=>set({highGround:!bon.highGround})}/>
+      <ChipToggle label="Standard +1" on={bon.banner} onClick={()=>set({banner:!bon.banner})}/>
+      <ChipToggle label="Battle Standard +1" on={bon.warbanner} onClick={()=>set({warbanner:!bon.warbanner})}/>
+      <ChipToggle label="High ground +1" on={bon.highGround} onClick={()=>set({highGround:!bon.highGround})}/>
       {charged && <span style={{alignSelf:'center',font:'600 var(--fs-xs)/1 var(--font-ui)',color:'var(--out-win)'}}>Charge +1</span>}
     </div>
   </div>;
 }
 
 function CombatAssistant({ me, foe, sel, onDone }) {
-  const meName = me ? me.name : 'Ton unité', foeName = foe ? foe.name : 'Unité adverse';
+  const meName = me ? me.name : 'Your unit', foeName = foe ? foe.name : 'Enemy unit';
   const [step, setStep] = useState(0);
   const [charger, setCharger]   = useState(sel.charger);
   const [reaction, setReaction] = useState(sel.reaction);
@@ -1766,7 +1766,7 @@ function CombatAssistant({ me, foe, sel, onDone }) {
     color:ok?'var(--out-win)':'var(--out-flee)'}}>{text}</div>;
 
   return <Fragment>
-    <ScreenHeader eyebrow={`Phase de combat · ${phase.n} / 4`} title="Assistant"/>
+    <ScreenHeader eyebrow={`Combat phase · ${phase.n} / 4`} title="Assistant"/>
     <PhaseRail active={step}/>
     <Body style={{paddingTop:14}}>
       <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -1777,89 +1777,89 @@ function CombatAssistant({ me, foe, sel, onDone }) {
 
       {/* ── 1 · CHARGE & RÉACTION ── */}
       {phase.key==='charge' && <Fragment>
-        <Q>Qui a chargé ?</Q>
+        <Q>Who charged?</Q>
         <Segmented value={charger} onChange={setCharger}
-          options={[{value:'me',label:'Toi'},{value:'none',label:'Personne'},{value:'foe',label:'Adversaire'}]}/>
+          options={[{value:'me',label:'You'},{value:'none',label:'Nobody'},{value:'foe',label:'Enemy'}]}/>
         {charger!=='none' && <Fragment>
-          <Q>Réaction du défenseur · {charger==='me'?foeName:meName} ?</Q>
+          <Q>Defender's reaction · {charger==='me'?foeName:meName}?</Q>
           <Segmented size="sm" value={reaction} onChange={setReaction}
-            options={[{value:'hold',label:'Tenir'},{value:'standshoot',label:'Tenir & tirer'},{value:'flee',label:'Fuir'}]}/>
+            options={[{value:'hold',label:'Hold'},{value:'standshoot',label:'Stand & shoot'},{value:'flee',label:'Flee'}]}/>
           <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-md)',
             padding:'var(--sp-3) var(--sp-4)',font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-            {reaction==='hold' && <span>Le défenseur tient. Le chargeur gagne <b style={{color:'var(--out-win)'}}>+1</b> au résultat (déjà compté à l'étape suivante)<span> ; ajoute ses lances/blessures d'impact dans les blessures.</span></span>}
-            {reaction==='standshoot' && <span>Le défenseur <b>tire avant le contact</b> : retire d'abord les pertes, puis résous le corps à corps avec les figurines restantes.</span>}
-            {reaction==='flee' && <span>Le défenseur <b>fuit</b>. Si la charge le rattrape, il est détruit (va à l'étape Poursuite) ; sinon la charge échoue.</span>}
+            {reaction==='hold' && <span>The defender holds. The charger gains <b style={{color:'var(--out-win)'}}>+1</b> to the result (counted in the next step)<span> ; add its lance / impact wounds to the wounds.</span></span>}
+            {reaction==='standshoot' && <span>The defender <b>shoots before contact</b>: remove the casualties first, then resolve the melee with the remaining models.</span>}
+            {reaction==='flee' && <span>The defender <b>flees</b>. If the charge catches it, it is destroyed (go to the Pursuit step); otherwise the charge fails.</span>}
           </div>
         </Fragment>}
-        {charger==='none' && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-tertiary)'}}>Combat déjà engagé — pas de charge ce tour.</div>}
+        {charger==='none' && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-tertiary)'}}>Already locked in combat — no charge this turn.</div>}
       </Fragment>}
 
-      {/* ── 2 · RÉSULTAT DU COMBAT ── */}
+      {/* ── 2 · COMBAT RESULT ── */}
       {phase.key==='result' && <Fragment>
-        <Q>Combien de blessures non sauvegardées chaque camp a-t-il infligées ?</Q>
+        <Q>How many unsaved wounds did each side inflict?</Q>
         <div style={{display:'flex',gap:10}}>
-          <Stepper label={'Blessures · '+meName.split(/[ ,]/)[0]} value={myWounds} onChange={setMyWounds} min={0} max={40} style={{flex:1}}/>
-          <Stepper label={'Blessures · '+foeName.split(/[ ,]/)[0]} value={foeWounds} onChange={setFoeWounds} min={0} max={40} style={{flex:1}}/>
+          <Stepper label={'Wounds · '+meName.split(/[ ,]/)[0]} value={myWounds} onChange={setMyWounds} min={0} max={40} style={{flex:1}}/>
+          <Stepper label={'Wounds · '+foeName.split(/[ ,]/)[0]} value={foeWounds} onChange={setFoeWounds} min={0} max={40} style={{flex:1}}/>
         </div>
-        <SectionLabel style={{color:'var(--signal-400)'}}>Bonus · {meName}{myCharged?' (charge)':''} → RC {myCR}</SectionLabel>
+        <SectionLabel style={{color:'var(--signal-400)'}}>Bonuses · {meName}{myCharged?' (charge)':''} → CR {myCR}</SectionLabel>
         <BonusEditor bon={myBon} setBon={setMyBon} charged={myCharged}/>
-        <SectionLabel style={{color:'var(--out-flee)'}}>Bonus · {foeName}{foeCharged?' (charge)':''} → RC {foeCR}</SectionLabel>
+        <SectionLabel style={{color:'var(--out-flee)'}}>Bonuses · {foeName}{foeCharged?' (charge)':''} → CR {foeCR}</SectionLabel>
         <BonusEditor bon={foeBon} setBon={setFoeBon} charged={foeCharged}/>
         <div style={{textAlign:'center',padding:'var(--sp-4)',background:'var(--surface-2)',borderRadius:'var(--r-md)',
           border:'1px solid var(--border-default)',marginTop:4}}>
-          <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>Écart de résultat</div>
+          <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>Result difference</div>
           <div style={{font:'700 var(--fs-display)/1 var(--font-mono)',marginTop:4,
             color:loser==='foe'?'var(--positive)':loser==='me'?'var(--danger)':'var(--text-secondary)'}}>{diff>0?'+':''}{diff}</div>
           <div style={{font:'600 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-secondary)',marginTop:4}}>
-            {loser==='foe'?`Tu l'emportes — ${foeName} doit tester`:loser==='me'?`Tu perds — ${meName} doit tester`:'Égalité — personne ne teste'}</div>
+            {loser==='foe'?`You win — ${foeName} must test`:loser==='me'?`You lose — ${meName} must test`:'Draw — nobody tests'}</div>
         </div>
       </Fragment>}
 
-      {/* ── 3 · TEST DE BREAK ── */}
+      {/* ── 3 · BREAK TEST ── */}
       {phase.key==='break' && (loser===null ? (
-        <div style={{font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>Égalité au résultat : aucun test de Break à effectuer.</div>
+        <div style={{font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>Drawn result: no Break test required.</div>
       ) : <Fragment>
-        <Q>{testName} doit passer un test de Commandement.</Q>
+        <Q>{testName} must take a Leadership test.</Q>
         <div style={{display:'flex',justifyContent:'space-around',textAlign:'center',padding:'var(--sp-2) 0'}}>
-          {[['Cd',cd,'var(--text-primary)'],['Malus',(stubborn?'0':'−'+Math.abs(diff)),'var(--danger)'],['Cible',testUnbreakable?'auto':'≤'+target,'var(--signal-400)']].map(([l,v,c])=>
+          {[['Ld',cd,'var(--text-primary)'],['Modifier',(stubborn?'0':'−'+Math.abs(diff)),'var(--danger)'],['Target',testUnbreakable?'auto':'≤'+target,'var(--signal-400)']].map(([l,v,c])=>
             <div key={l}><div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>{l}</div>
               <div style={{font:'700 var(--fs-h1)/1 var(--font-mono)',color:c,marginTop:4}}>{v}</div></div>)}
         </div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          <ChipToggle label="Tenace (ignore le malus)" on={stubborn} onClick={()=>setStubborn(!stubborn)}/>
-          <ChipToggle label="Sang-froid (3D6, retire le + haut)" on={coldBlood} onClick={()=>setColdBlood(!coldBlood)}/>
-          <ChipToggle label="Relance (BG / Général)" on={reroll} onClick={()=>setReroll(!reroll)}/>
+          <ChipToggle label="Stubborn (ignore modifier)" on={stubborn} onClick={()=>setStubborn(!stubborn)}/>
+          <ChipToggle label="Cold-Blooded (3D6, drop highest)" on={coldBlood} onClick={()=>setColdBlood(!coldBlood)}/>
+          <ChipToggle label="Reroll (BSB / General)" on={reroll} onClick={()=>setReroll(!reroll)}/>
         </div>
         {testUnbreakable ? (
           <div style={{textAlign:'center',padding:'var(--sp-4)',background:'var(--out-give-soft)',border:'1px solid var(--caution)',
-            borderRadius:'var(--r-md)',color:'var(--caution)',font:'600 var(--fs-body)/1.3 var(--font-ui)'}}>Unité inébranlable — réussite automatique, elle tient.</div>
+            borderRadius:'var(--r-md)',color:'var(--caution)',font:'600 var(--fs-body)/1.3 var(--font-ui)'}}>Unbreakable unit — automatic success, it holds.</div>
         ) : <Fragment>
-          <Q>Jet de dés — lance en vrai puis saisis, ou lance dans l'app</Q>
+          <Q>Dice roll — roll for real then enter, or roll in the app</Q>
           <div style={{display:'flex',gap:10,alignItems:'flex-end'}}>
-            <Stepper label={coldBlood?'Total (2 dés les + bas)':'Total 2D6'} value={entry} onChange={setEntry} min={2} max={12} style={{flex:1}}/>
-            <Button variant="secondary" size="lg" onClick={doRoll} icon={<Icon name="dices" size={20}/>}>Lancer</Button>
+            <Stepper label={coldBlood?'Total (2 lowest dice)':'Total 2D6'} value={entry} onChange={setEntry} min={2} max={12} style={{flex:1}}/>
+            <Button variant="secondary" size="lg" onClick={doRoll} icon={<Icon name="dices" size={20}/>}>Roll</Button>
           </div>
-          <Verdict ok={passed} glow text={passed?`Réussi (${entry} ≤ ${target}) — l'unité tient`:`Raté (${entry} > ${target}) — L'UNITÉ FUIT`}/>
+          <Verdict ok={passed} glow text={passed?`Passed (${entry} ≤ ${target}) — the unit holds`:`Failed (${entry} > ${target}) — THE UNIT FLEES`}/>
         </Fragment>}
       </Fragment>)}
 
-      {/* ── 4 · POURSUITE ── */}
+      {/* ── 4 · PURSUIT ── */}
       {phase.key==='pursue' && <Fragment>
-        <Q>L'unité a-t-elle fui ? Compare sa fuite à la poursuite.</Q>
+        <Q>Did the unit flee? Compare its flee roll to the pursuit.</Q>
         <div style={{display:'flex',gap:10}}>
-          <Stepper label="Distance de fuite (2D6)" value={fleeRoll} onChange={setFleeRoll} min={2} max={12} style={{flex:1}}/>
-          <Stepper label="Poursuite (2D6)" value={pursueRoll} onChange={setPursueRoll} min={2} max={12} style={{flex:1}}/>
+          <Stepper label="Flee distance (2D6)" value={fleeRoll} onChange={setFleeRoll} min={2} max={12} style={{flex:1}}/>
+          <Stepper label="Pursuit (2D6)" value={pursueRoll} onChange={setPursueRoll} min={2} max={12} style={{flex:1}}/>
         </div>
-        <Button variant="secondary" block onClick={()=>{setFleeRoll(roll2d6());setPursueRoll(roll2d6());}} icon={<Icon name="dices" size={18}/>}>Lancer les deux</Button>
+        <Button variant="secondary" block onClick={()=>{setFleeRoll(roll2d6());setPursueRoll(roll2d6());}} icon={<Icon name="dices" size={18}/>}>Roll both</Button>
         <Verdict ok={pursueRoll<fleeRoll}
-          text={pursueRoll>=fleeRoll?`Rattrapée (${pursueRoll} ≥ ${fleeRoll}) — DÉTRUITE → PV adverse`:`Échappée (${pursueRoll} < ${fleeRoll}) — elle survit, le vainqueur avance`}/>
+          text={pursueRoll>=fleeRoll?`Caught (${pursueRoll} ≥ ${fleeRoll}) — DESTROYED → enemy VP`:`Escaped (${pursueRoll} < ${fleeRoll}) — it survives, the winner advances`}/>
       </Fragment>}
     </Body>
     <BottomBar>
-      {step>0&&<Button variant="secondary" size="lg" onClick={back} icon={<Icon name="chevron-left" size={20}/>}>Retour</Button>}
+      {step>0&&<Button variant="secondary" size="lg" onClick={back} icon={<Icon name="chevron-left" size={20}/>}>Back</Button>}
       <Button variant="primary" size="lg" block onClick={next}
         icon={<Icon name={step===PHASES.length-1?'check':'chevron-right'} size={20}/>}>
-        {step===PHASES.length-1?'Terminer':'Étape suivante'}</Button>
+        {step===PHASES.length-1?'Finish':'Next step'}</Button>
     </BottomBar></Fragment>;
 }
 
@@ -1882,7 +1882,7 @@ function VPScoreboard({ vp, players }) {
           {i===1&&<div style={{width:1,background:'var(--border-default)',margin:'0 var(--sp-3)'}}/>}
           <div style={{flex:1,textAlign:i===0?'left':'right'}}>
             <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-              color:'var(--text-tertiary)'}}>{i===0?'Toi':'Adverse'}</div>
+              color:'var(--text-tertiary)'}}>{i===0?'You':'Enemy'}</div>
             <div style={{font:'700 44px/1 var(--font-display)',color:col,marginTop:4,fontVariantNumeric:'tabular-nums'}}>{score}</div>
             <div style={{font:'400 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',marginTop:2}}>{name}</div></div>
         </Fragment>))}
@@ -1890,7 +1890,7 @@ function VPScoreboard({ vp, players }) {
     <div style={{marginTop:'var(--sp-3)',padding:'var(--sp-2)',borderRadius:'var(--r-md)',
       background:leading?'var(--out-win-soft)':'var(--out-flee-soft)',textAlign:'center',
       font:'600 var(--fs-sm)/1 var(--font-ui)',color:leading?'var(--out-win)':'var(--out-flee)'}}>
-      {lead===0?'Égalité parfaite':leading?`Tu mènes de ${lead} PV`:`Tu es mené de ${Math.abs(lead)} PV`}</div></div>;
+      {lead===0?'Dead even':leading?`You lead by ${lead} VP`:`You trail by ${Math.abs(lead)} VP`}</div></div>;
 }
 function UnitRow({ unit, onCycle }) {
   const pct=unit.fuMax?unit.fuCurrent/unit.fuMax:0;const dead=unit.status==='destroyed';
@@ -1916,9 +1916,9 @@ function ArmyPanel({ title, roster, side, onCycle }) {
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',margin:'4px 0 2px'}}>
       <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
         color:side==='enemy'?'var(--out-flee)':'var(--signal-400)'}}>{title}</span>
-      <span style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>perdu {lost} pts</span></div>
+      <span style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>lost {lost} pts</span></div>
     <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',padding:'0 var(--sp-4)'}}>
-      {roster.length===0&&<div style={{padding:'14px 0',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>Aucune unité.</div>}
+      {roster.length===0&&<div style={{padding:'14px 0',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>No unit.</div>}
       {roster.map((u,i)=><Fragment key={u.ref+i}>
         {i>0&&<div style={{height:1,background:'var(--border-subtle)'}}/>}
         <UnitRow unit={u} onCycle={()=>onCycle(i)}/></Fragment>)}</div></div>;
@@ -1926,13 +1926,13 @@ function ArmyPanel({ title, roster, side, onCycle }) {
 function Objectives({ items, onSet }) {
   return <div>
     <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-      color:'var(--text-tertiary)',margin:'4px 0 6px'}}>Objectifs du scénario · 100 PV ch.</div>
+      color:'var(--text-tertiary)',margin:'4px 0 6px'}}>Scenario objectives · 100 VP each</div>
     <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',
       padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:10}}>
       {items.map(o=><div key={o.id} style={{display:'flex',alignItems:'center',gap:10}}>
         <span style={{flex:1,font:'500 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-secondary)'}}>{o.name}</span>
         <Segmented size="sm" value={o.holder} onChange={v=>onSet(o.id,v)} style={{width:150}}
-          options={[{value:'me',label:'Toi'},{value:'none',label:'—'},{value:'foe',label:'Adv.'}]}/></div>)}</div></div>;
+          options={[{value:'me',label:'You'},{value:'none',label:'—'},{value:'foe',label:'Foe'}]}/></div>)}</div></div>;
 }
 function GameTracker({ game, setGame }) {
   const vp = computeVP(game);
@@ -1946,18 +1946,18 @@ function GameTracker({ game, setGame }) {
   });
   const setObj=(id,holder)=>setGame(g=>({...g,objectives:g.objectives.map(o=>o.id===id?{...o,holder}:o)}));
   return <Fragment>
-    <ScreenHeader eyebrow={`Tour ${game.turn} · Phase de mêlée`} title="Partie" right={
+    <ScreenHeader eyebrow={`Turn ${game.turn} · Melee phase`} title="Game" right={
       <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
         {game.mission}<br/>{game.pointsCap} pts</span>}/>
     <Body>
       <VPScoreboard vp={vp} players={{me:FACTIONS[game.myArmy],foe:FACTIONS[game.foeArmy]}}/>
       <Objectives items={game.objectives} onSet={setObj}/>
-      <ArmyPanel title={`Ton armée · ${FACTIONS[game.myArmy]}`} roster={game.myRoster} side="friendly" onCycle={cycle('myRoster')}/>
-      <ArmyPanel title={`Armée adverse · ${FACTIONS[game.foeArmy]}`} roster={game.foeRoster} side="enemy" onCycle={cycle('foeRoster')}/>
+      <ArmyPanel title={`Your army · ${FACTIONS[game.myArmy]}`} roster={game.myRoster} side="friendly" onCycle={cycle('myRoster')}/>
+      <ArmyPanel title={`Enemy army · ${FACTIONS[game.foeArmy]}`} roster={game.foeRoster} side="enemy" onCycle={cycle('foeRoster')}/>
       <div style={{display:'flex',gap:10}}>
         <Button variant="secondary" onClick={()=>setGame(g=>({...g,turn:Math.min(8,g.turn+1)}))}
-          icon={<Icon name="chevron-right" size={18}/>} style={{flex:1}}>Tour suivant</Button>
-        <Button variant="ghost" onClick={()=>{ if(confirm('Réinitialiser la partie ?')){localStorage.removeItem(STORE_KEY);setGame(freshGame());} }}
+          icon={<Icon name="chevron-right" size={18}/>} style={{flex:1}}>Next turn</Button>
+        <Button variant="ghost" onClick={()=>{ if(confirm('Reset the game?')){localStorage.removeItem(STORE_KEY);setGame(freshGame());} }}
           icon={<Icon name="rotate-ccw" size={18}/>}>Reset</Button></div>
       <div style={{height:4}}/>
     </Body></Fragment>;
@@ -1970,17 +1970,17 @@ function NoData() {
   return <PhoneFrame><div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',
     justifyContent:'center',padding:24,textAlign:'center',gap:12}}>
     <Icon name="database" size={32} color="var(--out-flee)"/>
-    <div style={{font:'600 var(--fs-h3)/1.3 var(--font-display)',color:'var(--text-primary)'}}>Données introuvables</div>
+    <div style={{font:'600 var(--fs-h3)/1.3 var(--font-display)',color:'var(--text-primary)'}}>Data not found</div>
     <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-      Augur n'a pas pu charger <code style={{font:'var(--font-mono)'}}>unit_db.js</code> / <code style={{font:'var(--font-mono)'}}>owb_unit_data.js</code>.
-      Ces deux fichiers doivent se trouver dans le même dossier que <code style={{font:'var(--font-mono)'}}>index.html</code>.</div></div></PhoneFrame>;
+      Augur couldn't load <code style={{font:'var(--font-mono)'}}>unit_db.js</code> / <code style={{font:'var(--font-mono)'}}>owb_unit_data.js</code>.
+      These files must sit in the same folder as <code style={{font:'var(--font-mono)'}}>index.html</code>.</div></div></PhoneFrame>;
 }
 
 const LISTS_KEY = 'augur.lists.v1';
 function normalizeImported(data) {
-  if (Array.isArray(data)) return { name: 'Liste importée', army: '', units: data };
+  if (Array.isArray(data)) return { name: 'Imported list', army: '', units: data };
   return {
-    name: data.name || 'Liste importée',
+    name: data.name || 'Imported list',
     army: data.army || '',
     units: Array.isArray(data.units) ? data.units : [],
   };
@@ -2013,16 +2013,16 @@ function Splash({ onEnter }) {
         transform:leaving?'scale(1.04)':'scale(1)',transition:'transform var(--dur-slow) var(--ease-out)'}}/>
     <div>
       <div style={{font:'700 var(--fs-display)/1 var(--font-display)',color:'var(--text-primary)',letterSpacing:'var(--ls-tight)'}}>Augur</div>
-      <div style={{marginTop:6,font:'600 var(--fs-body)/1.3 var(--font-ui)',color:'var(--signal-300)'}}>Les présages du champ de bataille</div>
+      <div style={{marginTop:6,font:'600 var(--fs-body)/1.3 var(--font-ui)',color:'var(--signal-300)'}}>Omens of the Battlefield</div>
     </div>
     <p style={{maxWidth:360,margin:0,font:'400 var(--fs-sm)/1.65 var(--font-ui)',color:'var(--text-secondary)'}}>
-      Décrypte les signes que les dieux du Vieux Monde t'envoient. Avant de lancer le moindre dé, Augur
-      lit l'augure de tes engagements : il <b style={{color:'var(--text-primary)'}}>prédit l'issue probable</b> de
-      chaque combat et t'<b style={{color:'var(--text-primary)'}}>assiste pas à pas</b> dans la phase de mêlée —
-      pour t'assurer la victoire.</p>
+      Read the signs the gods of the Old World send you. Before you roll a single die, Augur
+      reads the omens of your engagements: it <b style={{color:'var(--text-primary)'}}>predicts the likely outcome</b> of
+      each combat and <b style={{color:'var(--text-primary)'}}>guides you step by step</b> through the melee phase —
+      to secure your victory.</p>
     <Button variant="primary" size="lg" icon={<Icon name="eye" size={22}/>}
-      onClick={(e)=>{ e.stopPropagation(); enter(); }}>Consulter l'augure</Button>
-    <div style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',letterSpacing:'0.04em'}}>Touche pour entrer</div>
+      onClick={(e)=>{ e.stopPropagation(); enter(); }}>Consult the omens</Button>
+    <div style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',letterSpacing:'0.04em'}}>Tap to enter</div>
   </div></Portal>;
 }
 
@@ -2057,7 +2057,7 @@ function App() {
     r.onload = () => {
       try {
         const list = normalizeImported(JSON.parse(r.result));
-        if (!list.units.length) { alert('Aucune unité trouvée dans ce fichier.'); return; }
+        if (!list.units.length) { alert('No unit found in this file.'); return; }
         setLists(prev => {
           const next = [...prev, list];
           const idx = next.length - 1;
@@ -2065,7 +2065,7 @@ function App() {
             mine: 'me:0', foe: prev.length ? s.foe : 'foe:0' }));
           return next;
         });
-      } catch (e) { alert('Fichier JSON invalide : ' + e.message); }
+      } catch (e) { alert('Invalid JSON file: ' + e.message); }
     };
     r.readAsText(file);
   };
@@ -2076,7 +2076,7 @@ function App() {
       let next, idx;
       if (target === 'new' || prev.length === 0) {
         const army = side==='me' ? game.myArmy : game.foeArmy;
-        next = [...prev, { name: side==='me' ? 'Mon armée' : 'Armée adverse', army, units: [entry] }];
+        next = [...prev, { name: side==='me' ? 'My army' : 'Enemy army', army, units: [entry] }];
         idx = next.length - 1;
       } else {
         idx = target;
