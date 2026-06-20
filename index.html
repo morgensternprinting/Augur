@@ -461,28 +461,50 @@ function effectiveSave(save, s) {
 function combatFlags(u) {
   const r = (u && u.rules) || [];
   const has = (...s) => s.some(x => r.includes(x));
+  // Armour Piercing from rule (in addition to Strength-based save reduction)
+  const ap = has('cleaving-blow', 'obsidian-blades') ? 2
+           : has('armour-bane', 'gromril-weapons', 'ensorcelled-weapons', 'khopesh') ? 1 : 0;
   return {
-    hatred:        has('hatred', 'eternal-hatred'),
-    poisoned:      has('poisoned-attacks'),
-    killingBlow:   has('killing-blow', 'heroic-killing-blow'),
-    regen:         has('regeneration'),
-    flaming:       has('flaming-attacks'),
-    frenzy:        has('frenzy', 'blood-rage', 'primal-fury'),
-    furiousCharge: has('furious-charge', 'daemonic-charge'),
+    hatred:        has('hatred', 'eternal-hatred', 'ancestral-grudge'),
+    poisoned:      has('poisoned-attacks', 'warpstone-weapons'),
+    killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death', 'slayer'),
+    regen:         has('regeneration', 'too-horrible-to-die'),
+    flaming:       has('flaming-attacks', 'blazing-body', 'born-of-fire', 'wreathed-in-flame'),
+    frenzy:        has('frenzy', 'blood-rage', 'primal-fury', 'blood-greed', 'foe-render', 'bestial-fury', 'blood-frenzy', 'gorefeast'),
+    furiousCharge: has('furious-charge', 'daemonic-charge', 'devastating-charge'),
     swiftstride:   has('swiftstride'),
     fear:          has('fear'),
     terror:        has('terror'),
-    immunePsych:   has('immune-to-psychology', 'daemonic', 'necromantic-undead', 'nehekharan-undead', 'unstable'),
-    stubborn:      has('stubborn', 'resolute', 'immovable-object'),
+    immunePsych:   has('immune-to-psychology', 'daemonic', 'necromantic-undead', 'nehekharan-undead', 'unstable', 'tree-spirit'),
+    stubborn:      has('stubborn', 'resolute', 'immovable-object', 'indomitable', 'shieldwall', 'steadfast-discipline'),
     unbreakable:   has('unbreakable'),
     coldBlooded:   has('cold-blooded'),
-    strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge'),
+    strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge', 'martial-prowess'),
     strikeLast:    has('strike-last', 'cumbersome', 'ponderous'),
-    unstable:      has('unstable', 'daemonic-instability', 'necromantic-undead', 'nehekharan-undead'),
+    unstable:      has('unstable', 'daemonic-instability', 'necromantic-undead', 'nehekharan-undead', 'daemonic'),
     multiWounds:   has('multiple-wounds'),
-    impactHits:    has('impact-hits'),
+    impactHits:    has('impact-hits', 'bull-charge', 'ogre-charge', 'thunderous-charge', 'mournfang-charge',
+                       'tusker-charge', 'bestial-charge', 'slavering-charge', 'stampede', 'brazen-wheels', 'crushing-bulk'),
     stomp:         has('stomp-attacks'),
+    ap,
+    ward:          wardFromRules(r),
   };
+}
+
+// Auto-detect an invulnerable (ward) save from special rules, returning the
+// best (lowest) value found, or 0 if none. Magic-item wards are still manual.
+function wardFromRules(r) {
+  const has = (...s) => s.some(x => r.includes(x));
+  let w = 0; const set = (v) => { if (v && (!w || v < w)) w = v; };
+  if (has('daemonic')) set(5);                                              // Daemonic ward
+  if (has('blessings-of-the-lady', 'the-grail-vow', 'grail-reliquae')) set(5);
+  if (has('aura-of-the-lady', 'shield-of-the-lady', 'the-knights-vow', 'the-questing-vow')) set(6);
+  if (has('feel-no-pain')) set(6);
+  if (has('witness-to-destiny', 'blessings-of-asuryan', 'lileaths-blessing', 'favour-of-the-goddess')) set(6);
+  if (has('runes-of-warding', 'runes-of-protection', 'dark-runes', 'arcane-shield')) set(5);
+  if (has('mark-of-tzeentch', 'infernal-favour')) set(5);
+  if (has('ethereal')) set(0);                                             // ethereal handled via save, not ward here
+  return w;
 }
 
 // Roll a unit's attacks against a defender → unsaved wounds inflicted.
@@ -490,7 +512,7 @@ function combatFlags(u) {
 function resolveAttacks(att, def, nAttacks, o = {}) {
   const hitT = Math.min(6, toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0)); // Fear: −1 to hit
   const woundT = toWoundTarget(att.s, def.t);
-  const saveT = effectiveSave(def.save, att.s);
+  const saveT = effectiveSave(def.save, att.s + (o.ap || 0)); // Armour Bane / Cleaving Blow add extra AP
   const wardT = def.ward || 0;        // invulnerable save (magic items), 0 = none
   const regenNegated = o.flaming;     // flaming attacks negate regeneration
   const multi = o.multiWounds && def.w > 1; // multiple wounds only matter vs multi-wound models
@@ -518,7 +540,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
 function autoHits(att, def, n, o = {}) {
   const woundT = toWoundTarget(att.s, def.t);
   if (woundT === 7 || n <= 0) return 0;
-  const saveT = effectiveSave(def.save, att.s);
+  const saveT = effectiveSave(def.save, att.s + (o.ap || 0));
   const wardT = def.ward || 0;
   let unsaved = 0;
   for (let i = 0; i < n; i++) {
@@ -582,11 +604,11 @@ function simulateOnce(cfg) {
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: me.ward || 0,  w: me.profile.w };
-  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || 0, w: foe.profile.w };
+  const dMe  = { ...meEff,  save: me.save,  ward: me.ward  || fm.ward || 0, w: me.profile.w };
+  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || ff.ward || 0, w: foe.profile.w };
   // Offensive rule packs (defender's regen travels with the attacker call).
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen, multiWounds:fm.multiWounds, hitPenalty:myHitPen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen, multiWounds:ff.multiWounds, hitPenalty:foeHitPen };
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen, multiWounds:fm.multiWounds, ap:fm.ap, hitPenalty:myHitPen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen, multiWounds:ff.multiWounds, ap:ff.ap, hitPenalty:foeHitPen };
   // Strike order from Initiative (+ strike first/last from rules).
   const ei = (u, f) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0) - ((u.strikeLast || f.strikeLast) ? 20 : 0);
   const eiMe = ei(me, fm), eiFoe = ei(foe, ff);
@@ -1419,7 +1441,12 @@ const RULE_LABELS = {
   fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
   stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks',
 };
-const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','regen','multiWounds','impactHits','stomp','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','ap','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
+function ruleChipLabel(k, f) {
+  if (k === 'ap')   return 'Armour Piercing −' + f.ap;
+  if (k === 'ward') return 'Ward ' + f.ward + '+';
+  return RULE_LABELS[k];
+}
 function RuleChips({ unit, accent }) {
   if (!unit) return null;
   const f = combatFlags(unit);
@@ -1427,7 +1454,7 @@ function RuleChips({ unit, accent }) {
   if (!active.length) return <span style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>No notable combat rule detected.</span>;
   return <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
     {active.map(k => <span key={k} style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.02em',
-      background:'var(--surface-3)',border:`1px solid ${accent}55`,color:accent,borderRadius:'var(--r-pill)',padding:'5px 9px',whiteSpace:'nowrap'}}>{RULE_LABELS[k]}</span>)}
+      background:'var(--surface-3)',border:`1px solid ${accent}55`,color:accent,borderRadius:'var(--r-pill)',padding:'5px 9px',whiteSpace:'nowrap'}}>{ruleChipLabel(k, f)}</span>)}
   </div>;
 }
 
