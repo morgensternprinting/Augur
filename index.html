@@ -325,10 +325,28 @@ function rosterUnitFromUDB(army, cat, slug, displayName) {
     strikeLast: rules.some(r => /always-strikes-last/.test(r)),
   };
 }
+// A "stub" UNIT_DB entry is a placeholder that was never filled in upstream
+// (no special rules AND no equipment) — e.g. Malekith, Teclis, Vampire Lord in
+// TOW en 1's data. Its profile is garbage, so we keep it out of the catalog.
+function isStubUnit(u) {
+  return u && (!u.specialRules || !u.specialRules.length) && (!u.equipment || !u.equipment.length);
+}
+// Map a UNIT_DB category / troop type to one of our ROSTER_CATS buckets, so that
+// units recovered straight from UNIT_DB land under a sensible Army→Type filter.
+function udbCategoryToCat(u) {
+  const s = (String(u.category || '') + ' ' + String(u.troopType || '')).toLowerCase();
+  if (/named|character|\blord\b|\bhero\b|wizard|priest|prince|princ|king|captain|chief|champion|general|master|sorcer|shaman|engineer|thane|standard bearer/.test(s)) return 'characters';
+  if (/\bcore\b/.test(s)) return 'core';
+  if (/\bspecial\b/.test(s)) return 'special';
+  if (/\brare\b/.test(s)) return 'rare';
+  if (/mercenar/.test(s)) return 'mercenaries';
+  if (/monster|behemoth|war ?machine|chariot|artillery|cannon/.test(s)) return 'rare';
+  return 'special';
+}
 function buildRoster() {
   const hasAL = typeof AUGUR_AL !== 'undefined', hasUDB = typeof UNIT_DB !== 'undefined';
   if (!hasUDB) return { units: [], byArmy: {}, coverage: 0 };
-  const units = [], seen = new Set();
+  const units = [], seen = new Set(), seenKeys = new Set();
   if (hasAL) {
     for (const army in AUGUR_AL) {
       for (const cat of ROSTER_CATS) {
@@ -337,9 +355,24 @@ function buildRoster() {
           if (!entry || !entry.s) continue;
           const unit = rosterUnitFromUDB(army, cat, entry.s, entry.n);
           if (!unit || seen.has(unit.id)) continue;
-          seen.add(unit.id); units.push(unit);
+          if (isStubUnit(UNIT_DB[unit.udbKey])) continue;   // drop broken placeholder entries
+          seen.add(unit.id); seenKeys.add(unit.udbKey); units.push(unit);
         }
       }
+    }
+    // Recover every valid UNIT_DB unit that the army lists never wired in (named
+    // characters like Galrauch/Frydaal + ~160 regular units). Skip stubs, mounts,
+    // spells/items, and anything already present (by resolved UNIT_DB key).
+    for (const key in UNIT_DB) {
+      const u = UNIT_DB[key]; if (!u || !u.army) continue;
+      if (seenKeys.has(key)) continue;
+      const catLc = String(u.category || '').toLowerCase();
+      if (/mount|spell|magic item/.test(catLc)) continue;
+      if (isStubUnit(u)) continue;
+      if (!pickCombatProfile(u.profiles)) continue;
+      const unit = rosterUnitFromUDB(u.army, udbCategoryToCat(u), key, u.name);
+      if (!unit || seen.has(unit.id)) continue;
+      seen.add(unit.id); seenKeys.add(key); units.push(unit);
     }
   } else {
     // fallback: stats-only roster straight from UNIT_DB
