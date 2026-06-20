@@ -144,6 +144,7 @@ button{font-family:inherit;}
      this file so the app works from file:// and any preview server). -->
 <script src="./unit_db.js"></script>
 <script src="./owb_unit_data.js"></script>
+<script src="./augur_al.js"></script>
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, Fragment } = React;
@@ -166,7 +167,8 @@ const FACTIONS = {
   'ogre-kingdoms':'Royaumes Ogres', 'orc-and-goblin-tribes':'Peaux-Vertes',
   'skaven':'Skavens', 'tomb-kings-of-khemri':'Rois des Tombes',
   'vampire-counts':'Comtes Vampires', 'warriors-of-chaos':'Guerriers du Chaos',
-  'wood-elf-realms':'Elfes Sylvains',
+  'wood-elf-realms':'Elfes Sylvains', 'realms-of-men':'Royaumes des Hommes',
+  'regiments-of-renown':'Régiments de Renom',
 };
 
 const num = (x) => {
@@ -297,94 +299,58 @@ function resolveEquipment(base, chosenNames, mountName) {
   return { profile: prof, save: finalSave, strikeLast, strikeFirst, chargeS, notes };
 }
 
-// Build the playable roster: iterate OWB (fieldable units w/ points & FR names),
-// attach stats from UNIT_DB via exact key → suffix-strip → normalized name match.
-function buildRoster() {
-  const hasUDB = typeof UNIT_DB !== 'undefined';
-  const hasOWB = typeof OWB_UNIT_DATA !== 'undefined';
-  if (!hasUDB && !hasOWB) return { units: [], byArmy: {}, coverage: 0 };
-
-  // index UNIT_DB by normalized name within army for fuzzy join
-  const udbByName = {}; // army → { normName → entry }
-  if (hasUDB) {
-    for (const k in UNIT_DB) {
-      const u = UNIT_DB[k]; if (!u) continue;
-      const a = u.army || '_';
-      (udbByName[a] = udbByName[a] || {})[normName(u.name)] = { key: k, ...u };
-    }
-  }
-  const SUF = ['-core','-special','-rare','-characters','-character','-mounts','-mount','-regiment'];
-  const stripSuf = (k) => { let b = k; for (const s of SUF) if (b.endsWith(s)) b = b.slice(0, -s.length); return b; };
-
-  const findStats = (id, owb) => {
-    if (!hasUDB) return null;
-    if (UNIT_DB[id]) return { key: id, ...UNIT_DB[id] };
-    const base = stripSuf(id);
-    if (UNIT_DB[base]) return { key: base, ...UNIT_DB[base] };
-    const army = owb.army;
-    const byName = udbByName[army] || {};
-    const nn = normName(owb.name_en || owb.name_fr);
-    if (byName[nn]) return byName[nn];
-    // prefix match: a UNIT_DB key starting with base
-    for (const k in UNIT_DB) {
-      const u = UNIT_DB[k];
-      if (u.army === army && (k === base || k.startsWith(base + '-'))) return { key: k, ...u };
-    }
-    // loose name containment
-    for (const key in byName) {
-      if (key.includes(nn) || nn.includes(key)) return byName[key];
-    }
-    return null;
+// Build the playable roster from the army-list data (AUGUR_AL, extracted from
+// TOW en 1): for each army → each list category → resolve the unit's stats from
+// UNIT_DB (via slug aliases) and enrich points / FR name from OWB when present.
+const ROSTER_CATS = ['characters','core','special','rare','mercenaries'];
+function rosterUnitFromUDB(army, cat, slug, displayName) {
+  const resolveKey = (s) => {
+    const a = (typeof augurResolveSlug === 'function') ? augurResolveSlug(s) : s;
+    return UNIT_DB[a] ? a : (UNIT_DB[s] ? s : null);
   };
-
-  const units = [];
-  const source = hasOWB ? OWB_UNIT_DATA : null;
-  if (source) {
-    for (const id in source) {
-      const owb = source[id];
-      const stats = findStats(id, owb);
-      if (!stats || !stats.profiles || !stats.profiles.length) continue; // engine needs a profile
-      // pick the most "combatant" profile: prefer one with WS & A defined
-      let p = stats.profiles[0];
-      for (const cand of stats.profiles) {
-        if (num(cand.WS) > 0 && num(cand.A) > 0) { p = cand; break; }
+  const key = resolveKey(slug); if (!key) return null;
+  const u = UNIT_DB[key]; const p = pickCombatProfile(u.profiles); if (!p) return null;
+  const owb = (typeof OWB_UNIT_DATA !== 'undefined') ? (OWB_UNIT_DATA[slug] || OWB_UNIT_DATA[key] || null) : null;
+  const clean = (n) => String(n || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+  const rules = rulesOf(u);
+  return {
+    id: army + '/' + slug, udbKey: key, slug,
+    name: (owb && owb.name_fr) || clean(displayName) || u.name,
+    army, category: cat,
+    points: (owb && owb.points) || 0,
+    size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
+    profile: profileFromRaw(p), rules,
+    unbreakable: rules.includes('unbreakable'),
+    strikeFirst: rules.some(r => /strike-first|always-strikes-first/.test(r)),
+    strikeLast: rules.some(r => /always-strikes-last/.test(r)),
+  };
+}
+function buildRoster() {
+  const hasAL = typeof AUGUR_AL !== 'undefined', hasUDB = typeof UNIT_DB !== 'undefined';
+  if (!hasUDB) return { units: [], byArmy: {}, coverage: 0 };
+  const units = [], seen = new Set();
+  if (hasAL) {
+    for (const army in AUGUR_AL) {
+      for (const cat of ROSTER_CATS) {
+        const arr = AUGUR_AL[army][cat]; if (!Array.isArray(arr)) continue;
+        for (const entry of arr) {
+          if (!entry || !entry.s) continue;
+          const unit = rosterUnitFromUDB(army, cat, entry.s, entry.n);
+          if (!unit || seen.has(unit.id)) continue;
+          seen.add(unit.id); units.push(unit);
+        }
       }
-      const rules = (stats.specialRules || []).map(r => r.slug || normName(r.name));
-      const sizeMin = num(stats.unitSize) || 1;
-      units.push({
-        id,
-        udbKey: stats.key,                   // real UNIT_DB key, for re-resolving stats
-        name: owb.name_fr || owb.name_en || stats.name,
-        army: owb.army || stats.army,
-        category: owb.category || stats.category || '',
-        points: owb.points || 0,             // OWB base points (per model for troops)
-        size: sizeMin,
-        save: parseSave(stats.armourValue),
-        profile: {
-          M: num(p.M), ws: num(p.WS), bs: num(p.BS), s: num(p.S),
-          t: num(p.T), w: Math.max(1, num(p.W) || 1), i: num(p.I),
-          a: Math.max(1, num(p.A) || 1), ld: num(p.Ld) || 7,
-        },
-        rules,
-        unbreakable: rules.includes('unbreakable'),
-        fearsome: rules.includes('terror') || rules.includes('fear'),
-        strikeFirst: rules.some(r=>/strike-first|always-strikes-first/.test(r)),
-        strikeLast: rules.some(r=>/always-strikes-last/.test(r)),
-      });
     }
-  } else if (hasUDB) {
-    // fallback: stats only, no points
+  } else {
+    // fallback: stats-only roster straight from UNIT_DB
     for (const k in UNIT_DB) {
-      const u = UNIT_DB[k]; const p = (u.profiles || [])[0]; if (!p) continue;
-      const rules = (u.specialRules || []).map(r => r.slug || normName(r.name));
-      units.push({ id: k, name: u.name, army: u.army, category: u.category || '', points: 0,
-        size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
-        profile: { M:num(p.M),ws:num(p.WS),bs:num(p.BS),s:num(p.S),t:num(p.T),w:Math.max(1,num(p.W)||1),i:num(p.I),a:Math.max(1,num(p.A)||1),ld:num(p.Ld)||7 },
-        rules, unbreakable: rules.includes('unbreakable') });
+      const u = UNIT_DB[k]; const p = pickCombatProfile(u.profiles); if (!p) continue;
+      const rules = rulesOf(u);
+      units.push({ id: k, udbKey: k, slug: k, name: u.name, army: u.army, category: (u.category||'core').toLowerCase(),
+        points: 0, size: num(u.unitSize) || 1, save: parseSave(u.armourValue), profile: profileFromRaw(p), rules,
+        unbreakable: rules.includes('unbreakable') });
     }
   }
-
-  units.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
   const byArmy = {};
   for (const u of units) (byArmy[u.army] = byArmy[u.army] || []).push(u);
   return { units, byArmy, coverage: units.length };
@@ -1131,7 +1097,7 @@ function OptRow({ label, pts, on, radio, onClick }) {
 
 /* Configure a catalog unit's options + count, then add it to a list. */
 function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
-  const owb = (typeof OWB_UNIT_DATA !== 'undefined' && OWB_UNIT_DATA[unit.id]) || {};
+  const owb = (typeof OWB_UNIT_DATA !== 'undefined' && (OWB_UNIT_DATA[unit.slug] || OWB_UNIT_DATA[unit.udbKey] || OWB_UNIT_DATA[unit.id])) || {};
   const eq = owb.equip || [], ar = owb.armor || [], mo = owb.mounts || [], op = owb.opts || [], cm = owb.command || [];
   const defActive = (arr) => { const i = arr.findIndex(x => x.active); return i >= 0 ? i : (arr.length ? 0 : -1); };
   const [count, setCount]   = useState(unit.size || 1);
@@ -1255,15 +1221,16 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
 
 /* Modal bottom-sheet unit picker with search — clearly shows the selected unit. */
 const UNIT_TYPES = [
-  { key:'all',        label:'Tout' },
-  { key:'characters', label:'Personnages' },
-  { key:'core',       label:'Base' },
-  { key:'special',    label:'Spéciale' },
-  { key:'rare',       label:'Rare' },
+  { key:'all',         label:'Tout' },
+  { key:'characters',  label:'Personnages' },
+  { key:'core',        label:'Base' },
+  { key:'special',     label:'Spéciale' },
+  { key:'rare',        label:'Rare' },
+  { key:'mercenaries', label:'Mercenaires' },
 ];
 const catOf = (u) => { const c = String(u.category||'').toLowerCase();
   if (/charact|personn|hero|lord|seigneur/.test(c)) return 'characters';
-  if (/core|base/.test(c)) return 'core';
+  if (/merc/.test(c)) return 'mercenaries';
   if (/special|spécia/.test(c)) return 'special';
   if (/rare/.test(c)) return 'rare';
   return 'core'; };
