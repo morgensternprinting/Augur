@@ -1014,6 +1014,7 @@ function DiceRoller({ open, onClose }) {
     flexDirection:'column',justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:'2px solid var(--signal-500)',boxShadow:'var(--shadow-sheet)',
+      width:'100%',maxWidth:'min(520px,100%)',alignSelf:'center',
       maxHeight:'88dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
         <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>Roll dice</span>
@@ -1334,6 +1335,7 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
     justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
     <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
       borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
+      width:'100%',maxWidth:'min(640px,100%)',alignSelf:'center',
       maxHeight:'90dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
         <button type="button" onClick={onBack} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="chevron-left" size={22}/></button>
@@ -1408,12 +1410,13 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
   const norm = (s) => String(s || '').toLowerCase();
   const counts = {}; units.forEach(u => { const c = catOf(u); counts[c] = (counts[c]||0)+1; });
   const filtered = units.filter(u => norm(u.name).includes(norm(q)) && (typeF==='all' || catOf(u)===typeF));
-  const rowClick = (u) => { if (configurable) setCfg(u); else { onPick(u.id); onClose(); } };
+  const rowClick = (u) => { onPick(u.id); onClose(); };   // one tap selects; gear (below) configures
   return <Fragment>
     <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:50,display:'flex',flexDirection:'column',
       justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
       <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',
         borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
+        width:'100%',maxWidth:'min(680px,100%)',alignSelf:'center',
         maxHeight:'82dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
           <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>{title}</span>
@@ -1436,24 +1439,30 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
               {t.label}{t.key!=='all'&&counts[t.key]?' ('+counts[t.key]+')':''}</button>;})}
         </div>
         {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
-          Tap a unit to configure it (options, models) and add it to a list.</div>}
+          Tap a unit to pick it · use the gear to set options/models and add it to a list.</div>}
         <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:6}}>
           {filtered.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>No unit.</div>}
           {filtered.map(u=>{const on=u.id===selectedId;const p=u.profile;
-            return <button key={u.id} type="button" onClick={()=>rowClick(u)} style={{textAlign:'left',
-              cursor:'pointer',background:on?'var(--signal-soft)':'var(--surface-2)',borderRadius:'var(--r-md)',
-              border:`1px solid ${on?accent:'var(--border-subtle)'}`,padding:'10px var(--sp-3)',
-              display:'flex',alignItems:'center',gap:10,boxShadow:on?'var(--glow-signal)':'none'}}>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
-                    textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</span>
-                  {u.unbreakable&&<Badge tone="caution">unbr.</Badge>}</div>
-                <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3,
-                  whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-                  CC{p.ws} F{p.s} E{p.t} A{p.a} Cd{p.ld} · {u.sub||''}</div></div>
-              {configurable?<Icon name="settings-2" size={16} color="var(--text-tertiary)"/>:(on&&<Icon name="check" size={18} color={accent}/>)}
-            </button>;})}
+            return <div key={u.id} style={{display:'flex',alignItems:'stretch',gap:6}}>
+              <button type="button" onClick={()=>rowClick(u)} style={{flex:1,minWidth:0,textAlign:'left',
+                cursor:'pointer',background:on?'var(--surface-3)':'var(--surface-2)',borderRadius:'var(--r-md)',
+                border:`1px solid ${on?accent:'var(--border-subtle)'}`,padding:'10px var(--sp-3)',
+                display:'flex',alignItems:'center',gap:10}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+                    <span style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
+                      textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</span>
+                    {u.unbreakable&&<Badge tone="caution">unbr.</Badge>}</div>
+                  <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3,
+                    whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                    CC{p.ws} F{p.s} E{p.t} A{p.a} Cd{p.ld} · {u.sub||''}</div></div>
+                {on&&<Icon name="check" size={18} color={accent}/>}
+              </button>
+              {configurable&&<button type="button" onClick={()=>setCfg(u)} aria-label="Configure & add to list"
+                style={{flex:'none',width:46,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',
+                  background:'var(--surface-3)',border:'1px solid var(--border-default)',borderRadius:'var(--r-md)',color:'var(--text-secondary)'}}>
+                <Icon name="settings-2" size={18}/></button>}
+            </div>;})}
         </div>
       </div></div></Portal>
     {cfg&&<UnitConfig unit={cfg} side={side} lists={lists} accent={accent}
@@ -1568,15 +1577,16 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
   const myCR  = sideStatic(sel.me,  sel.foe, myCharged);
   const foeCR = sideStatic(sel.foe, sel.me,  foeCharged);
 
+  const wide = useIsWide();
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
 
-  const accentMe='var(--signal-500)', accentFoe='var(--out-flee)';
+  const accentMe='var(--signal-500)', accentFoe='var(--foe-500)';
 
   return <Fragment>
     <ScreenHeader eyebrow="Combat selection" title="Engagement" right={
       <span style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',textAlign:'right'}}>
         <span style={{color:'var(--signal-400)'}}>you +{myCR}</span><br/>
-        <span style={{color:'var(--out-flee)'}}>foe +{foeCR}</span></span>}/>
+        <span style={{color:'var(--foe-400)'}}>foe +{foeCR}</span></span>}/>
     <Body>
       {/* source mode */}
       <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
@@ -1586,7 +1596,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <div style={{display:'flex',gap:8}}>
           {['me','foe'].map(sd=>{
             const aKey=sd==='me'?'myArmy':'foeArmy', vKey=sd==='me'?'myVariant':'foeVariant';
-            const army=game[aKey], variant=game[vKey], accent=sd==='me'?'var(--signal-600)':'var(--out-flee)';
+            const army=game[aKey], variant=game[vKey], accent=sd==='me'?'var(--signal-600)':'var(--foe-600)';
             const vars=variantsFor(army);
             const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(sd==='me'?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
             const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(sd==='me'?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
@@ -1617,7 +1627,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
               <div style={{flex:1}}><SectionLabel>Enemy list</SectionLabel>
                 <select value={sel.foeList} onChange={e=>{const i=+e.target.value;set({foeList:i,foe:'foe:0'});}}
                   style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
-                    border:'1px solid var(--out-flee)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
+                    border:'1px solid var(--foe-500)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
                     font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
                   {lists.map((l,i)=><option key={i} value={i}>{l.name||('List '+(i+1))}</option>)}</select></div>
             </div>
@@ -1629,14 +1639,19 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         </Card>
       )}
 
-      <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
-
-      <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
-        <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
-        <Icon name="swords" size={18} color="var(--text-tertiary)"/>
-        <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
-
-      <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+      {wide ? (
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,alignItems:'start'}}>
+          <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+          <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+        </div>
+      ) : (<Fragment>
+        <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+        <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
+          <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
+          <Icon name="swords" size={18} color="var(--text-tertiary)"/>
+          <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
+        <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+      </Fragment>)}
 
       {/* auto-detected combat rules from both units' special rules */}
       <Collapsible title="Active combat rules" icon="sparkles" accent="var(--signal-400)" defaultOpen={false}
@@ -1644,7 +1659,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <div><SectionLabel style={{color:accentMe}}>{myUnit?myUnit.name:'Your unit'}</SectionLabel>
           <RuleChips unit={myUnit} accent="var(--signal-400)"/></div>
         <div><SectionLabel style={{color:accentFoe}}>{foeUnit?foeUnit.name:'Enemy unit'}</SectionLabel>
-          <RuleChips unit={foeUnit} accent="var(--out-flee)"/></div>
+          <RuleChips unit={foeUnit} accent="var(--foe-400)"/></div>
         <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
           Detected from the unit's special rules (tow.whfb.app) and applied automatically by the engine.</div>
       </Collapsible>
@@ -1673,10 +1688,13 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
             The defender tries to flee: the charge may fail. Tick « target already fleeing » to simulate the pursuit.</div>}
       </Collapsible>
 
-      <FactorPanel side="me" accent={accentMe} f={sel.me} setF={setF('me')}
-        attacks={sel.myAttacks} setAttacks={v=>set({myAttacks:v})} charged={myCharged} cr={myCR}/>
-      <FactorPanel side="foe" accent={accentFoe} f={sel.foe} setF={setF('foe')}
-        attacks={sel.foeAttacks} setAttacks={v=>set({foeAttacks:v})} charged={foeCharged} cr={foeCR}/>
+      <div style={{display:wide?'grid':'flex',gridTemplateColumns:wide?'1fr 1fr':undefined,
+        flexDirection:wide?undefined:'column',gap:wide?12:'var(--sp-3)',alignItems:'start'}}>
+        <FactorPanel side="me" accent={accentMe} f={sel.me} setF={setF('me')}
+          attacks={sel.myAttacks} setAttacks={v=>set({myAttacks:v})} charged={myCharged} cr={myCR}/>
+        <FactorPanel side="foe" accent={accentFoe} f={sel.foe} setF={setF('foe')}
+          attacks={sel.foeAttacks} setAttacks={v=>set({foeAttacks:v})} charged={foeCharged} cr={foeCR}/>
+      </div>
 
       <div style={{height:4}}/>
     </Body>
@@ -1839,7 +1857,7 @@ function CasualtiesRow({ res, names }) {
     <div style={{display:'flex',alignItems:'center',gap:10}}>
       {cell('You slay on ' + foeShort, 'var(--signal-400)', c.inflictModels, c.inflictWounds)}
       <div style={{width:1,alignSelf:'stretch',background:'var(--border-default)'}}/>
-      {cell(meShort + ' lose', 'var(--out-flee)', c.sufferModels, c.sufferWounds)}
+      {cell(meShort + ' lose', 'var(--foe-400)', c.sufferModels, c.sufferWounds)}
     </div>
   </Card>;
 }
