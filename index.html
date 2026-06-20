@@ -31,9 +31,13 @@
   --slate-500:#556377; --slate-400:#7C8CA3; --slate-300:#A2B0C4; --slate-200:#C9D3E0;
   --slate-100:#E7ECF3; --slate-50:#F4F6FA;
 
-  /* ---- Brand signal ---- */
+  /* ---- Brand signal — my army (logo's left-hand cyan flame + the eye) ---- */
   --signal-700:#1E6E92; --signal-600:#2A8DB8; --signal-500:#3FA7D6; --signal-400:#6BC1E4; --signal-300:#9BD7EE;
   --signal-soft:rgba(63,167,214,0.14); --signal-glow:rgba(63,167,214,0.30);
+
+  /* ---- Foe accent — opponent (logo's right-hand amber flame) ---- */
+  --foe-700:#A8521A; --foe-600:#CC6A22; --foe-500:#E8822E; --foe-400:#F2A04F; --foe-300:#F8C088;
+  --foe-soft:rgba(232,130,46,0.14); --foe-glow:rgba(232,130,46,0.32);
 
   /* ---- Outcome spectrum (best → catastrophe) ---- */
   --out-win:#4FB07A; --out-draw:#6E83A6; --out-give:#C9A24B; --out-fallback:#D98441; --out-flee:#E4544E;
@@ -79,6 +83,7 @@
   --shadow-1:0 1px 2px rgba(0,0,0,0.40); --shadow-2:0 4px 14px rgba(0,0,0,0.45);
   --shadow-3:0 12px 32px rgba(0,0,0,0.55); --shadow-sheet:0 -8px 32px rgba(0,0,0,0.55);
   --glow-signal:0 0 0 1px var(--signal-600),0 0 18px var(--signal-glow);
+  --glow-foe:0 0 0 1px var(--foe-600),0 0 18px var(--foe-glow);
   --glow-flee:0 0 0 1px var(--out-flee),0 0 20px var(--out-flee-glow);
   --inset-hairline:inset 0 0 0 1px var(--border-default);
   --ease-out:cubic-bezier(0.22,1,0.36,1); --ease-inout:cubic-bezier(0.65,0,0.35,1);
@@ -101,17 +106,19 @@ button{font-family:inherit;}
 @keyframes augur-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
-@media (min-width:431px){ body{padding:24px;box-sizing:border-box;} }
+/* Wide screens (tablet landscape / PC): the app is a centered card that uses the
+   available width; content scrolls internally. Layout chrome (top nav, 2-column
+   panels) is chosen in JS via useIsWide() at the same 900px breakpoint. */
+@media (min-width:900px){ body{padding:16px;} }
 
-/* Floating dice button — above the tab bar, bottom-right. */
-.augur-fab{position:absolute;right:16px;bottom:90px;z-index:45;transition:transform var(--dur-fast) var(--ease-out);}
+/* Floating dice button — bottom-right of the card. */
+.augur-fab{position:absolute;right:18px;bottom:18px;z-index:45;transition:transform var(--dur-fast) var(--ease-out);}
 .augur-fab:active{transform:scale(0.92);}
 
-/* ── Real phone / any touch device: drop the fixed-height device shell and
-   let the document scroll naturally (bulletproof on iOS Safari). The tab bar
-   is pinned with position:fixed; content reserves space for it. Triggered by a
-   narrow viewport OR a coarse pointer, so big Pro-Max phones (>430px) qualify. ── */
-@media (max-width:560px), (pointer:coarse){
+/* ── Phone & narrow tablets (<900px): drop the card shell and let the document
+   scroll naturally (bulletproof on iOS Safari). The tab bar is pinned with
+   position:fixed; content reserves space for it. ── */
+@media (max-width:899px){
   html,body{height:auto;}
   body{display:block;padding:0;min-height:100dvh;}
   .augur-frame{
@@ -119,16 +126,15 @@ button{font-family:inherit;}
     border:none!important;border-radius:0!important;box-shadow:none!important;
     display:block!important;overflow-x:hidden!important;overflow-y:visible!important;
   }
-  .augur-content{display:block!important;flex:none!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:0!important;max-width:100%!important;}
+  .augur-content{display:block!important;flex:none!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:0!important;max-width:100%!important;
+    padding-bottom:calc(70px + var(--safe-bottom))!important;}
   .augur-body{overflow-x:hidden!important;overflow-y:visible!important;height:auto!important;flex:none!important;max-width:100%!important;}
   /* tab bar fixed to the bottom of the viewport */
   .augur-tabbar{position:fixed!important;left:0;right:0;bottom:0;z-index:40;}
-  /* keep the last content/action bar clear of the fixed tab bar */
-  .augur-content{padding-bottom:calc(64px + var(--safe-bottom))!important;}
   /* modal sheets must cover the viewport, not the (now tall) frame */
   .augur-sheet{position:fixed!important;}
   /* floating dice button pinned above the fixed tab bar */
-  .augur-fab{position:fixed!important;right:16px;bottom:calc(74px + var(--safe-bottom))!important;}
+  .augur-fab{position:fixed!important;right:16px;bottom:calc(78px + var(--safe-bottom))!important;}
 }
 </style>
 </head>
@@ -1080,21 +1086,65 @@ function TabBar({ active, onChange }) {
         <span style={{font:`${on?600:500} 10px/1 var(--font-ui)`,letterSpacing:'0.02em'}}>{t.label}</span></button>;})}
   </div>;
 }
+// Track the wide (tablet-landscape / desktop) breakpoint in JS so layout chrome
+// (top nav vs bottom tabs, 1 vs 2 columns) matches the 900px CSS breakpoint.
+function useIsWide() {
+  const q = '(min-width:900px)';
+  const [w, setW] = useState(() => typeof window !== 'undefined' && window.matchMedia(q).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(q); const h = () => setW(mq.matches);
+    mq.addEventListener ? mq.addEventListener('change', h) : mq.addListener(h);
+    window.addEventListener('resize', h);                 // fallback: some envs miss the mq 'change'
+    return () => { mq.removeEventListener ? mq.removeEventListener('change', h) : mq.removeListener(h);
+      window.removeEventListener('resize', h); };
+  }, []);
+  return w;
+}
+// Horizontal top navigation — shown on wide screens instead of the bottom tab bar.
+function TopNav({ active, onChange, onDice }) {
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  return <div style={{flex:'none',display:'flex',alignItems:'center',gap:14,padding:'12px 20px',
+    borderBottom:'1px solid var(--border-default)',background:'rgba(8,10,14,0.55)'}}>
+    <img src="./logo-mark.png" alt="" style={{width:32,height:32,objectFit:'contain',
+      filter:'drop-shadow(0 1px 4px rgba(63,167,214,0.35))'}}/>
+    <span style={{font:'700 var(--fs-h3)/1 var(--font-display)',letterSpacing:'0.12em',color:'var(--text-primary)'}}>AUGUR</span>
+    <div style={{display:'flex',gap:4,marginLeft:10}}>
+      {TABS.map(t=>{const on=t.key===active;
+        return <button key={t.key} type="button" onClick={()=>onChange(t.key)}
+          style={{display:'flex',alignItems:'center',gap:8,padding:'9px 16px',borderRadius:'var(--r-pill)',cursor:'pointer',
+            border:'1px solid '+(on?'var(--signal-500)':'transparent'),background:on?'var(--signal-soft)':'transparent',
+            color:on?'var(--signal-300)':'var(--text-secondary)',font:(on?600:500)+' var(--fs-sm)/1 var(--font-ui)'}}>
+          <Icon name={t.icon} size={18}/>{t.label}</button>;})}
+    </div>
+    <div style={{flex:1}}/>
+    <button type="button" onClick={onDice} aria-label="Roll dice"
+      style={{display:'flex',alignItems:'center',gap:8,padding:'9px 16px',borderRadius:'var(--r-pill)',cursor:'pointer',
+        border:'1px solid var(--border-strong)',background:'var(--surface-3)',color:'var(--text-secondary)',
+        font:'500 var(--fs-sm)/1 var(--font-ui)'}}>
+      <Icon name="dices" size={18}/>Dice</button>
+  </div>;
+}
 function PhoneFrame({ active, onTab, children }) {
+  const wide = useIsWide();
   const [dice, setDice] = useState(false);
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
-  return <div className="augur-frame" style={{width:'var(--screen-w)',height:'min(844px, calc(100vh - 48px))',position:'relative',
-    background:'var(--bg-app)',borderRadius:44,overflow:'hidden',border:'10px solid #000',
-    boxShadow:'var(--shadow-3),0 0 0 1px #2a2f38',display:'flex',flexDirection:'column'}}>
-    <StatusBar/>
+  return <div className="augur-frame" style={{
+      width: wide ? 'min(1180px, 100vw - 32px)' : 'var(--screen-w)',
+      height: wide ? 'min(960px, calc(100dvh - 32px))' : 'min(844px, calc(100vh - 48px))',
+      position:'relative', background:'var(--bg-app)',
+      borderRadius: wide ? 18 : 44, overflow:'hidden',
+      border: wide ? '1px solid var(--border-default)' : '10px solid #000',
+      boxShadow: wide ? 'var(--shadow-3)' : 'var(--shadow-3),0 0 0 1px #2a2f38',
+      display:'flex', flexDirection:'column'}}>
+    {wide && onTab && <TopNav active={active} onChange={onTab} onDice={()=>setDice(true)}/>}
     <div className="augur-content" style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflow:'hidden'}}>{children}</div>
-    {onTab&&<TabBar active={active} onChange={onTab}/>}
-    {onTab&&<button type="button" className="augur-fab" aria-label="Roll dice" onClick={()=>setDice(true)}
+    {!wide && onTab && <TabBar active={active} onChange={onTab}/>}
+    {onTab && <button type="button" className="augur-fab" aria-label="Roll dice" onClick={()=>setDice(true)}
       style={{width:52,height:52,borderRadius:'var(--r-pill)',background:'var(--signal-500)',color:'var(--text-on-signal)',
-        border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+        border:'none',cursor:'pointer',display: wide?'none':'flex',alignItems:'center',justifyContent:'center',
         boxShadow:'var(--glow-signal), var(--shadow-2)'}}>
       <Icon name="dices" size={24}/></button>}
-    {onTab&&<DiceRoller open={dice} onClose={()=>setDice(false)}/>}
+    {onTab && <DiceRoller open={dice} onClose={()=>setDice(false)}/>}
   </div>;
 }
 
