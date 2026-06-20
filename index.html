@@ -659,7 +659,9 @@ function simulateOnce(cfg) {
   // the whole unit if caught fleeing).
   const foeLost = lossPoints(foe, myWounds + foeCrumble, foeCaught);
   const myLost  = lossPoints(me, foeWounds + meCrumble, meCaught);
-  return { meOut, foeOut, vpSwing: foeLost - myLost };
+  // Casualties = unsaved wounds I deal to the foe / take myself (incl. crumble).
+  return { meOut, foeOut, vpSwing: foeLost - myLost,
+           foeWoundsTaken: myWounds + foeCrumble, myWoundsTaken: foeWounds + meCrumble };
 }
 
 // Pursuit catch: both roll 2D6 (Swiftstride rolls 3D6 and keeps the best two).
@@ -684,10 +686,12 @@ function monteCarlo(cfg, N = 8000) {
     foe: { win:0, draw:0, give:0, fallback:0, flee:0 },
   };
   const swings = new Array(N);
+  let sumInflict = 0, sumSuffer = 0; // unsaved wounds dealt to foe / taken by me
   for (let i = 0; i < N; i++) {
     const r = simulateOnce(cfg);
     tally.me[r.meOut]++; tally.foe[r.foeOut]++;
     swings[i] = r.vpSwing;
+    sumInflict += r.foeWoundsTaken; sumSuffer += r.myWoundsTaken;
   }
   const dist = (t) => {
     const o = {}; for (const k in t) o[k] = t[k] / N; return o;
@@ -698,11 +702,18 @@ function monteCarlo(cfg, N = 8000) {
   const meDist = dist(tally.me), foeDist = dist(tally.foe);
   const myWinProb = meDist.win + meDist.draw * 0.5;
   const badExchange = myWinProb > 0.6 && mean < 60 && (cfg.foe.unbreakable || foeDist.flee < 0.2);
+  const wMe = (cfg.me.profile && cfg.me.profile.w) || 1;
+  const wFoe = (cfg.foe.profile && cfg.foe.profile.w) || 1;
+  const inflictW = sumInflict / N, sufferW = sumSuffer / N;
   return {
     expectedVP: mean,
     range: [Math.round(pct(0.10)), Math.round(pct(0.90))],
     me: meDist, foe: foeDist,
     badExchange,
+    casualties: {
+      inflictWounds: inflictW, sufferWounds: sufferW,         // avg unsaved wounds
+      inflictModels: inflictW / wFoe, sufferModels: sufferW / wMe, // ≈ models slain
+    },
     N,
   };
 }
@@ -1725,6 +1736,31 @@ function VariantDuel({ res, names }) {
         <div style={{width:1,background:'var(--border-subtle)'}}/>
         <OutcomeColumn name={names.foe} dist={res.foe} side="enemy"/></div></Card></Fragment>;
 }
+// Average casualties (models slain ≈ unsaved wounds / wounds-per-model), shown
+// under every result view. Raw wounds in the sub-line for multi-wound models.
+function CasualtiesRow({ res, names }) {
+  const c = res && res.casualties;
+  if (!c) return null;
+  const fmt = (n) => n >= 10 ? String(Math.round(n)) : (Math.round(n * 10) / 10).toFixed(1);
+  const foeShort = (names && names.foeShort) || 'enemy';
+  const meShort  = (names && names.meShort)  || 'you';
+  const cell = (label, accent, models, wounds) =>
+    <div style={{flex:1,display:'flex',flexDirection:'column',gap:2,alignItems:'center',textAlign:'center'}}>
+      <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.04em',textTransform:'uppercase',color:'var(--text-tertiary)'}}>{label}</span>
+      <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accent,fontVariantNumeric:'tabular-nums'}}>≈{fmt(models)}</span>
+      <span style={{font:'400 var(--fs-xs)/1.2 var(--font-ui)',color:'var(--text-tertiary)'}}>{fmt(wounds)} wounds</span>
+    </div>;
+  return <Card elevation={1} style={{padding:'var(--sp-4) var(--sp-5)',marginTop:10}}>
+    <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.04em',textTransform:'uppercase',
+      color:'var(--text-tertiary)',textAlign:'center',marginBottom:8}}>Average casualties per round</div>
+    <div style={{display:'flex',alignItems:'center',gap:10}}>
+      {cell('You slay on ' + foeShort, 'var(--signal-400)', c.inflictModels, c.inflictWounds)}
+      <div style={{width:1,alignSelf:'stretch',background:'var(--border-default)'}}/>
+      {cell(meShort + ' lose', 'var(--out-flee)', c.sufferModels, c.sufferWounds)}
+    </div>
+  </Card>;
+}
+
 function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
   const [view, setView] = useState('verdict');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
@@ -1745,6 +1781,7 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
       {view==='verdict'&&<VariantVerdict res={result} names={names}/>}
       {view==='cadran'&&<VariantCadran res={result} names={names}/>}
       {view==='duel'&&<VariantDuel res={result} names={names}/>}
+      <CasualtiesRow res={result} names={names}/>
       <div style={{height:4}}/>
     </Body>
     <BottomBar>
