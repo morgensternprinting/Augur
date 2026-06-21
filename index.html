@@ -510,30 +510,33 @@ function combatFlags(u) {
            : has('armour-bane', 'gromril-weapons', 'ensorcelled-weapons', 'khopesh') ? 1 : 0;
   return {
     hatred:        has('hatred', 'eternal-hatred', 'ancestral-grudge'),
-    poisoned:      has('poisoned-attacks', 'warpstone-weapons'),
-    killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death'),
+    poisoned:      has('poisoned-attacks', 'warpstone-weapons', 'spawn-of-nurgle', 'gigantic-spawn-of-nurgle', 'cult-of-the-slithering-serpent'),
+    killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death', 'dark-venom'),
     monsterSlayer: has('slayer', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'),
     largeTarget:   has('large-target', 'tree-spirit'),
     regen:         has('regeneration', 'too-horrible-to-die'),
     flaming:       has('flaming-attacks', 'blazing-body', 'born-of-fire', 'wreathed-in-flame'),
-    frenzy:        has('frenzy', 'blood-rage', 'primal-fury', 'blood-greed', 'foe-render', 'bestial-fury', 'blood-frenzy', 'gorefeast'),
+    frenzy:        has('frenzy', 'blood-rage', 'primal-fury', 'blood-greed', 'foe-render', 'bestial-fury', 'blood-frenzy', 'gorefeast', 'mark-of-khorne', 'marque-de-khorne'),
     furiousCharge: has('furious-charge', 'daemonic-charge', 'devastating-charge'),
     swiftstride:   has('swiftstride'),
-    fear:          has('fear'),
+    fear:          has('fear', 'hellbound'),
     terror:        has('terror'),
     immunePsych:   has('immune-to-psychology', 'daemonic', 'necromantic-undead', 'nehekharan-undead', 'unstable', 'tree-spirit'),
     stubborn:      has('stubborn', 'resolute', 'immovable-object', 'indomitable', 'shieldwall', 'steadfast-discipline'),
     unbreakable:   has('unbreakable'),
     coldBlooded:   has('cold-blooded'),
-    strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge', 'martial-prowess'),
+    strikeFirst:   has('strike-first', 'elven-reflexes', 'first-charge', 'martial-prowess', 'spawn-of-slaanesh', 'gigantic-spawn-of-slaanesh'),
     strikeLast:    has('strike-last', 'cumbersome', 'ponderous'),
     unstable:      has('unstable', 'daemonic-instability', 'necromantic-undead', 'nehekharan-undead', 'daemonic'),
-    multiWounds:   has('multiple-wounds'),
+    multiWounds:   has('multiple-wounds', 'wallop'),
     impactHits:    has('impact-hits', 'bull-charge', 'ogre-charge', 'thunderous-charge', 'mournfang-charge',
-                       'tusker-charge', 'bestial-charge', 'slavering-charge', 'stampede', 'brazen-wheels', 'crushing-bulk'),
-    stomp:         has('stomp-attacks'),
-    magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched'),
-    ethereal:      has('ethereal'),
+                       'tusker-charge', 'bestial-charge', 'slavering-charge', 'stampede', 'brazen-wheels', 'crushing-bulk',
+                       'big-stabbas', 'skullcracker'),
+    stomp:         has('stomp-attacks', 'crushing-weight'),
+    magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched',
+                       'accursed-weapons', 'warpstone-sentinel', 'spectral-hounds', 'spectral-reapers', 'usirians-reaper',
+                       'spawn-of-tzeentch', 'gigantic-spawn-of-tzeentch', 'spectral-coach', 'hellbound'),
+    ethereal:      has('ethereal', 'spectral-coach'),
     ap,
     ward:          wardFromRules(r),
   };
@@ -550,7 +553,11 @@ function wardFromRules(r) {
   if (has('feel-no-pain')) set(6);
   if (has('witness-to-destiny', 'blessings-of-asuryan', 'lileaths-blessing', 'favour-of-the-goddess')) set(6);
   if (has('runes-of-warding', 'runes-of-protection', 'dark-runes', 'arcane-shield')) set(5);
-  if (has('mark-of-tzeentch', 'infernal-favour')) set(5);
+  if (has('mark-of-tzeentch', 'infernal-favour', 'marque-de-tzeentch')) set(5);
+  // additional army wards (confirmed unconditional grants from RULES_DB)
+  if (has('future-sight', 'chaos-armour-daemons-of-chaos')) set(4);
+  if (has('blackshard-armour', 'ancestral-shield', 'blessings-of-khaine', 'blessings-of-the-horned-rat')) set(5);
+  if (has('wards-of-grimnir', 'prayer-of-the-damned', 'blessings-of-ulric', 'priere-de-la-dame', 'benediction-de-la-dame', 'hellbound')) set(6);
   if (has('ethereal')) set(0);                                             // ethereal handled via save, not ward here
   return w;
 }
