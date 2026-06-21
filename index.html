@@ -1236,6 +1236,7 @@ function freshGame() {
       { id:'o3', name:'Bridge',       holder:'none' },
     ],
     turn: 1, mission: 'Pitched Battle', pointsCap: 2000,
+    maxRounds: 6, activeSide: 'me', phaseIdx: 0, subIdx: 0,
   };
 }
 function loadGame() {
@@ -2226,7 +2227,146 @@ function Objectives({ items, onSet }) {
         <Segmented size="sm" value={o.holder} onChange={v=>onSet(o.id,v)} style={{width:150}}
           options={[{value:'me',label:tr('You','Toi')},{value:'none',label:'—'},{value:'foe',label:tr('Foe','Adv.')}]}/></div>)}</div></div>;
 }
-function GameTracker({ game, setGame }) {
+/* ── Turn / phase / sub-phase structure (TOW), with a rule→sub-phase digest ── */
+const TURN_PHASES = [
+  { en:'Strategy', fr:'Stratégie', icon:'crown', subs:[
+    {en:'Start of Turn',fr:'Début de tour'},{en:'Command',fr:'Commandement'},{en:'Magic',fr:'Conjuration'},{en:'Rally',fr:'Ralliement'} ]},
+  { en:'Movement', fr:'Mouvement', icon:'move', subs:[
+    {en:'Charges & reactions',fr:'Charges & réactions'},{en:'Charge moves',fr:'Mouvements de charge'},{en:'Compulsory moves',fr:'Mouvements obligatoires'},{en:'Remaining moves',fr:'Mouvements restants'} ]},
+  { en:'Shooting', fr:'Tir', icon:'crosshair', subs:[
+    {en:'Pick target',fr:'Choix de la cible'},{en:'To-hit',fr:'Jet de touche'},{en:'To-wound & saves',fr:'Blessures & sauvegardes'},{en:'Casualties & panic',fr:'Pertes & panique'} ]},
+  { en:'Combat', fr:'Combat', icon:'swords', subs:[
+    {en:'Fight',fr:'Combattre'},{en:'Combat result',fr:'Résultat'},{en:'Break test',fr:'Test de moral'},{en:'Pursuit',fr:'Poursuite'} ]},
+];
+const phName  = (p)   => LANG==='fr'?TURN_PHASES[p].fr:TURN_PHASES[p].en;
+const subName = (p,s) => LANG==='fr'?TURN_PHASES[p].subs[s].fr:TURN_PHASES[p].subs[s].en;
+const prettyRule = (s) => String(s).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+// rule slug → which sub-phase it matters in (p=phaseIdx, s=subIdx) + a short functional note.
+const RULE_PHASE = {
+  stupidity:{p:0,s:1,en:'Take a Stupidity test in the Command sub-phase.',fr:'Test de Stupidité en sous-phase de Commandement.'},
+  'hold-the-line':{p:0,s:1,en:'Can auto-pass a Panic test.',fr:'Peut réussir auto un test de Panique.'},
+  'rallying-cry':{p:0,s:1,en:'Helps friendly units rally / pass Leadership.',fr:'Aide les unités amies à se rallier / passer un test de Cd.'},
+  'my-will-be-done':{p:0,s:1,en:'Boosts a friendly unit\'s Leadership.',fr:'Augmente le Commandement d\'une unité amie.'},
+  'master-of-battle':{p:0,s:1,en:'Leadership / re-roll buff in Command range.',fr:'Bonus de Commandement / relance à portée.'},
+  'grand-strategist':{p:0,s:1,en:'Command-phase bonus (initiative/Ld).',fr:'Bonus en phase de Commandement (initiative/Cd).'},
+  'prayers-of-sigmar':{p:0,s:1,en:'Pray in the Command sub-phase.',fr:'Prière en sous-phase de Commandement.'},
+  'prayers-of-ulric':{p:0,s:1,en:'Pray in the Command sub-phase.',fr:'Prière en sous-phase de Commandement.'},
+  'will-of-the-dragons':{p:0,s:1,en:'Leadership / panic support.',fr:'Soutien de Commandement / panique.'},
+  'magic-resistance':{p:0,s:2,en:'Bonus to dispel spells targeting the unit.',fr:'Bonus pour dissiper les sorts visant l\'unité.'},
+  daemonic:{p:0,s:2,en:'Daemonic Instability — crumbles instead of fleeing (resolved after combat).',fr:'Instabilité Démoniaque — s\'effrite au lieu de fuir (après combat).'},
+  // ---- Movement ----
+  swiftstride:{p:1,s:0,en:'Roll 3D6 keep best 2 for charge range (and pursuit).',fr:'3D6 garder les 2 meilleurs pour la charge (et la poursuite).'},
+  'fast-cavalry':{p:1,s:0,en:'Free reform; may declare charges flexibly.',fr:'Reformation libre ; charges flexibles.'},
+  vanguard:{p:1,s:0,en:'Vanguard move before the first turn.',fr:'Mouvement d\'avant-garde avant le 1er tour.'},
+  impetuous:{p:1,s:0,en:'Must test or charge the nearest enemy.',fr:'Doit tester ou charger l\'ennemi le plus proche.'},
+  frenzy:{p:1,s:0,en:'Must declare a charge if able (and +1 A in combat).',fr:'Doit déclarer une charge si possible (et +1 A au combat).'},
+  fly:{p:1,s:3,en:'May Fly its full move.',fr:'Peut Voler sur tout son mouvement.'},
+  'feigned-flight':{p:1,s:0,en:'Flee as a charge reaction, then rally easily.',fr:'Fuite en réaction de charge, ralliement facile.'},
+  'fire-and-flee':{p:1,s:0,en:'Stand & shoot then flee as a charge reaction.',fr:'Tir & fuite en réaction de charge.'},
+  'counter-charge':{p:1,s:0,en:'May counter-charge a charging enemy.',fr:'Peut contre-charger un ennemi qui charge.'},
+  'random-movement':{p:1,s:2,en:'Moves a random distance (compulsory).',fr:'Bouge d\'une distance aléatoire (obligatoire).'},
+  ambushers:{p:1,s:3,en:'Arrives from ambush / reserves.',fr:'Arrive d\'embuscade / réserve.'},
+  scouts:{p:1,s:0,en:'Deploys forward / vanguard-like.',fr:'Déploiement avancé / type avant-garde.'},
+  // ---- Shooting ----
+  'quick-shot':{p:2,s:1,en:'Extra shot / ignores some to-hit penalties.',fr:'Tir supplémentaire / ignore certains malus.'},
+  'arrows-of-asaph':{p:2,s:1,en:'Ignores to-hit penalties when shooting.',fr:'Ignore les malus pour toucher au tir.'},
+  'stand-back-chief':{p:2,s:1,en:'Shooting nuance — check the unit rule.',fr:'Nuance de tir — voir la règle de l\'unité.'},
+  poisoned:{p:2,s:1,en:'A natural 6 to hit auto-wounds (also in combat).',fr:'Un 6 naturel pour toucher blesse auto (aussi au combat).'},
+  // ---- Combat ----
+  hatred:{p:3,s:0,en:'Re-roll missed hits in the first round.',fr:'Relance les touches ratées au 1er round.'},
+  'poisoned-attacks':{p:3,s:0,en:'A natural 6 to hit auto-wounds.',fr:'Un 6 naturel pour toucher blesse automatiquement.'},
+  'killing-blow':{p:3,s:0,en:'A natural 6 to wound ignores armour saves.',fr:'Un 6 naturel pour blesser ignore l\'armure.'},
+  'heroic-killing-blow':{p:3,s:0,en:'Killing Blow even against tougher targets.',fr:'Coup fatal même contre des cibles résistantes.'},
+  'impact-hits':{p:3,s:0,en:'Auto-hits when it charges.',fr:'Touches automatiques quand elle charge.'},
+  'stomp-attacks':{p:3,s:0,en:'Extra auto-hits vs infantry each round.',fr:'Touches auto vs infanterie chaque round.'},
+  fear:{p:3,s:0,en:'Enemy tests or fights at a penalty.',fr:'L\'ennemi teste ou combat avec malus.'},
+  terror:{p:3,s:0,en:'May force enemies to flee before contact.',fr:'Peut faire fuir l\'ennemi avant le contact.'},
+  'furious-charge':{p:3,s:0,en:'+1 Strength on the charge.',fr:'+1 Force en charge.'},
+  'devastating-charge':{p:3,s:0,en:'Bonus when it charges.',fr:'Bonus quand elle charge.'},
+  regeneration:{p:3,s:0,en:'Regeneration ward, negated by flaming attacks.',fr:'Save de régénération, annulée par les attaques enflammées.'},
+  'elven-reflexes':{p:3,s:0,en:'+1 Initiative / strikes first in the first round.',fr:'+1 Initiative / frappe en premier au 1er round.'},
+  'strike-first':{p:3,s:0,en:'Always strikes first.',fr:'Frappe toujours en premier.'},
+  'armour-bane':{p:3,s:0,en:'Extra armour penetration.',fr:'Perce-armure supplémentaire.'},
+  'cleaving-blow':{p:3,s:0,en:'High armour penetration.',fr:'Forte pénétration d\'armure.'},
+  'multiple-wounds':{p:3,s:0,en:'Inflicts several wounds per unsaved wound.',fr:'Plusieurs blessures par blessure non sauvegardée.'},
+  'flaming-attacks':{p:3,s:0,en:'Negates Regeneration; some foes fear fire.',fr:'Annule la Régénération ; certains craignent le feu.'},
+  stubborn:{p:3,s:2,en:'Ignores the combat-result modifier on Break tests.',fr:'Ignore le malus de résultat au test de moral.'},
+  resolute:{p:3,s:2,en:'Steadier Break tests / pursuit.',fr:'Tests de moral / poursuite plus solides.'},
+  'cold-blooded':{p:3,s:2,en:'Rolls 3D6 for Break tests, dropping the highest.',fr:'Test de moral en 3D6, retire le plus haut.'},
+  unbreakable:{p:3,s:2,en:'Never has to take Break tests.',fr:'Ne fait jamais de test de moral.'},
+  'immune-to-psychology':{p:3,s:2,en:'Immune to Fear, Terror and Panic.',fr:'Immunité à la Peur, Terreur et Panique.'},
+  'nehekharan-undead':{p:3,s:2,en:'Crumbles when it loses; immune to psychology.',fr:'S\'effrite si elle perd ; immunité psycho.'},
+  'necromantic-undead':{p:3,s:2,en:'Crumbles when it loses; immune to psychology.',fr:'S\'effrite si elle perd ; immunité psycho.'},
+  drilled:{p:3,s:1,en:'Reforms / fights more efficiently.',fr:'Reformation / combat plus efficace.'},
+  'first-charge':{p:3,s:0,en:'Bonus in the round it charges.',fr:'Bonus au round où elle charge.'},
+};
+function PhaseTracker({ game, setGame, lists, sel }) {
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const activeSide=game.activeSide||'me', phaseIdx=game.phaseIdx||0, subIdx=game.subIdx||0, maxRounds=game.maxRounds||6, turn=game.turn||1;
+  const setG=(patch)=>setGame(g=>({...g,...patch}));
+  const step=(dir)=>{
+    let p=phaseIdx, s=subIdx, side=activeSide, t=turn;
+    if(dir>0){ s++; if(s>3){s=0;p++;} if(p>3){p=0; if(side==='me') side='foe'; else { side='me'; t=Math.min(maxRounds,t+1);} } }
+    else { s--; if(s<0){s=3;p--;} if(p<0){p=3; if(side==='foe') side='me'; else { side='foe'; t=Math.max(1,t-1);} } }
+    setG({phaseIdx:p,subIdx:s,activeSide:side,turn:t});
+  };
+  const accent = activeSide==='me'?'var(--signal-400)':'var(--foe-400)';
+  const listIdx = activeSide==='me'?sel.myList:sel.foeList;
+  const list = (sel.source==='lists' && lists[listIdx]) ? lists[listIdx] : null;
+  const digest=[];
+  if(list){ (list.units||[]).forEach(u=>{
+    const e = engineUnitFromSlug(u.slug, u.name, u.count, u.ppm);
+    const slugs = new Set((e&&e.rules)||[]);
+    (u.opts||[]).forEach(o=>{const sl=slugifyName(o); if(RULE_PHASE[sl]) slugs.add(sl);});
+    const hits=[...slugs].filter(sl=>RULE_PHASE[sl]&&RULE_PHASE[sl].p===phaseIdx&&RULE_PHASE[sl].s===subIdx);
+    if(hits.length) digest.push({ name:(LANG==='fr'?(u.name_fr||u.name):u.name), hits });
+  }); }
+  return <Card elevation={2} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:10,borderTop:`2px solid ${accent}`}}>
+    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8}}>
+      <div style={{minWidth:0}}>
+        <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>
+          {tr('Round','Round')} {turn}/{maxRounds} · <span style={{color:accent}}>{activeSide==='me'?tr('Your turn','Ton tour'):tr('Enemy turn','Tour adverse')}</span></div>
+        <div style={{font:'700 var(--fs-h2)/1.1 var(--font-display)',color:'var(--text-primary)',marginTop:2}}>{phName(phaseIdx)}</div>
+        <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:accent}}>{subName(phaseIdx,subIdx)}</div>
+      </div>
+      <Icon name={TURN_PHASES[phaseIdx].icon} size={28} color={accent} style={{flex:'none'}}/>
+    </div>
+    <div style={{display:'flex',gap:4}}>
+      {TURN_PHASES.map((ph,i)=><button key={i} type="button" onClick={()=>setG({phaseIdx:i,subIdx:0})}
+        style={{flex:1,padding:'6px 2px',borderRadius:'var(--r-sm)',cursor:'pointer',border:'1px solid '+(i===phaseIdx?accent:'var(--border-subtle)'),
+          background:i===phaseIdx?'var(--surface-3)':'transparent',color:i===phaseIdx?'var(--text-primary)':'var(--text-tertiary)',
+          font:'600 var(--fs-label)/1.1 var(--font-ui)'}}>{phName(i)}</button>)}
+    </div>
+    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+      {TURN_PHASES[phaseIdx].subs.map((sb,i)=><button key={i} type="button" onClick={()=>setG({subIdx:i})}
+        style={{cursor:'pointer',whiteSpace:'nowrap',padding:'6px 10px',borderRadius:'var(--r-pill)',
+          background:i===subIdx?'var(--surface-3)':'transparent',border:'1px solid '+(i===subIdx?accent:'var(--border-default)'),
+          color:i===subIdx?accent:'var(--text-secondary)',font:(i===subIdx?600:500)+' var(--fs-xs)/1 var(--font-ui)'}}>{subName(phaseIdx,i)}</button>)}
+    </div>
+    <div style={{display:'flex',gap:8}}>
+      <Button variant="secondary" onClick={()=>step(-1)} icon={<Icon name="chevron-left" size={18}/>}>{tr('Back','Précédent')}</Button>
+      <Button variant="primary" block onClick={()=>step(1)} icon={<Icon name="chevron-right" size={18}/>}>{tr('Next sub-phase','Sous-phase suivante')}</Button>
+    </div>
+    <div style={{height:1,background:'var(--border-subtle)'}}/>
+    <SectionLabel>{tr('Rules active now','Règles actives maintenant')} · {activeSide==='me'?tr('your units','tes unités'):tr('enemy units','unités adverses')}</SectionLabel>
+    {!list ? <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
+        {tr('Load an army list (Combat → Imported lists) to see which of its rules apply this sub-phase.','Charge une liste (Combat → Listes importées) pour voir lesquelles de ses règles s\'appliquent à cette sous-phase.')}</div>
+      : digest.length===0 ? <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
+        {tr('No tracked rule applies to these units in this sub-phase.','Aucune règle suivie ne s\'applique à ces unités dans cette sous-phase.')}</div>
+      : <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {digest.map((d,i)=><div key={i} style={{background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-sm)',padding:'8px 10px'}}>
+            <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{d.name}</div>
+            {d.hits.map((sl,j)=><div key={j} style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>
+              <span style={{color:accent,fontWeight:600}}>{prettyRule(sl)}</span> — {LANG==='fr'?RULE_PHASE[sl].fr:RULE_PHASE[sl].en}</div>)}
+          </div>)}
+        </div>}
+    <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
+      <span style={{flex:1,font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('Rounds in this game','Rounds de la partie')}</span>
+      <Stepper size="sm" value={maxRounds} onChange={v=>setG({maxRounds:Math.max(turn,v)})} min={1} max={12} style={{width:130,flex:'none'}}/>
+    </div>
+  </Card>;
+}
+function GameTracker({ game, setGame, lists, sel }) {
   const vp = computeVP(game);
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   const cycle = (sideKey) => (i) => setGame(g=>{
@@ -2238,19 +2378,18 @@ function GameTracker({ game, setGame }) {
   });
   const setObj=(id,holder)=>setGame(g=>({...g,objectives:g.objectives.map(o=>o.id===id?{...o,holder}:o)}));
   return <Fragment>
-    <ScreenHeader eyebrow={tr('Turn','Tour')+` ${game.turn} · `+tr('Melee phase','Phase de corps à corps')} title={tr('Game','Partie')} right={
+    <ScreenHeader eyebrow={tr('Game tracking','Suivi de partie')} title={tr('Game','Partie')} right={
       <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
         {game.mission}<br/>{game.pointsCap} pts</span>}/>
     <Body>
+      <PhaseTracker game={game} setGame={setGame} lists={lists} sel={sel}/>
       <VPScoreboard vp={vp} players={{me:factionName(game.myArmy),foe:factionName(game.foeArmy)}}/>
       <Objectives items={game.objectives} onSet={setObj}/>
       <ArmyPanel title={tr('Your army · ','Ton armée · ')+factionName(game.myArmy)} roster={game.myRoster} side="friendly" onCycle={cycle('myRoster')}/>
       <ArmyPanel title={tr('Enemy army · ','Armée adverse · ')+factionName(game.foeArmy)} roster={game.foeRoster} side="enemy" onCycle={cycle('foeRoster')}/>
-      <div style={{display:'flex',gap:10}}>
-        <Button variant="secondary" onClick={()=>setGame(g=>({...g,turn:Math.min(8,g.turn+1)}))}
-          icon={<Icon name="chevron-right" size={18}/>} style={{flex:1}}>{tr('Next turn','Tour suivant')}</Button>
+      <div style={{display:'flex',justifyContent:'center'}}>
         <Button variant="ghost" onClick={()=>{ if(confirm(tr('Reset the game?','Réinitialiser la partie ?'))){localStorage.removeItem(STORE_KEY);setGame(freshGame());} }}
-          icon={<Icon name="rotate-ccw" size={18}/>}>{tr('Reset','Réinit.')}</Button></div>
+          icon={<Icon name="rotate-ccw" size={18}/>}>{tr('Reset the game','Réinitialiser la partie')}</Button></div>
       <div style={{height:4}}/>
     </Body></Fragment>;
 }
@@ -2634,7 +2773,7 @@ function App() {
   else if (tab==='assistant') screen = <CombatAssistant
     me={myUnit} foe={foeUnit} sel={sel} onDone={()=>setTab('tracker')}/>;
   else if (tab==='ref') screen = <QuickRef/>;
-  else screen = <GameTracker game={game} setGame={setGame}/>;
+  else screen = <GameTracker game={game} setGame={setGame} lists={lists} sel={sel}/>;
 
   return <Fragment>
     <PhoneFrame active={tab} onTab={setTab}>{screen}</PhoneFrame>
