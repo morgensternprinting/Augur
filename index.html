@@ -322,6 +322,7 @@ function rosterUnitFromUDB(army, cat, slug, displayName) {
   return {
     id: army + '/' + slug, udbKey: key, slug,
     name: clean(displayName) || u.name,
+    nameFr: (owb && (owb.name_fr || owb.name_en)) ? clean(owb.name_fr) : null,
     army, category: cat,
     points: (owb && owb.points) || 0,
     size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
@@ -774,6 +775,57 @@ function sideStatic(s, o, charged) {
 }
 
 /* ════════════════════════════════════════════════════════════════
+   i18n — English by default, with a FR/EN flag toggle. LANG is a module
+   variable kept in sync by App on every render, so tr() works in any
+   component without threading a context. French unit names come from OWB
+   (name_fr); faction/stat/category/rule labels from the dicts below.
+   ════════════════════════════════════════════════════════════════ */
+let LANG = 'en';
+let _setLang = () => {};
+const FR = {};                                    // central dict for stray strings (optional)
+function tr(en, fr) { return LANG === 'fr' ? (fr !== undefined ? fr : (FR[en] || en)) : en; }
+function toggleLang() { _setLang(LANG === 'fr' ? 'en' : 'fr'); }
+
+const FR_FACTIONS = {
+  'empire-of-man':'Empire des Hommes','beastmen-brayherds':'Hardes Bestiales','chaos-dwarfs':'Nains du Chaos',
+  'daemons-of-chaos':'Démons du Chaos','dark-elves':'Elfes Noirs','dwarfen-mountain-holds':'Forteresses Naines',
+  'grand-cathay':'Grand Cathay','high-elf-realms':'Hauts Elfes','kingdom-of-bretonnia':'Royaume de Bretonnie',
+  'lizardmen':'Hommes-Lézards','ogre-kingdoms':'Royaumes Ogres','orc-and-goblin-tribes':'Tribus Orques & Gobelines',
+  'skaven':'Skavens','tomb-kings-of-khemri':'Rois des Tombes de Khemri','vampire-counts':'Comtes Vampires',
+  'warriors-of-chaos':'Guerriers du Chaos','wood-elf-realms':'Elfes Sylvains','realms-of-men':'Royaumes des Hommes',
+  'regiments-of-renown':'Régiments de Renom',
+};
+function factionName(slug){ return LANG==='fr' ? (FR_FACTIONS[slug]||(typeof FACTIONS!=='undefined'&&FACTIONS[slug])||slug)
+  : ((typeof FACTIONS!=='undefined'&&FACTIONS[slug])||slug); }
+// Mini-profile stat abbreviations.
+function statLabels(){ return LANG==='fr'
+  ? {ws:'CC',bs:'CT',s:'F',t:'E',w:'PV',i:'I',a:'A',sv:'Svg',ld:'Cd'}
+  : {ws:'WS',bs:'BS',s:'S',t:'T',w:'W',i:'I',a:'A',sv:'Sv',ld:'Ld'}; }
+const CAT_FR = {characters:'Personnages',core:'De base',special:'Spéciales',rare:'Rares',mercenaries:'Mercenaires',allies:'Alliés'};
+const CAT_EN = {characters:'Characters',core:'Core',special:'Special',rare:'Rare',mercenaries:'Mercenaries',allies:'Allies'};
+function catName(cat){ const c=String(cat||'').toLowerCase(); return LANG==='fr' ? (CAT_FR[c]||cat) : (CAT_EN[c]||cat); }
+function unitName(u){ if(!u) return ''; return LANG==='fr' ? (u.nameFr || u.name) : u.name; }
+
+// Compact flag glyphs (SVG, so they render on Windows too — emoji flags don't).
+const FlagFR = ({ size=20 }) => <svg width={size} height={Math.round(size*0.7)} viewBox="0 0 3 2" style={{borderRadius:2,flex:'none'}}>
+  <rect width="3" height="2" fill="#ECECEC"/><rect width="1" height="2" fill="#0055A4"/><rect x="2" width="1" height="2" fill="#EF4135"/></svg>;
+const FlagEN = ({ size=20 }) => <svg width={size} height={Math.round(size*0.7)} viewBox="0 0 60 40" style={{borderRadius:2,flex:'none'}}>
+  <rect width="60" height="40" fill="#012169"/>
+  <path d="M0,0 60,40 M60,0 0,40" stroke="#fff" strokeWidth="8"/>
+  <path d="M0,0 60,40 M60,0 0,40" stroke="#C8102E" strokeWidth="4"/>
+  <rect x="25" width="10" height="40" fill="#fff"/><rect y="15" width="60" height="10" fill="#fff"/>
+  <rect x="27" width="6" height="40" fill="#C8102E"/><rect y="17" width="60" height="6" fill="#C8102E"/></svg>;
+function LangToggle({ compact=false }) {
+  const fr = LANG==='fr';
+  return <button type="button" onClick={toggleLang} aria-label={fr?'Switch to English':'Passer en français'}
+    style={{display:'inline-flex',alignItems:'center',gap:6,padding:compact?'6px':'6px 10px',borderRadius:'var(--r-pill)',
+      cursor:'pointer',background:'var(--surface-3)',border:'1px solid var(--border-default)'}}>
+    {fr ? <FlagFR size={20}/> : <FlagEN size={20}/>}
+    {!compact && <span style={{font:'700 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.06em',color:'var(--text-secondary)'}}>{fr?'FR':'EN'}</span>}
+  </button>;
+}
+
+/* ════════════════════════════════════════════════════════════════
    2 · UI PRIMITIVES  (faithful to the Augur design system)
    ════════════════════════════════════════════════════════════════ */
 const Icon = ({ name, size = 20, color, style = {} }) =>
@@ -972,7 +1024,7 @@ function ScreenHeader({ title, eyebrow, right=null }) {
         textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:4}}>{eyebrow}</div>}
         <h1 style={{margin:0,font:'600 var(--fs-display)/var(--lh-snug) var(--font-display)',
           color:'var(--text-primary)',letterSpacing:'var(--ls-tight)'}}>{title}</h1></div></div>
-    {right}</div>;
+    <div style={{display:'flex',alignItems:'center',gap:8,flex:'none'}}>{right}<LangToggle/></div></div>;
 }
 function Body({ children, style={} }) {
   return <div className="augur-body" style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',
@@ -1077,6 +1129,8 @@ const TABS = [
   {key:'tracker',label:'Game',icon:'map'},
   {key:'ref',label:'Tables',icon:'book-open'},
 ];
+const FR_TABS = { select:'Combat', result:'Prévision', assistant:'Assistant', tracker:'Partie', ref:'Tables' };
+const tabLabel = (t) => tr(t.label, FR_TABS[t.key]);
 function TabBar({ active, onChange }) {
   return <div className="augur-tabbar" style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
     background:'rgba(8,10,14,0.82)',backdropFilter:'blur(16px)',borderTop:'1px solid var(--border-default)'}}>
@@ -1085,7 +1139,7 @@ function TabBar({ active, onChange }) {
         style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,background:'transparent',
           border:'none',cursor:'pointer',padding:'6px 0',color:on?'var(--signal-400)':'var(--text-tertiary)'}}>
         <Icon name={t.icon} size={22}/>
-        <span style={{font:`${on?600:500} 10px/1 var(--font-ui)`,letterSpacing:'0.02em'}}>{t.label}</span></button>;})}
+        <span style={{font:`${on?600:500} 10px/1 var(--font-ui)`,letterSpacing:'0.02em'}}>{tabLabel(t)}</span></button>;})}
   </div>;
 }
 // Track the wide (tablet-landscape / desktop) breakpoint in JS so layout chrome
@@ -1116,7 +1170,7 @@ function TopNav({ active, onChange, onDice }) {
           style={{display:'flex',alignItems:'center',gap:8,padding:'9px 16px',borderRadius:'var(--r-pill)',cursor:'pointer',
             border:'1px solid '+(on?'var(--signal-500)':'transparent'),background:on?'var(--signal-soft)':'transparent',
             color:on?'var(--signal-300)':'var(--text-secondary)',font:(on?600:500)+' var(--fs-sm)/1 var(--font-ui)'}}>
-          <Icon name={t.icon} size={18}/>{t.label}</button>;})}
+          <Icon name={t.icon} size={18}/>{tabLabel(t)}</button>;})}
     </div>
     <div style={{flex:1}}/>
     <button type="button" onClick={onDice} aria-label="Roll dice"
@@ -1194,14 +1248,14 @@ function ArmySelect({ value, onChange, accent }) {
     style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
       color:'var(--text-primary)',border:`1px solid ${accent||'var(--border-default)'}`,borderRadius:'var(--r-md)',
       padding:'10px var(--sp-4)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-    {armyList().map(a=><option key={a} value={a} style={{background:'var(--surface-2)'}}>{FACTIONS[a]}</option>)}
+    {armyList().map(a=><option key={a} value={a} style={{background:'var(--surface-2)'}}>{factionName(a)}</option>)}
   </select>;
 }
 
 function MiniProfile({ unit }) {
   if (!unit) return null;
-  const p = unit.profile;
-  const stats = [['CC',p.ws],['F',p.s],['E',p.t],['A',p.a],['Svg',unit.save>=7?'—':unit.save+'+'],['Cd',p.ld]];
+  const p = unit.profile; const L = statLabels();
+  const stats = [[L.ws,p.ws],[L.s,p.s],[L.t,p.t],[L.a,p.a],[L.sv,unit.save>=7?'—':unit.save+'+'],[L.ld,p.ld]];
   return <div style={{display:'flex',gap:5,marginTop:8}}>
     {stats.map(([k,v])=><StatPill key={k} label={k} value={v} style={{flex:1,minWidth:0}}/>)}
   </div>;
@@ -1238,7 +1292,7 @@ function candidatesFor(side, sel, game, lists) {
   }
   const army = side === 'me' ? game.myArmy : game.foeArmy;
   const variant = side === 'me' ? game.myVariant : game.foeVariant;
-  return armyRoster(army, variant).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + (u.category || '') }));
+  return armyRoster(army, variant).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + catName(u.category) }));
 }
 function resolveUnit(side, sel, game, lists) {
   const cands = candidatesFor(side, sel, game, lists);
@@ -1437,7 +1491,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
               whiteSpace:'nowrap',background:on?'var(--signal-soft)':'var(--surface-3)',
               border:`1px solid ${on?accent:'var(--border-default)'}`,borderRadius:'var(--r-pill)',padding:'7px 12px',
               font:`${on?600:500} var(--fs-xs)/1 var(--font-ui)`,color:on?'var(--signal-300)':'var(--text-secondary)'}}>
-              {t.label}{t.key!=='all'&&counts[t.key]?' ('+counts[t.key]+')':''}</button>;})}
+              {t.key==='all'?tr('All','Toutes'):catName(t.key)}{t.key!=='all'&&counts[t.key]?' ('+counts[t.key]+')':''}</button>;})}
         </div>
         {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
           Tap a unit to pick it · use the gear to set options/models and add it to a list.</div>}
@@ -1452,11 +1506,11 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:6}}>
                     <span style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
-                      textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name}</span>
-                    {u.unbreakable&&<Badge tone="caution">unbr.</Badge>}</div>
+                      textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unitName(u)}</span>
+                    {u.unbreakable&&<Badge tone="caution">{tr('unbr.','indém.')}</Badge>}</div>
                   <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3,
                     whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-                    CC{p.ws} F{p.s} E{p.t} A{p.a} Cd{p.ld} · {u.sub||''}</div></div>
+                    {(()=>{const L=statLabels();return L.ws+p.ws+' '+L.s+p.s+' '+L.t+p.t+' '+L.a+p.a+' '+L.ld+p.ld;})()} · {u.sub||''}</div></div>
                 {on&&<Icon name="check" size={18} color={accent}/>}
               </button>
               {configurable&&<button type="button" onClick={()=>setCfg(u)} aria-label="Configure & add to list"
@@ -1481,8 +1535,8 @@ function SideSelector({ label, accent, unit, onOpen }) {
       background:'var(--surface-2)',border:`1px solid ${accent}`,borderRadius:'var(--r-lg)',padding:'var(--sp-3) var(--sp-4)'}}>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
         <span style={{flex:1,minWidth:0,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',
-          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit?unit.name:'— choose a unit —'}</span>
-        {unit&&unit.unbreakable&&<Badge tone="caution">Unbreakable</Badge>}
+          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unit?unitName(unit):tr('— choose a unit —','— choisir une unité —')}</span>
+        {unit&&unit.unbreakable&&<Badge tone="caution">{tr('Unbreakable','Indémoralisable')}</Badge>}
         <Icon name="chevron-down" size={18} color="var(--text-tertiary)"/></div>
       {unit&&<MiniProfile unit={unit}/>}
     </button></div>;
@@ -1584,14 +1638,14 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
   const accentMe='var(--signal-500)', accentFoe='var(--foe-500)';
 
   return <Fragment>
-    <ScreenHeader eyebrow="Combat selection" title="Engagement" right={
+    <ScreenHeader eyebrow={tr('Combat selection','Sélection du combat')} title={tr('Engagement','Engagement')} right={
       <span style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',textAlign:'right'}}>
         <span style={{color:'var(--signal-400)'}}>you +{myCR}</span><br/>
         <span style={{color:'var(--foe-400)'}}>foe +{foeCR}</span></span>}/>
     <Body>
       {/* source mode */}
       <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
-        options={[{value:'catalog',label:'Catalogue'},{value:'lists',label:'Imported lists'}]}/>
+        options={[{value:'catalog',label:tr('Catalogue','Catalogue')},{value:'lists',label:tr('Imported lists','Listes importées')}]}/>
 
       {sel.source==='catalog' ? (
         <div style={{display:'flex',gap:8}}>
@@ -1602,7 +1656,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
             const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(sd==='me'?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
             const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(sd==='me'?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
             return <div key={sd} style={{flex:1,display:'flex',flexDirection:'column',gap:6}}>
-              <SectionLabel>{sd==='me'?'Your army':'Enemy army'}</SectionLabel>
+              <SectionLabel>{sd==='me'?tr('Your army','Ton armée'):tr('Enemy army','Armée adverse')}</SectionLabel>
               <ArmySelect value={army} accent={accent} onChange={setArmy}/>
               {vars.length>1 && <select value={variant} onChange={e=>setVar(e.target.value)}
                 style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
@@ -1642,16 +1696,16 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
 
       {wide ? (
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,alignItems:'start'}}>
-          <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
-          <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+          <SideSelector label={tr('Your unit','Ton unité')} accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+          <SideSelector label={tr('Enemy unit','Unité adverse')} accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
         </div>
       ) : (<Fragment>
-        <SideSelector label="Your unit" accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
+        <SideSelector label={tr('Your unit','Ton unité')} accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
         <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
           <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
           <Icon name="swords" size={18} color="var(--text-tertiary)"/>
           <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
-        <SideSelector label="Enemy unit" accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
+        <SideSelector label={tr('Enemy unit','Unité adverse')} accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
       </Fragment>)}
 
       {/* auto-detected combat rules from both units' special rules */}
@@ -1701,7 +1755,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
     </Body>
     <BottomBar>
       <Button variant="primary" size="lg" block disabled={!myUnit||!foeUnit} onClick={onSimulate}
-        icon={<Icon name="dices" size={22}/>}>Run the simulation</Button>
+        icon={<Icon name="dices" size={22}/>}>{tr('Run the simulation','Lancer la simulation')}</Button>
     </BottomBar>
 
     <UnitSheet open={sheet==='me'} title="Your unit" accent={accentMe} units={myCands}
@@ -1867,13 +1921,13 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
   const [view, setView] = useState('verdict');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   if (!result) return <Fragment>
-    <ScreenHeader eyebrow="Probabilistic result" title="Forecast"/>
+    <ScreenHeader eyebrow={tr('Probabilistic result','Résultat probabiliste')} title={tr('Forecast','Prévision')}/>
     <Body><Card elevation={1} style={{padding:'var(--sp-6)',textAlign:'center'}}>
       <Icon name="dices" size={28} color="var(--text-tertiary)"/>
       <div style={{marginTop:10,font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
         Select an engagement, then run the simulation.</div></Card></Body></Fragment>;
   return <Fragment>
-    <ScreenHeader eyebrow="Probabilistic result" title="Forecast" right={
+    <ScreenHeader eyebrow={tr('Probabilistic result','Résultat probabiliste')} title={tr('Forecast','Prévision')} right={
       <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
         Monte&nbsp;Carlo<br/>{result.N.toLocaleString('en-GB')}&nbsp;rolls</span>}/>
     <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
@@ -1990,7 +2044,7 @@ function CombatAssistant({ me, foe, sel, onDone }) {
     color:ok?'var(--out-win)':'var(--out-flee)'}}>{text}</div>;
 
   return <Fragment>
-    <ScreenHeader eyebrow={`Combat phase · ${phase.n} / 4`} title="Assistant"/>
+    <ScreenHeader eyebrow={tr('Combat phase','Phase de combat')+` · ${phase.n} / 4`} title={tr('Assistant','Assistant')}/>
     <PhaseRail active={step}/>
     <Body style={{paddingTop:14}}>
       <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -2170,7 +2224,7 @@ function GameTracker({ game, setGame }) {
   });
   const setObj=(id,holder)=>setGame(g=>({...g,objectives:g.objectives.map(o=>o.id===id?{...o,holder}:o)}));
   return <Fragment>
-    <ScreenHeader eyebrow={`Turn ${game.turn} · Melee phase`} title="Game" right={
+    <ScreenHeader eyebrow={tr('Turn','Tour')+` ${game.turn} · `+tr('Melee phase','Phase de corps à corps')} title={tr('Game','Partie')} right={
       <span style={{font:'400 var(--fs-xs)/1.3 var(--font-mono)',color:'var(--text-tertiary)',textAlign:'right'}}>
         {game.mission}<br/>{game.pointsCap} pts</span>}/>
     <Body>
@@ -2304,7 +2358,7 @@ function QuickRef() {
     gap:wide?12:'var(--sp-3)',alignItems:'start'}}>{children}</div>;
 
   return <Fragment>
-    <ScreenHeader eyebrow="Quick reference" title="Tables"/>
+    <ScreenHeader eyebrow={tr('Quick reference','Référence rapide')} title={tr('Tables','Tables')}/>
     <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
       <Segmented value={view} onChange={setView} size="sm"
         options={[{value:'incidents',label:'Incidents & Fiasco'},{value:'combat',label:'Touches · Blessures'}]}/>
@@ -2376,6 +2430,9 @@ function QuickRef() {
 
 function App() {
   const [splash, setSplash] = useState(true);
+  const [lang, setLang] = useState(() => { try { return localStorage.getItem('augur.lang')==='fr' ? 'fr' : 'en'; } catch(e){ return 'en'; } });
+  LANG = lang; _setLang = setLang;                 // keep the module-level i18n state in sync before children render
+  useEffect(()=>{ try{ localStorage.setItem('augur.lang', lang); }catch(e){} }, [lang]);
   const [tab, setTab] = useState('select');
   const [game, setGame] = useState(loadGame);
   const [lists, setLists] = useState(() => { try { return JSON.parse(localStorage.getItem(LISTS_KEY)) || []; } catch (e) { return []; } });
