@@ -2300,6 +2300,12 @@ const RULE_PHASE = {
   drilled:{p:3,s:1,en:'Reforms / fights more efficiently.',fr:'Reformation / combat plus efficace.'},
   'first-charge':{p:3,s:0,en:'Bonus in the round it charges.',fr:'Bonus au round où elle charge.'},
 };
+// Rules that can trigger on the NON-active side during the opponent's turn:
+// charge reactions, fighting back in combat, break tests, dispelling.
+const REACT_RULES = new Set(['counter-charge','fire-and-flee','feigned-flight','swiftstride','fast-cavalry','evasive',
+  'hatred','poisoned-attacks','poisoned','killing-blow','heroic-killing-blow','regeneration','elven-reflexes','strike-first',
+  'armour-bane','cleaving-blow','multiple-wounds','flaming-attacks','fear','terror','stomp-attacks',
+  'stubborn','resolute','cold-blooded','unbreakable','immune-to-psychology','nehekharan-undead','necromantic-undead','daemonic','magic-resistance']);
 function PhaseTracker({ game, setGame, lists, sel }) {
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   const activeSide=game.activeSide||'me', phaseIdx=game.phaseIdx||0, subIdx=game.subIdx||0, maxRounds=game.maxRounds||6, turn=game.turn||1;
@@ -2311,16 +2317,24 @@ function PhaseTracker({ game, setGame, lists, sel }) {
     setG({phaseIdx:p,subIdx:s,activeSide:side,turn:t});
   };
   const accent = activeSide==='me'?'var(--signal-400)':'var(--foe-400)';
-  const listIdx = activeSide==='me'?sel.myList:sel.foeList;
-  const list = (sel.source==='lists' && lists[listIdx]) ? lists[listIdx] : null;
-  const digest=[];
-  if(list){ (list.units||[]).forEach(u=>{
-    const e = engineUnitFromSlug(u.slug, u.name, u.count, u.ppm);
-    const slugs = new Set((e&&e.rules)||[]);
-    (u.opts||[]).forEach(o=>{const sl=slugifyName(o); if(RULE_PHASE[sl]) slugs.add(sl);});
-    const hits=[...slugs].filter(sl=>RULE_PHASE[sl]&&RULE_PHASE[sl].p===phaseIdx&&RULE_PHASE[sl].s===subIdx);
-    if(hits.length) digest.push({ name:(LANG==='fr'?(u.name_fr||u.name):u.name), hits });
-  }); }
+  const otherSide = activeSide==='me'?'foe':'me';
+  const reactAccent = otherSide==='me'?'var(--signal-400)':'var(--foe-400)';
+  const digestFor=(side,reactOnly)=>{
+    const idx = side==='me'?sel.myList:sel.foeList;
+    const lst = (sel.source==='lists' && lists[idx]) ? lists[idx] : null;
+    if(!lst) return null;                       // null = no list loaded for this side
+    const out=[];
+    (lst.units||[]).forEach(u=>{
+      const e = engineUnitFromSlug(u.slug, u.name, u.count, u.ppm);
+      const slugs = new Set((e&&e.rules)||[]);
+      (u.opts||[]).forEach(o=>{const sl=slugifyName(o); if(RULE_PHASE[sl]) slugs.add(sl);});
+      const hits=[...slugs].filter(sl=>RULE_PHASE[sl]&&RULE_PHASE[sl].p===phaseIdx&&RULE_PHASE[sl].s===subIdx&&(!reactOnly||REACT_RULES.has(sl)));
+      if(hits.length) out.push({ name:(LANG==='fr'?(u.name_fr||u.name):u.name), hits });
+    });
+    return out;
+  };
+  const digest = digestFor(activeSide,false);   // active side's rules for this sub-phase
+  const reactions = digestFor(otherSide,true);  // other side's reactive rules (defensive)
   return <Card elevation={2} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:10,borderTop:`2px solid ${accent}`}}>
     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8}}>
       <div style={{minWidth:0}}>
@@ -2349,7 +2363,7 @@ function PhaseTracker({ game, setGame, lists, sel }) {
     </div>
     <div style={{height:1,background:'var(--border-subtle)'}}/>
     <SectionLabel>{tr('Rules active now','Règles actives maintenant')} · {activeSide==='me'?tr('your units','tes unités'):tr('enemy units','unités adverses')}</SectionLabel>
-    {!list ? <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
+    {digest===null ? <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
         {tr('Load an army list (Combat → Imported lists) to see which of its rules apply this sub-phase.','Charge une liste (Combat → Listes importées) pour voir lesquelles de ses règles s\'appliquent à cette sous-phase.')}</div>
       : digest.length===0 ? <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
         {tr('No tracked rule applies to these units in this sub-phase.','Aucune règle suivie ne s\'applique à ces unités dans cette sous-phase.')}</div>
@@ -2360,6 +2374,19 @@ function PhaseTracker({ game, setGame, lists, sel }) {
               <span style={{color:accent,fontWeight:600}}>{prettyRule(sl)}</span> — {LANG==='fr'?RULE_PHASE[sl].fr:RULE_PHASE[sl].en}</div>)}
           </div>)}
         </div>}
+    {reactions && reactions.length>0 && <Fragment>
+      <div style={{height:1,background:'var(--border-subtle)'}}/>
+      <SectionLabel style={{color:reactAccent}}>
+        <Icon name="shield-alert" size={12} style={{verticalAlign:'-1px',marginRight:4}}/>
+        {otherSide==='me'?tr('Your reactions','Tes réactions'):tr('Enemy reactions','Réactions adverses')}</SectionLabel>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {reactions.map((d,i)=><div key={i} style={{background:'var(--surface-2)',border:`1px solid ${reactAccent}33`,borderRadius:'var(--r-sm)',padding:'8px 10px'}}>
+          <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{d.name}</div>
+          {d.hits.map((sl,j)=><div key={j} style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>
+            <span style={{color:reactAccent,fontWeight:600}}>{prettyRule(sl)}</span> — {LANG==='fr'?RULE_PHASE[sl].fr:RULE_PHASE[sl].en}</div>)}
+        </div>)}
+      </div>
+    </Fragment>}
     <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
       <span style={{flex:1,font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('Rounds in this game','Rounds de la partie')}</span>
       <Stepper size="sm" value={maxRounds} onChange={v=>setG({maxRounds:Math.max(turn,v)})} min={1} max={12} style={{width:130,flex:'none'}}/>
