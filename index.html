@@ -151,6 +151,7 @@ button{font-family:inherit;}
 <script src="./unit_db.js"></script>
 <script src="./owb_unit_data.js"></script>
 <script src="./augur_al.js"></script>
+<script src="./rules_db.js"></script>
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, Fragment } = React;
@@ -2282,6 +2283,14 @@ const TURN_PHASES = [
 const phName  = (p)   => LANG==='fr'?TURN_PHASES[p].fr:TURN_PHASES[p].en;
 const subName = (p,s) => LANG==='fr'?TURN_PHASES[p].subs[s].fr:TURN_PHASES[p].subs[s].en;
 const prettyRule = (s) => String(s).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+// Full rule data (name + the user's own description) from the imported RULES_DB.
+const ruleInfo = (sl) => (typeof RULES_DB !== 'undefined' && RULES_DB[sl]) || null;
+const ruleTitle = (sl) => { const i = ruleInfo(sl); return (i && i.name) || prettyRule(sl); };
+const ruleNote = (sl) => {
+  const i = ruleInfo(sl);
+  if (LANG === 'fr' && i && i.desc) { const d = i.desc.replace(/\s+/g,' ').trim(); return d.length > 180 ? d.slice(0,178) + '…' : d; }
+  return RULE_PHASE[sl] ? (LANG==='fr' ? RULE_PHASE[sl].fr : RULE_PHASE[sl].en) : (i && i.desc ? i.desc.slice(0,160) : '');
+};
 // rule slug → which sub-phase it matters in (p=phaseIdx, s=subIdx) + a short functional note.
 const RULE_PHASE = {
   stupidity:{p:0,s:1,en:'Take a Stupidity test in the Command sub-phase.',fr:'Test de Stupidité en sous-phase de Commandement.'},
@@ -2341,8 +2350,8 @@ const RULE_PHASE = {
   drilled:{p:3,s:1,en:'Reforms / fights more efficiently.',fr:'Reformation / combat plus efficace.'},
   'first-charge':{p:3,s:0,en:'Bonus in the round it charges.',fr:'Bonus au round où elle charge.'},
   // ---- Combat result & post-combat triggers (win / lose / slain) ----
-  'gaze-of-the-gods':{p:3,s:1,en:'If it wins the combat or slays a foe in a challenge, roll on the Eye of the Gods table (a boon… or Spawnhood).',fr:'Si elle gagne le combat ou tue en défi, jet sur la table du Regard des Dieux (une faveur… ou devenir un Rejeton).'},
-  'gaze-of-the-gods-table':{p:3,s:1,en:'Roll on the Eye of the Gods table after a winning combat.',fr:'Jet sur la table du Regard des Dieux après un combat gagné.'},
+  'gaze-of-the-gods':{p:0,s:1,en:'In the Command sub-phase, a character that slew foes last turn may roll on the Eye of the Gods table.',fr:'En sous-phase de Commandement, un personnage qui a tué des ennemis au tour précédent peut faire un jet sur la table du Regard des Dieux.'},
+  'gaze-of-the-gods-table':{p:0,s:1,en:'Roll on the Eye of the Gods table in the Command sub-phase.',fr:'Jet sur la table du Regard des Dieux en sous-phase de Commandement.'},
   'gift-of-the-gods':{p:3,s:1,en:'May gain a boon after combat (Eye of the Gods).',fr:'Peut gagner une faveur après le combat (Regard des Dieux).'},
   'warp-spawned':{p:3,s:1,en:'Risk of mutation / becoming a Spawn after combat.',fr:'Risque de mutation / devenir un Rejeton après le combat.'},
   'curse-of-the-necropolis':{p:3,s:1,en:'A foe that destroys this unit suffers a burst of hits.',fr:'Un ennemi qui détruit cette unité subit une volée de touches.'},
@@ -2423,7 +2432,7 @@ function PhaseTracker({ game, setGame, lists, sel }) {
           {digest.map((d,i)=><div key={i} style={{background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-sm)',padding:'8px 10px'}}>
             <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{d.name}</div>
             {d.hits.map((sl,j)=><div key={j} style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>
-              <span style={{color:accent,fontWeight:600}}>{prettyRule(sl)}</span> — {LANG==='fr'?RULE_PHASE[sl].fr:RULE_PHASE[sl].en}</div>)}
+              <span style={{color:accent,fontWeight:600}}>{ruleTitle(sl)}</span> — {ruleNote(sl)}</div>)}
           </div>)}
         </div>}
     {reactions && reactions.length>0 && <Fragment>
@@ -2435,7 +2444,7 @@ function PhaseTracker({ game, setGame, lists, sel }) {
         {reactions.map((d,i)=><div key={i} style={{background:'var(--surface-2)',border:`1px solid ${reactAccent}33`,borderRadius:'var(--r-sm)',padding:'8px 10px'}}>
           <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{d.name}</div>
           {d.hits.map((sl,j)=><div key={j} style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>
-            <span style={{color:reactAccent,fontWeight:600}}>{prettyRule(sl)}</span> — {LANG==='fr'?RULE_PHASE[sl].fr:RULE_PHASE[sl].en}</div>)}
+            <span style={{color:reactAccent,fontWeight:600}}>{ruleTitle(sl)}</span> — {ruleNote(sl)}</div>)}
         </div>)}
       </div>
     </Fragment>}
