@@ -152,6 +152,7 @@ button{font-family:inherit;}
 <script src="./owb_unit_data.js"></script>
 <script src="./augur_al.js"></script>
 <script src="./rules_db.js"></script>
+<script src="./items_db.js"></script>
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, Fragment } = React;
@@ -673,8 +674,8 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap, magical:meMagical,  rerollWound:!!me.rerollWound,  noWard:!!me.noWard,  hitPenalty:myHitPen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap, magical:foeMagical, rerollWound:!!foe.rerollWound, noWard:!!foe.noWard, hitPenalty:foeHitPen };
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  noWard:!!me.noWard,  hitPenalty:myHitPen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, noWard:!!foe.noWard, hitPenalty:foeHitPen };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
@@ -1298,6 +1299,52 @@ function MiniProfile({ unit }) {
 }
 
 /* Resolve the engine-ready candidate units for one side, in either source mode. */
+// Flat lookup of every magic item / gift by normalised name → its effect text,
+// built once from MAGIC_ITEMS_DB (categories → armies → [{n,pts,d}]).
+const ITEM_BY_NAME = (() => {
+  const map = {};
+  if (typeof MAGIC_ITEMS_DB === 'undefined') return map;
+  const walk = (o) => { if (Array.isArray(o)) o.forEach(x => { if (x && x.n && x.d) { const k=normName(x.n); if(!map[k]) map[k]=x.d; } else walk(x); });
+    else if (o && typeof o === 'object') for (const kk in o) walk(o[kk]); };
+  walk(MAGIC_ITEMS_DB);
+  return map;
+})();
+// Parse a (terse, user-written) item description into combat-engine effects.
+function parseItemEffects(d) {
+  d = (d || '').toLowerCase(); const r = { ward:0, regen:false, magical:false, ethereal:false, addRules:[], dS:0, dA:0, dI:0, ap:0 }; let m;
+  if ((m = d.match(/(\d)\+\s*ward/))) r.ward = +m[1];
+  if (/regenerat|régén/.test(d) && !/ignore|annul|negate|no regen|cannot/.test(d)) r.regen = true;
+  if (/magical attack|attaques?\s*magiques/.test(d)) r.magical = true;
+  if (/\bethereal\b|éthéré/.test(d)) r.ethereal = true;
+  if (/killing blow|coup fatal/.test(d)) r.addRules.push('killing-blow');
+  if (/poisoned attack|empoisonn/.test(d)) r.addRules.push('poisoned-attacks');
+  if (/\bhatred\b|\bhaine\b/.test(d)) r.addRules.push('hatred');
+  if (/\bfrenz|frénés/.test(d)) r.addRules.push('frenzy');
+  if (/always strikes first|strikes? first|frappe en premier/.test(d)) r.addRules.push('strike-first');
+  if (/always strikes last|frappe en dernier/.test(d)) r.addRules.push('strike-last');
+  if (/flaming attack|attaques?\s*enflamm/.test(d)) r.addRules.push('flaming-attacks');
+  if (/multiple wounds|blessures multiples/.test(d)) r.addRules.push('multiple-wounds');
+  if ((m = d.match(/\bs\s*\+\s*(\d)|\+\s*(\d)\s*strength|force\s*\+\s*(\d)/))) r.dS = +(m[1]||m[2]||m[3]);
+  if ((m = d.match(/\ba\s*\+\s*(\d)|\+\s*(\d)\s*attack|\+\s*(\d)\s*attaque/))) r.dA = +(m[1]||m[2]||m[3]);
+  if ((m = d.match(/\bi\s*\+\s*(\d)|\+\s*(\d)\s*initiative/))) r.dI = +(m[1]||m[2]||m[3]);
+  if ((m = d.match(/ap\s*-\s*(\d)|pa\s*-\s*(\d)/))) r.ap = +(m[1]||m[2]);
+  return r;
+}
+// Apply the effects of any chosen magic items / gifts (from a loaded list's
+// option labels) to an engine-ready unit, so the forecast reflects them.
+function applyItemEffects(e, opts) {
+  (opts || []).forEach(label => {
+    const d = ITEM_BY_NAME[normName(label)]; if (!d) return;
+    const fx = parseItemEffects(d);
+    if (fx.ward) e.ward = e.ward ? Math.min(e.ward, fx.ward) : fx.ward;
+    if (fx.regen) e.regen = true;
+    if (fx.magical) e.magical = true;
+    if (fx.ethereal) e.ethereal = true;
+    if (fx.ap) e.ap = (e.ap || 0) + fx.ap;
+    if (fx.addRules.length) e.rules = [...(e.rules || []), ...fx.addRules];
+    if (fx.dS || fx.dA || fx.dI) e.profile = { ...e.profile, s: e.profile.s + fx.dS, a: e.profile.a + fx.dA, i: (e.profile.i || 0) + fx.dI };
+  });
+}
 function listCandidates(list, sideKey) {
   if (!list) return [];
   return (list.units || []).map((u, ui) => {
@@ -1320,6 +1367,7 @@ function listCandidates(list, sideKey) {
       e.profile = r.profile; e.save = r.save;
       e.strikeLast = r.strikeLast; e.strikeFirst = r.strikeFirst; e.chargeS = r.chargeS;
     }
+    applyItemEffects(e, u.opts);   // magic items / gifts from the list → engine effects
     return e;
   }).filter(Boolean);
 }
