@@ -2340,13 +2340,24 @@ const RULE_PHASE = {
   'necromantic-undead':{p:3,s:2,en:'Crumbles when it loses; immune to psychology.',fr:'S\'effrite si elle perd ; immunité psycho.'},
   drilled:{p:3,s:1,en:'Reforms / fights more efficiently.',fr:'Reformation / combat plus efficace.'},
   'first-charge':{p:3,s:0,en:'Bonus in the round it charges.',fr:'Bonus au round où elle charge.'},
+  // ---- Combat result & post-combat triggers (win / lose / slain) ----
+  'gaze-of-the-gods':{p:3,s:1,en:'If it wins the combat or slays a foe in a challenge, roll on the Eye of the Gods table (a boon… or Spawnhood).',fr:'Si elle gagne le combat ou tue en défi, jet sur la table du Regard des Dieux (une faveur… ou devenir un Rejeton).'},
+  'gaze-of-the-gods-table':{p:3,s:1,en:'Roll on the Eye of the Gods table after a winning combat.',fr:'Jet sur la table du Regard des Dieux après un combat gagné.'},
+  'gift-of-the-gods':{p:3,s:1,en:'May gain a boon after combat (Eye of the Gods).',fr:'Peut gagner une faveur après le combat (Regard des Dieux).'},
+  'warp-spawned':{p:3,s:1,en:'Risk of mutation / becoming a Spawn after combat.',fr:'Risque de mutation / devenir un Rejeton après le combat.'},
+  'curse-of-the-necropolis':{p:3,s:1,en:'A foe that destroys this unit suffers a burst of hits.',fr:'Un ennemi qui détruit cette unité subit une volée de touches.'},
+  deathblow:{p:3,s:1,en:'When slain in combat, may immediately strike back.',fr:'Tuée au combat, peut riposter immédiatement.'},
+  'explosive-demise':{p:3,s:1,en:'Explodes when slain — hits nearby models.',fr:'Explose en mourant — touche les figurines proches.'},
+  'soul-reaper':{p:3,s:1,en:'Grows stronger from the foes it slays.',fr:'Se renforce des ennemis qu\'elle tue.'},
+  'from-the-ashes':{p:0,s:3,en:'May return to play after being destroyed (Rally/Start).',fr:'Peut revenir en jeu après destruction (Ralliement/Début).'},
 };
 // Rules that can trigger on the NON-active side during the opponent's turn:
 // charge reactions, fighting back in combat, break tests, dispelling.
 const REACT_RULES = new Set(['counter-charge','fire-and-flee','feigned-flight','swiftstride','fast-cavalry','evasive',
   'hatred','poisoned-attacks','poisoned','killing-blow','heroic-killing-blow','regeneration','elven-reflexes','strike-first',
   'armour-bane','cleaving-blow','multiple-wounds','flaming-attacks','fear','terror','stomp-attacks',
-  'stubborn','resolute','cold-blooded','unbreakable','immune-to-psychology','nehekharan-undead','necromantic-undead','daemonic','magic-resistance']);
+  'stubborn','resolute','cold-blooded','unbreakable','immune-to-psychology','nehekharan-undead','necromantic-undead','daemonic','magic-resistance',
+  'gaze-of-the-gods','gaze-of-the-gods-table','gift-of-the-gods','warp-spawned','curse-of-the-necropolis','deathblow','explosive-demise','soul-reaper']);
 function PhaseTracker({ game, setGame, lists, sel }) {
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   const activeSide=game.activeSide||'me', phaseIdx=game.phaseIdx||0, subIdx=game.subIdx||0, maxRounds=game.maxRounds||6, turn=game.turn||1;
