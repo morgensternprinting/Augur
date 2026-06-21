@@ -1271,7 +1271,8 @@ function listCandidates(list, sideKey) {
     const e = engineUnitFromSlug(u.slug, u.name, u.count, ppm);
     if (!e) return null;
     e.id = sideKey + ':' + ui;
-    e.sub = (u.pts ? u.pts + ' pts' : '') + (u.count ? ' · ' + u.count + ' fig.' : '');
+    e.nameFr = u.name_fr || u.nameFr || null;
+    e.sub = (u.pts ? u.pts + ' pts' : '') + (u.count ? ' · ' + u.count + (LANG==='fr'?' fig.':' mdl') : '');
     // Apply equipment → stats: baked from the config sheet (u.eng), or parsed
     // from an imported list's option labels as a best effort.
     if (u.eng) {
@@ -1681,8 +1682,8 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
           {lists.length===0 ? (
             <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-              {tr("Import a list exported from TOW en 1 (the builder's « ⬇ JSON » button).",
-                  'Importe une liste exportée depuis TOW en 1 (bouton « ⬇ JSON » du constructeur).')}</div>
+              {tr("Import a list — TOW en 1 export (« ⬇ JSON ») or an OWB Builder file (.owb.json). The format is detected automatically.",
+                  'Importe une liste — export TOW en 1 (« ⬇ JSON ») ou un fichier OWB Builder (.owb.json). Le format est détecté automatiquement.')}</div>
           ) : (
             <div style={{display:'flex',gap:8}}>
               <div style={{flex:1}}><SectionLabel>{tr('Your list','Ta liste')}</SectionLabel>
@@ -2271,8 +2272,54 @@ function NoData() {
 }
 
 const LISTS_KEY = 'augur.lists.v1';
+const slugifyName = (n) => String(n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+  .replace(/\{[^}]*\}/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// Map an OWB unit id-slug to a real UNIT_DB key (they can differ, e.g.
+// "steam-tank" → "empire-steam-tank"). Tries exact, alias, then army-scoped name match.
+function resolveOwbSlug(slug, name, army) {
+  if (typeof UNIT_DB === 'undefined') return slug;
+  if (UNIT_DB[slug]) return slug;
+  if (typeof augurResolveSlug === 'function') { const a = augurResolveSlug(slug); if (UNIT_DB[a]) return a; }
+  const wantName = normName(name || ''), wantSlug = normName(slug.replace(/-/g,' '));
+  let contains = null;
+  for (const k in UNIT_DB) {
+    const nm = normName(UNIT_DB[k].name || '');
+    if (nm === wantName || nm === wantSlug) return k;
+    if (army && UNIT_DB[k].army === army && wantName && (nm.includes(wantName) || wantName.includes(nm))) contains = contains || k;
+  }
+  return contains || slug;
+}
+// OWB Builder export (`*.owb.json`): units are grouped under category arrays
+// (characters/core/special/rare/…), each with `id` = "slug.xxxx", name_en/name_fr,
+// and wargear arrays whose selected entries are flagged `active:true`.
+function normalizeOwb(data) {
+  const army = (typeof data.army === 'string' ? data.army : (data.armyComposition || '')) || '';
+  const CATS = ['characters','core','special','rare','mercenaries','allies'];
+  const units = [];
+  for (const cat of CATS) {
+    const arr = data[cat]; if (!Array.isArray(arr)) continue;
+    for (const u of arr) {
+      const rawSlug = String(u.id||'').split('.')[0] || slugifyName(u.name_en || u.name_fr);
+      if (!rawSlug) continue;
+      const slug = resolveOwbSlug(rawSlug, u.name_en || u.name_fr, army);
+      const ppm = num(u.points) || 0;
+      const count = num(u.minimum) || 1;
+      const active = (list) => (Array.isArray(list)?list:[]).filter(o => o && o.active);
+      const sel = [...active(u.equipment), ...active(u.armor), ...active(u.mounts), ...active(u.options), ...active(u.command)];
+      const optsPts = sel.reduce((s,o) => s + (o.perModel ? (num(o.points)||0)*count : (num(o.points)||0)), 0);
+      const opts = sel.map(o => o.name_fr || o.name_en).filter(Boolean);
+      units.push({ slug, name: u.name_en || u.name_fr || slug, name_en: u.name_en, name_fr: u.name_fr,
+        cat, count, ppm, opts, optsPts, pts: ppm*count + optsPts });
+    }
+  }
+  return { name: data.name || 'Imported list', army, format: 'owb',
+    total: num(data.points) || units.reduce((s,u)=>s+u.pts,0), units };
+}
 function normalizeImported(data) {
   if (Array.isArray(data)) return { name: 'Imported list', army: '', units: data };
+  const isOwb = !Array.isArray(data.units) &&
+    (data.game === 'the-old-world' || ['characters','core','special','rare'].some(k => Array.isArray(data[k])));
+  if (isOwb) return normalizeOwb(data);
   return {
     name: data.name || 'Imported list',
     army: data.army || '',
