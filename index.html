@@ -1966,11 +1966,12 @@ function ResultProbabilistic({ result, names, onResolve, onAdjust }) {
    7 · SCREEN 3 — Assistant de phase de combat
    ════════════════════════════════════════════════════════════════ */
 const PHASES = [
-  {key:'charge', n:1, title:'Charge & reaction', icon:'zap'},
-  {key:'result', n:2, title:'Combat result', icon:'calculator'},
-  {key:'break',  n:3, title:'Break test', icon:'dices'},
-  {key:'pursue', n:4, title:'Pursuit', icon:'wind'},
+  {key:'charge', n:1, title:'Charge & reaction', fr:'Charge & réaction', icon:'zap'},
+  {key:'result', n:2, title:'Combat result',     fr:'Résultat du combat', icon:'calculator'},
+  {key:'break',  n:3, title:'Break test',        fr:'Test de moral',     icon:'dices'},
+  {key:'pursue', n:4, title:'Pursuit',           fr:'Poursuite',         icon:'wind'},
 ];
+const phaseTitle = (p) => LANG==='fr' ? p.fr : p.title;
 function PhaseRail({ active }) {
   return <div style={{display:'flex',gap:6,padding:'0 var(--screen-pad)'}}>
     {PHASES.map((p,i)=><div key={p.key} style={{flex:1,height:4,borderRadius:'var(--r-pill)',
@@ -1994,22 +1995,22 @@ function BonusEditor({ bon, setBon, charged }) {
   const set=(p)=>setBon(b=>({...b,...p}));
   return <div style={{display:'flex',flexDirection:'column',gap:8}}>
     <div style={{display:'flex',gap:8}}>
-      <Stepper label="Ranks" value={bon.ranks} onChange={v=>set({ranks:v})} min={1} max={10} style={{flex:1}}/>
-      <Stepper label="Other (outnumber, overkill…)" value={bon.extra||0} onChange={v=>set({extra:v})} min={0} max={12} signed style={{flex:1}}/>
+      <Stepper label={tr('Ranks','Rangs')} value={bon.ranks} onChange={v=>set({ranks:v})} min={1} max={10} style={{flex:1}}/>
+      <Stepper label={tr('Other (outnumber, overkill…)','Autre (surnombre, carnage…)')} value={bon.extra||0} onChange={v=>set({extra:v})} min={0} max={12} signed style={{flex:1}}/>
     </div>
     <Segmented size="sm" value={bon.flankRear||0} onChange={v=>set({flankRear:v})}
-      options={[{value:0,label:'Front'},{value:1,label:'Flank +1'},{value:2,label:'Rear +2'}]}/>
+      options={[{value:0,label:tr('Front','Front')},{value:1,label:tr('Flank +1','Flanc +1')},{value:2,label:tr('Rear +2','Dos +2')}]}/>
     <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-      <ChipToggle label="Standard +1" on={bon.banner} onClick={()=>set({banner:!bon.banner})}/>
-      <ChipToggle label="Battle Standard +1" on={bon.warbanner} onClick={()=>set({warbanner:!bon.warbanner})}/>
-      <ChipToggle label="High ground +1" on={bon.highGround} onClick={()=>set({highGround:!bon.highGround})}/>
-      {charged && <span style={{alignSelf:'center',font:'600 var(--fs-xs)/1 var(--font-ui)',color:'var(--out-win)'}}>Charge +1</span>}
+      <ChipToggle label={tr('Standard +1','Étendard +1')} on={bon.banner} onClick={()=>set({banner:!bon.banner})}/>
+      <ChipToggle label={tr('Battle Standard +1','Grande bannière +1')} on={bon.warbanner} onClick={()=>set({warbanner:!bon.warbanner})}/>
+      <ChipToggle label={tr('High ground +1','Position dominante +1')} on={bon.highGround} onClick={()=>set({highGround:!bon.highGround})}/>
+      {charged && <span style={{alignSelf:'center',font:'600 var(--fs-xs)/1 var(--font-ui)',color:'var(--out-win)'}}>{tr('Charge +1','Charge +1')}</span>}
     </div>
   </div>;
 }
 
 function CombatAssistant({ me, foe, sel, onDone }) {
-  const meName = me ? me.name : 'Your unit', foeName = foe ? foe.name : 'Enemy unit';
+  const meName = me ? unitName(me) : tr('Your unit','Ton unité'), foeName = foe ? unitName(foe) : tr('Enemy unit','Unité adverse');
   const [step, setStep] = useState(0);
   const [charger, setCharger]   = useState(sel.charger);
   const [reaction, setReaction] = useState(sel.reaction);
@@ -2066,93 +2067,93 @@ function CombatAssistant({ me, foe, sel, onDone }) {
         <span style={{width:44,height:44,flex:'none',display:'flex',alignItems:'center',justifyContent:'center',
           borderRadius:'var(--r-md)',background:'var(--signal-soft)',border:'1px solid var(--signal-600)'}}>
           <Icon name={phase.icon} size={22} color="var(--signal-400)"/></span>
-        <div style={{font:'600 var(--fs-h2)/1.1 var(--font-display)',color:'var(--text-primary)'}}>{phase.title}</div></div>
+        <div style={{font:'600 var(--fs-h2)/1.1 var(--font-display)',color:'var(--text-primary)'}}>{phaseTitle(phase)}</div></div>
 
       {/* ── 1 · CHARGE & RÉACTION ── */}
       {phase.key==='charge' && <Fragment>
-        <Q>Who charged?</Q>
+        <Q>{tr('Who charged?','Qui a chargé ?')}</Q>
         <Segmented value={charger} onChange={setCharger}
-          options={[{value:'me',label:'You'},{value:'none',label:'Nobody'},{value:'foe',label:'Enemy'}]}/>
+          options={[{value:'me',label:tr('You','Toi')},{value:'none',label:tr('Nobody','Personne')},{value:'foe',label:tr('Enemy','Adverse')}]}/>
         {charger!=='none' && <Fragment>
-          <Q>Defender's reaction · {charger==='me'?foeName:meName}?</Q>
+          <Q>{tr("Defender's reaction",'Réaction du défenseur')} · {charger==='me'?foeName:meName}?</Q>
           <Segmented size="sm" value={reaction} onChange={setReaction}
-            options={[{value:'hold',label:'Hold'},{value:'standshoot',label:'Stand & shoot'},{value:'flee',label:'Flee'}]}/>
+            options={[{value:'hold',label:tr('Hold','Tenir')},{value:'standshoot',label:tr('Stand & shoot','Tenir & tirer')},{value:'flee',label:tr('Flee','Fuir')}]}/>
           <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-md)',
             padding:'var(--sp-3) var(--sp-4)',font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-            {reaction==='hold' && <span>The defender holds. The charger gains <b style={{color:'var(--out-win)'}}>+1</b> to the result (counted in the next step)<span> ; add its lance / impact wounds to the wounds.</span></span>}
-            {reaction==='standshoot' && <span>The defender <b>shoots before contact</b>: remove the casualties first, then resolve the melee with the remaining models.</span>}
-            {reaction==='flee' && <span>The defender <b>flees</b>. If the charge catches it, it is destroyed (go to the Pursuit step); otherwise the charge fails.</span>}
+            {reaction==='hold' && <span>{tr('The defender holds. The charger gains','Le défenseur tient. Le chargeur gagne')} <b style={{color:'var(--out-win)'}}>+1</b> {tr('to the result (counted in the next step) ; add its lance / impact wounds to the wounds.','au résultat (compté à l\'étape suivante) ; ajoute ses blessures de lance / impact aux blessures.')}</span>}
+            {reaction==='standshoot' && <span>{tr('The defender shoots before contact: remove the casualties first, then resolve the melee with the remaining models.','Le défenseur tire avant le contact : retire d\'abord les pertes, puis résous le corps à corps avec les figurines restantes.')}</span>}
+            {reaction==='flee' && <span>{tr('The defender flees. If the charge catches it, it is destroyed (go to the Pursuit step); otherwise the charge fails.','Le défenseur fuit. Si la charge le rattrape, il est détruit (va à l\'étape Poursuite) ; sinon la charge échoue.')}</span>}
           </div>
         </Fragment>}
-        {charger==='none' && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-tertiary)'}}>Already locked in combat — no charge this turn.</div>}
+        {charger==='none' && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('Already locked in combat — no charge this turn.','Déjà engagé au combat — pas de charge ce tour.')}</div>}
       </Fragment>}
 
       {/* ── 2 · COMBAT RESULT ── */}
       {phase.key==='result' && <Fragment>
-        <Q>How many unsaved wounds did each side inflict?</Q>
+        <Q>{tr('How many unsaved wounds did each side inflict?','Combien de blessures non sauvegardées chaque camp a-t-il infligées ?')}</Q>
         <div style={{display:'flex',gap:10}}>
-          <Stepper label={'Wounds · '+meName.split(/[ ,]/)[0]} value={myWounds} onChange={setMyWounds} min={0} max={40} style={{flex:1}}/>
-          <Stepper label={'Wounds · '+foeName.split(/[ ,]/)[0]} value={foeWounds} onChange={setFoeWounds} min={0} max={40} style={{flex:1}}/>
+          <Stepper label={tr('Wounds · ','Blessures · ')+meName.split(/[ ,]/)[0]} value={myWounds} onChange={setMyWounds} min={0} max={40} style={{flex:1}}/>
+          <Stepper label={tr('Wounds · ','Blessures · ')+foeName.split(/[ ,]/)[0]} value={foeWounds} onChange={setFoeWounds} min={0} max={40} style={{flex:1}}/>
         </div>
-        <SectionLabel style={{color:'var(--signal-400)'}}>Bonuses · {meName}{myCharged?' (charge)':''} → CR {myCR}</SectionLabel>
+        <SectionLabel style={{color:'var(--signal-400)'}}>{tr('Bonuses · ','Bonus · ')}{meName}{myCharged?tr(' (charge)',' (charge)'):''} → CR {myCR}</SectionLabel>
         <BonusEditor bon={myBon} setBon={setMyBon} charged={myCharged}/>
-        <SectionLabel style={{color:'var(--out-flee)'}}>Bonuses · {foeName}{foeCharged?' (charge)':''} → CR {foeCR}</SectionLabel>
+        <SectionLabel style={{color:'var(--foe-400)'}}>{tr('Bonuses · ','Bonus · ')}{foeName}{foeCharged?tr(' (charge)',' (charge)'):''} → CR {foeCR}</SectionLabel>
         <BonusEditor bon={foeBon} setBon={setFoeBon} charged={foeCharged}/>
         <div style={{textAlign:'center',padding:'var(--sp-4)',background:'var(--surface-2)',borderRadius:'var(--r-md)',
           border:'1px solid var(--border-default)',marginTop:4}}>
-          <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>Result difference</div>
+          <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>{tr('Result difference','Écart de résultat')}</div>
           <div style={{font:'700 var(--fs-display)/1 var(--font-mono)',marginTop:4,
             color:loser==='foe'?'var(--positive)':loser==='me'?'var(--danger)':'var(--text-secondary)'}}>{diff>0?'+':''}{diff}</div>
           <div style={{font:'600 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-secondary)',marginTop:4}}>
-            {loser==='foe'?`You win — ${foeName} must test`:loser==='me'?`You lose — ${meName} must test`:'Draw — nobody tests'}</div>
+            {loser==='foe'?tr('You win — ','Tu gagnes — ')+foeName+tr(' must test',' doit tester'):loser==='me'?tr('You lose — ','Tu perds — ')+meName+tr(' must test',' doit tester'):tr('Draw — nobody tests','Égalité — personne ne teste')}</div>
         </div>
       </Fragment>}
 
       {/* ── 3 · BREAK TEST ── */}
       {phase.key==='break' && (loser===null ? (
-        <div style={{font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>Drawn result: no Break test required.</div>
+        <div style={{font:'500 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>{tr('Drawn result: no Break test required.','Égalité : aucun test de moral requis.')}</div>
       ) : <Fragment>
-        <Q>{testName} must take a Leadership test.</Q>
+        <Q>{testName} {tr('must take a Leadership test.','doit faire un test de Commandement.')}</Q>
         <div style={{display:'flex',justifyContent:'space-around',textAlign:'center',padding:'var(--sp-2) 0'}}>
-          {[['Ld',cd,'var(--text-primary)'],['Modifier',(stubborn?'0':'−'+Math.abs(diff)),'var(--danger)'],['Target',testUnbreakable?'auto':'≤'+target,'var(--signal-400)']].map(([l,v,c])=>
+          {[[tr('Ld','Cd'),cd,'var(--text-primary)'],[tr('Modifier','Modif.'),(stubborn?'0':'−'+Math.abs(diff)),'var(--danger)'],[tr('Target','Cible'),testUnbreakable?tr('auto','auto'):'≤'+target,'var(--signal-400)']].map(([l,v,c])=>
             <div key={l}><div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)'}}>{l}</div>
               <div style={{font:'700 var(--fs-h1)/1 var(--font-mono)',color:c,marginTop:4}}>{v}</div></div>)}
         </div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          <ChipToggle label="Stubborn (ignore modifier)" on={stubborn} onClick={()=>setStubborn(!stubborn)}/>
-          <ChipToggle label="Cold-Blooded (3D6, drop highest)" on={coldBlood} onClick={()=>setColdBlood(!coldBlood)}/>
-          <ChipToggle label="Reroll (BSB / General)" on={reroll} onClick={()=>setReroll(!reroll)}/>
+          <ChipToggle label={tr('Stubborn (ignore modifier)','Tenace (ignore le malus)')} on={stubborn} onClick={()=>setStubborn(!stubborn)}/>
+          <ChipToggle label={tr('Cold-Blooded (3D6, drop highest)','Sang-froid (3D6, retire le plus haut)')} on={coldBlood} onClick={()=>setColdBlood(!coldBlood)}/>
+          <ChipToggle label={tr('Reroll (BSB / General)','Relance (GB / Général)')} on={reroll} onClick={()=>setReroll(!reroll)}/>
         </div>
         {testUnbreakable ? (
           <div style={{textAlign:'center',padding:'var(--sp-4)',background:'var(--out-give-soft)',border:'1px solid var(--caution)',
-            borderRadius:'var(--r-md)',color:'var(--caution)',font:'600 var(--fs-body)/1.3 var(--font-ui)'}}>Unbreakable unit — automatic success, it holds.</div>
+            borderRadius:'var(--r-md)',color:'var(--caution)',font:'600 var(--fs-body)/1.3 var(--font-ui)'}}>{tr('Unbreakable unit — automatic success, it holds.','Unité indémoralisable — succès automatique, elle tient.')}</div>
         ) : <Fragment>
-          <Q>Dice roll — roll for real then enter, or roll in the app</Q>
+          <Q>{tr('Dice roll — roll for real then enter, or roll in the app','Jet de dés — lance pour de vrai puis saisis, ou lance dans l\'app')}</Q>
           <div style={{display:'flex',gap:10,alignItems:'flex-end'}}>
-            <Stepper label={coldBlood?'Total (2 lowest dice)':'Total 2D6'} value={entry} onChange={setEntry} min={2} max={12} style={{flex:1}}/>
-            <Button variant="secondary" size="lg" onClick={doRoll} icon={<Icon name="dices" size={20}/>}>Roll</Button>
+            <Stepper label={coldBlood?tr('Total (2 lowest dice)','Total (2 dés les plus bas)'):tr('Total 2D6','Total 2D6')} value={entry} onChange={setEntry} min={2} max={12} style={{flex:1}}/>
+            <Button variant="secondary" size="lg" onClick={doRoll} icon={<Icon name="dices" size={20}/>}>{tr('Roll','Lancer')}</Button>
           </div>
-          <Verdict ok={passed} glow text={passed?`Passed (${entry} ≤ ${target}) — the unit holds`:`Failed (${entry} > ${target}) — THE UNIT FLEES`}/>
+          <Verdict ok={passed} glow text={passed?tr('Passed','Réussi')+` (${entry} ≤ ${target}) — `+tr('the unit holds','l\'unité tient'):tr('Failed','Échec')+` (${entry} > ${target}) — `+tr('THE UNIT FLEES','L\'UNITÉ FUIT')}/>
         </Fragment>}
       </Fragment>)}
 
       {/* ── 4 · PURSUIT ── */}
       {phase.key==='pursue' && <Fragment>
-        <Q>Did the unit flee? Compare its flee roll to the pursuit.</Q>
+        <Q>{tr('Did the unit flee? Compare its flee roll to the pursuit.','L\'unité a-t-elle fui ? Compare son jet de fuite à la poursuite.')}</Q>
         <div style={{display:'flex',gap:10}}>
-          <Stepper label="Flee distance (2D6)" value={fleeRoll} onChange={setFleeRoll} min={2} max={12} style={{flex:1}}/>
-          <Stepper label="Pursuit (2D6)" value={pursueRoll} onChange={setPursueRoll} min={2} max={12} style={{flex:1}}/>
+          <Stepper label={tr('Flee distance (2D6)','Distance de fuite (2D6)')} value={fleeRoll} onChange={setFleeRoll} min={2} max={12} style={{flex:1}}/>
+          <Stepper label={tr('Pursuit (2D6)','Poursuite (2D6)')} value={pursueRoll} onChange={setPursueRoll} min={2} max={12} style={{flex:1}}/>
         </div>
-        <Button variant="secondary" block onClick={()=>{setFleeRoll(roll2d6());setPursueRoll(roll2d6());}} icon={<Icon name="dices" size={18}/>}>Roll both</Button>
+        <Button variant="secondary" block onClick={()=>{setFleeRoll(roll2d6());setPursueRoll(roll2d6());}} icon={<Icon name="dices" size={18}/>}>{tr('Roll both','Lancer les deux')}</Button>
         <Verdict ok={pursueRoll<fleeRoll}
-          text={pursueRoll>=fleeRoll?`Caught (${pursueRoll} ≥ ${fleeRoll}) — DESTROYED → enemy VP`:`Escaped (${pursueRoll} < ${fleeRoll}) — it survives, the winner advances`}/>
+          text={pursueRoll>=fleeRoll?tr('Caught','Rattrapée')+` (${pursueRoll} ≥ ${fleeRoll}) — `+tr('DESTROYED → enemy VP','DÉTRUITE → PV adverse'):tr('Escaped','Échappée')+` (${pursueRoll} < ${fleeRoll}) — `+tr('it survives, the winner advances','elle survit, le vainqueur avance')}/>
       </Fragment>}
     </Body>
     <BottomBar>
-      {step>0&&<Button variant="secondary" size="lg" onClick={back} icon={<Icon name="chevron-left" size={20}/>}>Back</Button>}
+      {step>0&&<Button variant="secondary" size="lg" onClick={back} icon={<Icon name="chevron-left" size={20}/>}>{tr('Back','Retour')}</Button>}
       <Button variant="primary" size="lg" block onClick={next}
         icon={<Icon name={step===PHASES.length-1?'check':'chevron-right'} size={20}/>}>
-        {step===PHASES.length-1?'Finish':'Next step'}</Button>
+        {step===PHASES.length-1?tr('Finish','Terminer'):tr('Next step','Étape suivante')}</Button>
     </BottomBar></Fragment>;
 }
 
@@ -2329,11 +2330,11 @@ function Splash({ onEnter }) {
    8 · SCREEN 5 — Quick reference tables (rulebook end-of-book summary)
    ════════════════════════════════════════════════════════════════ */
 const FIASCO_ROWS = [
-  { band:'2–4',   name:'Cascade Dimensionnelle' },
-  { band:'5–6',   name:'Déflagration Calamiteuse' },
-  { band:'7',     name:'Conjuration Imprudente' },
-  { band:'8–9',   name:'Pouvoir à Peine Contrôlé' },
-  { band:'10–12', name:'Drain de Magie' },
+  { band:'2–4',   name:'Dimensional Cascade',  fr:'Cascade Dimensionnelle' },
+  { band:'5–6',   name:'Calamitous Detonation',fr:'Déflagration Calamiteuse' },
+  { band:'7',     name:'Reckless Conjuration', fr:'Conjuration Imprudente' },
+  { band:'8–9',   name:'Barely Contained Power',fr:'Pouvoir à Peine Contrôlé' },
+  { band:'10–12', name:'Magical Drain',        fr:'Drain de Magie' },
 ];
 const bandHas = (band, v) => { const m=String(band).match(/(\d+)(?:\D+(\d+))?/); const lo=+m[1], hi=m[2]?+m[2]:lo; return v>=lo && v<=hi; };
 
@@ -2382,66 +2383,73 @@ function QuickRef() {
     <ScreenHeader eyebrow={tr('Quick reference','Référence rapide')} title={tr('Tables','Tables')}/>
     <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
       <Segmented value={view} onChange={setView} size="sm"
-        options={[{value:'incidents',label:'Incidents & Fiasco'},{value:'combat',label:'Touches · Blessures'}]}/>
+        options={[{value:'incidents',label:tr('Incidents & Miscast','Incidents & Fiasco')},{value:'combat',label:tr('To-hit · To-wound','Touches · Blessures')}]}/>
     </div>
     <Body>
       {view==='incidents' ? grid(<Fragment>
-        <RefBlock title="Magie — l'essentiel" accent="var(--signal-400)"
-          note="Phase de Stratégie, sous-phase de Conjuration. Seuls les sorts Enchantement (alliés) et Hex (ennemis) se lancent ici.">
-          <RefRow left="Lancer" right="2D6 + Niveau ≥ Valeur de lancement du sort"/>
-          <RefRow left="6 · 6" right="Pouvoir irrésistible — le sort passe, puis Fiasco"/>
-          <RefRow left="1 · 1" right="Fiasco — jet sur le Tableau des Fiascos"/>
-          <RefRow left="Dissip." right={'2D6 + Niveau · portée Niv 1-2 = 18", Niv 3-4 = 24"'}/>
+        <RefBlock title={tr('Magic — the essentials',"Magie — l'essentiel")} accent="var(--signal-400)"
+          note={tr('Strategy phase, Conjuration sub-phase. Only Enchantment (friendly) and Hex (enemy) spells are cast here.',
+                   'Phase de Stratégie, sous-phase de Conjuration. Seuls les sorts Enchantement (alliés) et Hex (ennemis) se lancent ici.')}>
+          <RefRow left={tr('Cast','Lancer')} right={tr("2D6 + Level ≥ the spell's casting value",'2D6 + Niveau ≥ Valeur de lancement du sort')}/>
+          <RefRow left="6 · 6" right={tr('Irresistible — the spell goes off, then a Miscast','Pouvoir irrésistible — le sort passe, puis Fiasco')}/>
+          <RefRow left="1 · 1" right={tr('Miscast — roll on the Miscast table','Fiasco — jet sur le Tableau des Fiascos')}/>
+          <RefRow left={tr('Dispel','Dissip.')} right={tr('2D6 + Level · range Lvl 1-2 = 18", Lvl 3-4 = 24"','2D6 + Niveau · portée Niv 1-2 = 18", Niv 3-4 = 24"')}/>
         </RefBlock>
 
-        <RefBlock title="Tableau des Fiascos (2D6)" accent="var(--signal-400)"
-          note="Effets détaillés à compléter depuis le livre (résumé p.344).">
+        <RefBlock title={tr('Miscast table (2D6)','Tableau des Fiascos (2D6)')} accent="var(--signal-400)"
+          note={tr('Detailed effects to be filled in from the book (summary p.344).','Effets détaillés à compléter depuis le livre (résumé p.344).')}>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {FIASCO_ROWS.map(r=><RefRow key={r.band} left={r.band} right={r.name} hl={fiasco!=null&&bandHas(r.band,fiasco)}/>)}
+            {FIASCO_ROWS.map(r=><RefRow key={r.band} left={r.band} right={LANG==='fr'?r.fr:r.name} hl={fiasco!=null&&bandHas(r.band,fiasco)}/>)}
           </div>
           <Button variant="secondary" onClick={()=>setFiasco(roll2d6())} icon={<Icon name="dices" size={18}/>}>
-            {fiasco!=null ? ('Résultat : '+fiasco+' — relancer') : 'Lancer 2D6'}</Button>
+            {fiasco!=null ? (tr('Result: ','Résultat : ')+fiasco+tr(' — reroll',' — relancer')) : tr('Roll 2D6','Lancer 2D6')}</Button>
         </RefBlock>
 
-        <RefBlock title="Incidents de tir — machines de guerre" accent="var(--foe-400)"
-          note="Catapultes et machines à poudre : sur un incident, jet sur la table d'incident. Résultats génériques à compléter depuis le livre (p.347). Les machines spéciales d'armée (Canon Infernal, Éclair Warp, Orgue…) ont leur propre table d'incident.">
+        <RefBlock title={tr('Shooting incidents — war machines','Incidents de tir — machines de guerre')} accent="var(--foe-400)"
+          note={tr("Catapults and black-powder weapons: on a misfire, roll on the Misfire table. Generic results to be filled in from the book (p.347). Army war machines (Hellcannon, Warp Lightning, Organ Gun…) have their own misfire table.",
+                   "Catapultes et machines à poudre : sur un incident, jet sur la table d'incident. Résultats génériques à compléter depuis le livre (p.347). Les machines spéciales d'armée (Canon Infernal, Éclair Warp, Orgue…) ont leur propre table d'incident.")}>
           <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
-            À renseigner : résultats D6 pour Catapultes et Machines à Poudre.</div>
+            {tr('To fill in: D6 results for Catapults and Black-Powder weapons.','À renseigner : résultats D6 pour Catapultes et Machines à Poudre.')}</div>
         </RefBlock>
       </Fragment>) : grid(<Fragment>
 
-        <RefBlock title="Toucher au tir (CT)" accent="var(--signal-400)"
-          note="Modificateurs : −1 tireur déplacé · −1 longue portée · −1 Tenir-et-tirer · −1 couvert léger · −2 couvert lourd.">
+        <RefBlock title={tr('Ballistic Skill to-hit (BS)','Toucher au tir (CT)')} accent="var(--signal-400)"
+          note={tr('Modifiers: −1 shooter moved · −1 long range · −1 Stand & shoot · −1 soft cover · −2 hard cover.',
+                   'Modificateurs : −1 tireur déplacé · −1 longue portée · −1 Tenir-et-tirer · −1 couvert léger · −2 couvert lourd.')}>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {[['CT 1','6+'],['CT 2','5+'],['CT 3','4+'],['CT 4','3+'],['CT 5+','2+']].map(([a,b])=>
-              <RefRow key={a} left={a} right={'touche sur '+b}/>)}
+            {[['1','6+'],['2','5+'],['3','4+'],['4','3+'],['5+','2+']].map(([a,b])=>
+              <RefRow key={a} left={tr('BS ','CT ')+a} right={tr('hits on ','touche sur ')+b}/>)}
           </div>
         </RefBlock>
 
-        <RefBlock title="Toucher au combat" accent="var(--signal-400)"
-          note="Lignes = CC de l'attaquant, colonnes = CC de la cible. CC supérieure → 3+, CC ennemie ≥ 2× → 5+, sinon 4+.">
-          <MatrixTable corner="CC" head={range.map(String)} rows={ccRows}/>
+        <RefBlock title={tr('Weapon Skill to-hit','Toucher au combat')} accent="var(--signal-400)"
+          note={tr('Rows = attacker WS, columns = target WS. Higher WS → 3+, enemy WS ≥ 2× → 5+, otherwise 4+.',
+                   "Lignes = CC de l'attaquant, colonnes = CC de la cible. CC supérieure → 3+, CC ennemie ≥ 2× → 5+, sinon 4+.")}>
+          <MatrixTable corner={tr('WS','CC')} head={range.map(String)} rows={ccRows}/>
         </RefBlock>
 
-        <RefBlock title="Blesser (Force vs Endurance)" accent="var(--signal-400)"
-          note="Lignes = Force, colonnes = Endurance. « — » = impossible (Force inférieure de 3+ à l'Endurance).">
-          <MatrixTable corner="F\\E" head={range.map(String)} rows={wRows}/>
+        <RefBlock title={tr('To-wound (Strength vs Toughness)','Blesser (Force vs Endurance)')} accent="var(--signal-400)"
+          note={tr('Rows = Strength, columns = Toughness. « — » = impossible (Strength 3+ below Toughness).',
+                   "Lignes = Force, colonnes = Endurance. « — » = impossible (Force inférieure de 3+ à l'Endurance).")}>
+          <MatrixTable corner={tr('S\\T','F\\E')} head={range.map(String)} rows={wRows}/>
         </RefBlock>
 
-        <RefBlock title="Résultat de combat" accent="var(--foe-400)">
-          {[['+1','par blessure infligée'],['+1','par rang complet (max +3)'],['+1','étendard'],['+1','grande bannière'],
-            ['+1','attaque de flanc'],['+2','attaque de dos'],['+1','position dominante'],['+1','par blessure en excès (Carnage / défi)']].map(([a,b],i)=>
+        <RefBlock title={tr('Combat result','Résultat de combat')} accent="var(--foe-400)">
+          {[['+1',tr('per wound inflicted','par blessure infligée')],['+1',tr('per full rank (max +3)','par rang complet (max +3)')],
+            ['+1',tr('standard','étendard')],['+1',tr('battle standard','grande bannière')],
+            ['+1',tr('flank attack','attaque de flanc')],['+2',tr('rear attack','attaque de dos')],
+            ['+1',tr('high ground','position dominante')],['+1',tr('per excess wound (Overkill / challenge)','par blessure en excès (Carnage / défi)')]].map(([a,b],i)=>
             <RefRow key={i} left={a} right={b}/>)}
         </RefBlock>
 
-        <RefBlock title="Moral, charge & marche" accent="var(--foe-400)">
-          <RefRow left="Moral" right="2D6 + écart de résultat, comparé au Commandement"/>
-          <RefRow left="Réussi" right="l'unité tient en bon ordre"/>
-          <RefRow left="Raté" right="démoralisée — cède du terrain ou fuite"/>
-          <RefRow left="1 · 1" right="cède du terrain (ne fuit jamais)"/>
+        <RefBlock title={tr('Morale, charge & march','Moral, charge & marche')} accent="var(--foe-400)">
+          <RefRow left={tr('Morale','Moral')} right={tr('2D6 + result difference, vs Leadership','2D6 + écart de résultat, comparé au Commandement')}/>
+          <RefRow left={tr('Pass','Réussi')} right={tr('the unit holds in good order',"l'unité tient en bon ordre")}/>
+          <RefRow left={tr('Fail','Raté')} right={tr('broken — gives ground or flees','démoralisée — cède du terrain ou fuite')}/>
+          <RefRow left="1 · 1" right={tr('gives ground (never flees)','cède du terrain (ne fuit jamais)')}/>
           <div style={{height:1,background:'var(--border-subtle)',margin:'2px 0'}}/>
-          <RefRow left="Charge" right="2D6 (garder le plus haut) + Mouvement"/>
-          <RefRow left="Marche" right={'×2 M (×3 en colonne) ; test de Cd si ≤ 8" d\'un ennemi'}/>
+          <RefRow left={tr('Charge','Charge')} right={tr('2D6 (keep highest) + Movement','2D6 (garder le plus haut) + Mouvement')}/>
+          <RefRow left={tr('March','Marche')} right={tr('×2 M (×3 in column); Ld test if ≤ 8" from an enemy','×2 M (×3 en colonne) ; test de Cd si ≤ 8" d\'un ennemi')}/>
         </RefBlock>
       </Fragment>)}
       <div style={{height:8}}/>
