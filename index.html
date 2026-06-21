@@ -1669,67 +1669,54 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
       <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
         options={[{value:'catalog',label:tr('Catalogue','Catalogue')},{value:'lists',label:tr('Imported lists','Listes importées')}]}/>
 
-      {sel.source==='catalog' ? (
-        <div style={{display:'flex',gap:8}}>
-          {['me','foe'].map(sd=>{
-            const aKey=sd==='me'?'myArmy':'foeArmy', vKey=sd==='me'?'myVariant':'foeVariant';
-            const army=game[aKey], variant=game[vKey], accent=sd==='me'?'var(--signal-600)':'var(--foe-600)';
-            const vars=variantsFor(army);
-            const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(sd==='me'?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
-            const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(sd==='me'?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
-            return <div key={sd} style={{flex:1,display:'flex',flexDirection:'column',gap:6}}>
-              <SectionLabel>{sd==='me'?tr('Your army','Ton armée'):tr('Enemy army','Armée adverse')}</SectionLabel>
-              <ArmySelect value={army} accent={accent} onChange={setArmy}/>
+      {sel.source==='lists' && <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-2)'}}>
+        {lists.length===0 && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
+          {tr("Import a list — TOW en 1 export (« ⬇ JSON ») or an OWB Builder file (.owb.json). The format is detected automatically.",
+              'Importe une liste — export TOW en 1 (« ⬇ JSON ») ou un fichier OWB Builder (.owb.json). Le format est détecté automatiquement.')}</div>}
+        <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
+          onChange={e=>{const f=e.target.files[0];if(f)onImport(f);e.target.value='';}}/>
+        <Button variant="secondary" block onClick={()=>fileRef.current&&fileRef.current.click()}
+          icon={<Icon name="upload" size={18}/>}>{tr('Import a list (.json)','Importer une liste (.json)')}</Button>
+      </Card>}
+
+      {/* one vertical block per side: army (or list) + its unit selection */}
+      {['me','foe'].map((sd,si)=>{
+        const isMe = sd==='me';
+        const accent = isMe?accentMe:accentFoe, accentDeep = isMe?'var(--signal-600)':'var(--foe-600)';
+        const aKey=isMe?'myArmy':'foeArmy', vKey=isMe?'myVariant':'foeVariant';
+        const army=game[aKey], variant=game[vKey], vars=variantsFor(army);
+        const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(isMe?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
+        const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(isMe?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
+        const unit = isMe?myUnit:foeUnit;
+        return <Fragment key={sd}>
+          {si===1 && <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
+            <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
+            <Icon name="swords" size={18} color="var(--text-tertiary)"/>
+            <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>}
+          <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:10,
+            borderLeft:`3px solid ${accent}`}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <Icon name={isMe?'shield':'swords'} size={16} color={accent}/>
+              <span style={{font:'700 var(--fs-sm)/1 var(--font-display)',letterSpacing:'0.02em',color:accent}}>
+                {isMe?tr('Your army','Ton armée'):tr('Enemy army','Armée adverse')}</span>
+            </div>
+            {sel.source==='catalog' ? (<Fragment>
+              <ArmySelect value={army} accent={accentDeep} onChange={setArmy}/>
               {vars.length>1 && <select value={variant} onChange={e=>setVar(e.target.value)}
                 style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
                   color:variant==='standard'?'var(--text-secondary)':accent,border:`1px solid ${variant==='standard'?'var(--border-default)':accent}`,
                   borderRadius:'var(--r-md)',padding:'8px var(--sp-3)',font:'600 var(--fs-xs)/1 var(--font-ui)',cursor:'pointer'}}>
                 {vars.map(v=><option key={v.key} value={v.key} style={{background:'var(--surface-2)',color:'var(--text-primary)'}}>{v.name}</option>)}</select>}
-            </div>;
-          })}
-        </div>
-      ) : (
-        <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
-          {lists.length===0 ? (
-            <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-              {tr("Import a list — TOW en 1 export (« ⬇ JSON ») or an OWB Builder file (.owb.json). The format is detected automatically.",
-                  'Importe une liste — export TOW en 1 (« ⬇ JSON ») ou un fichier OWB Builder (.owb.json). Le format est détecté automatiquement.')}</div>
-          ) : (
-            <div style={{display:'flex',gap:8}}>
-              <div style={{flex:1}}><SectionLabel>{tr('Your list','Ta liste')}</SectionLabel>
-                <select value={sel.myList} onChange={e=>{const i=+e.target.value;set({myList:i,mine:'me:0'});}}
-                  style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
-                    border:'1px solid var(--signal-600)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
-                    font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-                  {lists.map((l,i)=><option key={i} value={i}>{l.name||(tr('List ','Liste ')+(i+1))}</option>)}</select></div>
-              <div style={{flex:1}}><SectionLabel>{tr('Enemy list','Liste adverse')}</SectionLabel>
-                <select value={sel.foeList} onChange={e=>{const i=+e.target.value;set({foeList:i,foe:'foe:0'});}}
-                  style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
-                    border:'1px solid var(--foe-500)',borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
-                    font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-                  {lists.map((l,i)=><option key={i} value={i}>{l.name||(tr('List ','Liste ')+(i+1))}</option>)}</select></div>
-            </div>
-          )}
-          <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
-            onChange={e=>{const f=e.target.files[0];if(f)onImport(f);e.target.value='';}}/>
-          <Button variant="secondary" block onClick={()=>fileRef.current&&fileRef.current.click()}
-            icon={<Icon name="upload" size={18}/>}>{tr('Import a list (.json)','Importer une liste (.json)')}</Button>
-        </Card>
-      )}
-
-      {wide ? (
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,alignItems:'start'}}>
-          <SideSelector label={tr('Your unit','Ton unité')} accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
-          <SideSelector label={tr('Enemy unit','Unité adverse')} accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
-        </div>
-      ) : (<Fragment>
-        <SideSelector label={tr('Your unit','Ton unité')} accent={accentMe} unit={myUnit} onOpen={()=>setSheet('me')}/>
-        <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
-          <span style={{flex:1,height:1,background:'var(--border-default)'}}/>
-          <Icon name="swords" size={18} color="var(--text-tertiary)"/>
-          <span style={{flex:1,height:1,background:'var(--border-default)'}}/></div>
-        <SideSelector label={tr('Enemy unit','Unité adverse')} accent={accentFoe} unit={foeUnit} onOpen={()=>setSheet('foe')}/>
-      </Fragment>)}
+            </Fragment>) : (lists.length>0 &&
+              <select value={isMe?sel.myList:sel.foeList} onChange={e=>{const i=+e.target.value; set(isMe?{myList:i,mine:'me:0'}:{foeList:i,foe:'foe:0'});}}
+                style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
+                  border:`1px solid ${accentDeep}`,borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
+                  font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+                {lists.map((l,i)=><option key={i} value={i}>{l.name||(tr('List ','Liste ')+(i+1))}</option>)}</select>)}
+            <SideSelector label={isMe?tr('Your unit','Ton unité'):tr('Enemy unit','Unité adverse')} accent={accent} unit={unit} onOpen={()=>setSheet(sd)}/>
+          </Card>
+        </Fragment>;
+      })}
 
       {/* auto-detected combat rules from both units' special rules */}
       <Collapsible title={tr('Active combat rules','Règles de combat actives')} icon="sparkles" accent="var(--signal-400)" defaultOpen={false}
