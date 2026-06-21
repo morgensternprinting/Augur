@@ -2380,11 +2380,31 @@ function Splash({ onEnter }) {
    8 · SCREEN 5 — Quick reference tables (rulebook end-of-book summary)
    ════════════════════════════════════════════════════════════════ */
 const FIASCO_ROWS = [
-  { band:'2–4',   name:'Dimensional Cascade',  fr:'Cascade Dimensionnelle' },
-  { band:'5–6',   name:'Calamitous Detonation',fr:'Déflagration Calamiteuse' },
-  { band:'7',     name:'Reckless Conjuration', fr:'Conjuration Imprudente' },
-  { band:'8–9',   name:'Barely Contained Power',fr:'Pouvoir à Peine Contrôlé' },
-  { band:'10–12', name:'Magical Drain',        fr:'Drain de Magie' },
+  { band:'2–4',   name:'Dimensional Cascade',   fr:'Cascade Dimensionnelle',
+    eff:'5" blast on the wizard; each model under it risks 1 hit at S10, AP-4.',
+    efr:'Gabarit 5" sur le Sorcier ; chaque figurine dessous risque 1 touche F10, PA-4.' },
+  { band:'5–6',   name:'Calamitous Detonation', fr:'Déflagration Calamiteuse',
+    eff:'3" blast on the wizard; 1 hit at S6, AP-2.',
+    efr:'Gabarit 3" sur le Sorcier ; 1 touche F6, PA-2.' },
+  { band:'7',     name:'Reckless Conjuration',  fr:'Conjuration Imprudente',
+    eff:'The wizard takes 1 hit at S4, AP-1.',
+    efr:'Le Sorcier subit 1 touche F4, PA-1.' },
+  { band:'8–9',   name:'Barely Contained Power',fr:'Pouvoir à Peine Contrôlé',
+    eff:'Spell cast at its casting value; the wizard casts no more spells this turn.',
+    efr:'Sort lancé à sa valeur de lancement ; plus aucun sort ce tour.' },
+  { band:'10–12', name:'Magical Drain',         fr:'Drain de Magie',
+    eff:'Spell cast with a perfect invocation; the wizard casts no more spells this turn.',
+    efr:'Sort lancé avec une invocation parfaite ; plus aucun sort ce tour.' },
+];
+const CATAPULT_MISFIRE = [
+  { roll:'1',   en:'Destroyed — the machine is removed from play.', fr:'Détruite — la machine est retirée du jeu.' },
+  { roll:'2–4', en:'Malfunction — crew lose 1 wound; misfires this turn and cannot shoot until the end of the next round.', fr:'Défaillance — les servants perdent 1 PV ; rate son tir ce tour et ne peut plus tirer avant la fin du prochain round.' },
+  { roll:'5–6', en:'Twang — a minor break: misfires this turn.', fr:'Twang — panne mineure : rate son tir ce tour.' },
+];
+const POWDER_MISFIRE = [
+  { roll:'1',   en:'Destroyed — the machine explodes and is removed from play.', fr:'Détruite — la machine explose et est retirée du jeu.' },
+  { roll:'2–4', en:'Malfunction — crew lose 1 wound; does not fire this turn and cannot shoot until the end of the next round.', fr:'Défaillance — les servants perdent 1 PV ; ne tire pas ce tour et ne peut plus tirer avant la fin du prochain round.' },
+  { roll:'5–6', en:'Fizzle — the fuse fails: does not fire this turn.', fr:'Pachittt — la mèche fait long feu : ne tire pas ce tour.' },
 ];
 const bandHas = (band, v) => { const m=String(band).match(/(\d+)(?:\D+(\d+))?/); const lo=+m[1], hi=m[2]?+m[2]:lo; return v>=lo && v<=hi; };
 
@@ -2446,20 +2466,33 @@ function QuickRef() {
           <RefRow left={tr('Dispel','Dissip.')} right={tr('2D6 + Level · range Lvl 1-2 = 18", Lvl 3-4 = 24"','2D6 + Niveau · portée Niv 1-2 = 18", Niv 3-4 = 24"')}/>
         </RefBlock>
 
-        <RefBlock title={tr('Miscast table (2D6)','Tableau des Fiascos (2D6)')} accent="var(--signal-400)"
-          note={tr('Roll 2D6 and read the full result on the Miscast table in your rulebook (p.108-109).','Lance 2D6 et lis le résultat complet sur le Tableau des Fiascos de ton livre de règles (p.108-109).')}>
+        <RefBlock title={tr('Miscast table (2D6)','Tableau des Fiascos (2D6)')} accent="var(--signal-400)">
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {FIASCO_ROWS.map(r=><RefRow key={r.band} left={r.band} right={LANG==='fr'?r.fr:r.name} hl={fiasco!=null&&bandHas(r.band,fiasco)}/>)}
+            {FIASCO_ROWS.map(r=>{const on=fiasco!=null&&bandHas(r.band,fiasco);
+              return <div key={r.band} style={{display:'flex',gap:10,padding:'8px 10px',borderRadius:'var(--r-sm)',
+                background:on?'var(--signal-soft)':'var(--surface-2)',border:`1px solid ${on?'var(--signal-500)':'var(--border-subtle)'}`}}>
+                <span style={{flex:'none',minWidth:42,font:'700 var(--fs-sm)/1.2 var(--font-mono)',color:on?'var(--signal-300)':'var(--text-secondary)'}}>{r.band}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)'}}>{LANG==='fr'?r.fr:r.name}</div>
+                  <div style={{font:'400 var(--fs-xs)/1.35 var(--font-ui)',color:'var(--text-secondary)',marginTop:2}}>{LANG==='fr'?r.efr:r.eff}</div>
+                </div></div>;})}
           </div>
           <Button variant="secondary" onClick={()=>setFiasco(roll2d6())} icon={<Icon name="dices" size={18}/>}>
             {fiasco!=null ? (tr('Result: ','Résultat : ')+fiasco+tr(' — reroll',' — relancer')) : tr('Roll 2D6','Lancer 2D6')}</Button>
         </RefBlock>
 
-        <RefBlock title={tr('Shooting incidents — war machines','Incidents de tir — machines de guerre')} accent="var(--foe-400)"
+        <RefBlock title={tr('Catapult misfire (D6)','Incident de tir — Catapultes (D6)')} accent="var(--foe-400)">
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {CATAPULT_MISFIRE.map(r=><RefRow key={r.roll} left={r.roll} right={LANG==='fr'?r.fr:r.en}/>)}
+          </div>
+        </RefBlock>
+
+        <RefBlock title={tr('Black-powder misfire (D6)','Incident de tir — Machines à Poudre (D6)')} accent="var(--foe-400)"
           note={tr("Army war machines (Hellcannon, Warp Lightning, Organ Gun…) each have their own misfire table — see the unit's special rules.",
                    "Les machines de guerre d'armée (Canon Infernal, Éclair Warp, Orgue…) ont chacune leur propre table d'incident — voir les règles spéciales de l'unité.")}>
-          <RefRow left={tr('Catapults','Catapultes')} right={tr('on a misfire, roll on the Misfire table in your rulebook','sur un incident, jet sur la table d\'incident de ton livre de règles')}/>
-          <RefRow left={tr('Black powder','Poudre noire')} right={tr('on a misfire, roll on the Misfire table in your rulebook','sur un incident, jet sur la table d\'incident de ton livre de règles')}/>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {POWDER_MISFIRE.map(r=><RefRow key={r.roll} left={r.roll} right={LANG==='fr'?r.fr:r.en}/>)}
+          </div>
         </RefBlock>
       </Fragment>) : grid(<Fragment>
 
