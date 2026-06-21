@@ -2291,6 +2291,25 @@ const ruleNote = (sl) => {
   if (LANG === 'fr' && i && i.desc) { const d = i.desc.replace(/\s+/g,' ').trim(); return d.length > 180 ? d.slice(0,178) + '…' : d; }
   return RULE_PHASE[sl] ? (LANG==='fr' ? RULE_PHASE[sl].fr : RULE_PHASE[sl].en) : (i && i.desc ? i.desc.slice(0,160) : '');
 };
+// Best-effort classifier: guess a rule's sub-phase from its description so the
+// digest can surface EVERY rule (not just the hand-curated ones). Curated
+// RULE_PHASE always wins; this is the fallback for the other ~660 rules.
+function autoPhase(sl) {
+  const i = ruleInfo(sl); if (!i) return null;
+  const d = ((i.desc||'') + ' ' + (i.name||'')).toLowerCase();
+  if (/break test|test de moral|morale|démoralis|crumbl|effritement|panic|panique|unbreakable|indémoralis|steadfast|stubborn|tenace/.test(d)) return {p:3,s:2};
+  if (/pursu|poursuit|\bflee\b|fuite|overrun|percée|run down|catch the/.test(d)) return {p:3,s:3};
+  if (/combat result|résultat de combat|overkill|carnage|wins? the combat|gagne le combat/.test(d)) return {p:3,s:1};
+  if (/close combat|in combat|au combat|to wound|to hit|strikes?|frappe|killing blow|coup fatal|hatred|haine|impact hit|stomp|piétin|challenge|défi|initiative|parry|parade|great weapon|attaque|reroll.*(hit|wound|touch|bless)|relance.*(touch|bless)|poison|regenerat|régén|ward|flaming|enflamm/.test(d)) return {p:3,s:0};
+  if (/cast|lance un sort|\bspell\b|\bsort\b|miscast|fiasco|dispel|dissip|magic phase|winds of magic|bound spell|wizard|sorcier|magic missile|hex|enchantment|conjuration/.test(d)) return {p:0,s:2};
+  if (/command sub-?phase|sous-phase de commandement|leadership|commandement|prayer|prière|stupidity|stupidité|\brally\b|ralliement|general('|’)s|du général|inspiring|panic test/.test(d)) return {p:0,s:1};
+  if (/start of (the )?turn|début de tour|recovery/.test(d)) return {p:0,s:0};
+  if (/charge reaction|réaction.*charge|stand (and|&) shoot|tenir.*tir|counter-?charge|contre-charge|declare a charge|déclarer une charge|flee as a|feigned flight|fuite simulée/.test(d)) return {p:1,s:0};
+  if (/\bshoot|\btir\b|missile|ballistic|ranged|\barrow|\bbolt\b|cannon|canon|war machine|machine de guerre|artiller|volley|salve|breath weapon|souffle/.test(d)) return {p:2,s:1};
+  if (/\bmove|mouvement|\bfly\b|\bvol\b|voler|\bmarch|vanguard|avant-garde|scout|éclaireur|ambush|embusqu|terrain|\bcover\b|couvert|swiftstride|allure rapide|fast cavalry|cavalerie rapide/.test(d)) return {p:1,s:3};
+  return null;
+}
+const rulePlace = (sl) => RULE_PHASE[sl] || autoPhase(sl);
 // rule slug → which sub-phase it matters in (p=phaseIdx, s=subIdx) + a short functional note.
 const RULE_PHASE = {
   stupidity:{p:0,s:1,en:'Take a Stupidity test in the Command sub-phase.',fr:'Test de Stupidité en sous-phase de Commandement.'},
@@ -2389,7 +2408,7 @@ function PhaseTracker({ game, setGame, lists, sel }) {
       const e = engineUnitFromSlug(u.slug, u.name, u.count, u.ppm);
       const slugs = new Set((e&&e.rules)||[]);
       (u.opts||[]).forEach(o=>{const sl=slugifyName(o); if(RULE_PHASE[sl]) slugs.add(sl);});
-      const hits=[...slugs].filter(sl=>RULE_PHASE[sl]&&RULE_PHASE[sl].p===phaseIdx&&RULE_PHASE[sl].s===subIdx&&(!reactOnly||REACT_RULES.has(sl)));
+      const hits=[...slugs].filter(sl=>{const pl=rulePlace(sl); return pl&&pl.p===phaseIdx&&pl.s===subIdx&&(!reactOnly||REACT_RULES.has(sl));});
       if(hits.length) out.push({ name:(LANG==='fr'?(u.name_fr||u.name):u.name), hits });
     });
     return out;
