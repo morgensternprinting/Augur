@@ -510,7 +510,9 @@ function combatFlags(u) {
   return {
     hatred:        has('hatred', 'eternal-hatred', 'ancestral-grudge'),
     poisoned:      has('poisoned-attacks', 'warpstone-weapons'),
-    killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death', 'slayer'),
+    killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death'),
+    monsterSlayer: has('slayer', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'),
+    largeTarget:   has('large-target', 'tree-spirit'),
     regen:         has('regeneration', 'too-horrible-to-die'),
     flaming:       has('flaming-attacks', 'blazing-body', 'born-of-fire', 'wreathed-in-flame'),
     frenzy:        has('frenzy', 'blood-rage', 'primal-fury', 'blood-greed', 'foe-render', 'bestial-fury', 'blood-frenzy', 'gorefeast'),
@@ -649,12 +651,20 @@ function simulateOnce(cfg) {
   // Defender packs carry save + invulnerable ward + wounds-per-model.
   const dMe  = { ...meEff,  save: me.save,  ward: me.ward  || fm.ward || 0, w: me.profile.w };
   const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || ff.ward || 0, w: foe.profile.w };
-  // Offensive rule packs (defender's regen travels with the attacker call).
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:fm.killingBlow, flaming:fm.flaming, regen:ff.regen, multiWounds:fm.multiWounds, ap:fm.ap, hitPenalty:myHitPen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:ff.killingBlow, flaming:ff.flaming, regen:fm.regen, multiWounds:ff.multiWounds, ap:ff.ap, hitPenalty:foeHitPen };
-  // Strike order from Initiative (+ strike first/last from rules).
-  const ei = (u, f) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0) - ((u.strikeLast || f.strikeLast) ? 20 : 0);
-  const eiMe = ei(me, fm), eiFoe = ei(foe, ff);
+  // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
+  const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
+  const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
+  // Defender's Regeneration: from rules OR a magic item / equipment (unit.regen).
+  const meRegen  = fm.regen || !!me.regen;
+  const foeRegen = ff.regen || !!foe.regen;
+  // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap, hitPenalty:myHitPen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap, hitPenalty:foeHitPen };
+  // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
+  // +1 Initiative bonus for charging (and counter-charging) in the first round.
+  const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
+    - ((u.strikeLast || f.strikeLast) ? 20 : 0) + (charged ? 1 : 0);
+  const eiMe = ei(me, fm, cfg.myCharged), eiFoe = ei(foe, ff, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
     myWounds  = resolveAttacks(meEff,  dFoe, myAtt, offMe);
@@ -1287,7 +1297,7 @@ function listCandidates(list, sideKey) {
     if (u.eng) {
       e.profile = { ...e.profile, ...u.eng.profile };
       e.save = u.eng.save; e.strikeLast = u.eng.strikeLast;
-      e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0; e.ward = u.eng.ward || 0;
+      e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0; e.ward = u.eng.ward || 0; e.regen = !!u.eng.regen;
     } else if (u.opts && u.opts.length) {
       const mount = u.opts.find(o => /mont|cheval|destrier|warhorse|pegas|griffon|dragon|char|sanglier|loup/i.test(o));
       const r = resolveEquipment({ profile: e.profile, save: e.save }, u.opts, mount || null);
@@ -1342,7 +1352,9 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
   const [dSave, setDSave]     = useState(0);  // manual: +1 = save améliorée d'1
   const [dA, setDA]           = useState(0);  // manual: attaques en plus / figurine
   const [dS, setDS]           = useState(0);  // manual: Force +/-
-  const [ward, setWard]       = useState(0);  // manual: invulnerable save target (0/1 = none)
+  const [dI, setDI]           = useState(0);  // manual: Initiative +/- (items / magic)
+  const [ward, setWard]       = useState(unit.ward || 0);  // invulnerable save target (auto-filled from the unit, editable for items)
+  const [regen, setRegen]     = useState(!!unit.regen || (unit.rules||[]).some(r=>/regeneration|too-horrible-to-die/.test(r)));
   const [target, setTarget]   = useState(() => lists.length ? 0 : 'new');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
 
@@ -1367,15 +1379,19 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
   const eqRes = resolveEquipment({ profile: unit.profile, save: unit.save }, chosenNames, mountName);
   const applySave = (base, d) => d ? Math.max(2, Math.min(7, (base===7 && d>0 ? 7 : base) - d)) : base;
   const eng = {
-    profile: { ...eqRes.profile, a: Math.max(1, eqRes.profile.a + dA), s: Math.max(1, eqRes.profile.s + dS) },
+    profile: { ...eqRes.profile, a: Math.max(1, eqRes.profile.a + dA), s: Math.max(1, eqRes.profile.s + dS),
+               i: Math.max(1, (eqRes.profile.i || 0) + dI) },
     save: applySave(eqRes.save, dSave),
     strikeLast: eqRes.strikeLast || (unit.rules||[]).includes('always-strikes-last'),
     strikeFirst: eqRes.strikeFirst || (unit.rules||[]).some(r=>/strike-first|always-strikes-first/.test(r)),
     chargeS: eqRes.chargeS,
     ward: ward >= 2 ? ward : 0,
+    regen,
   };
   const engNotes = eqRes.notes.slice();
   if (eng.ward) engNotes.push('ward ' + eng.ward + '+');
+  if (eng.regen) engNotes.push(tr('regeneration','régénération'));
+  if (dI) engNotes.push((dI>0?'+':'') + dI + ' I');
   if (eng.strikeFirst) engNotes.push('strikes first');
 
   const buildEntry = () => {
@@ -1429,11 +1445,17 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         <div>
           <SectionLabel>{tr('Manual adjustment · items, special rules','Ajustement manuel · objets, règles spéciales')}</SectionLabel>
           <div style={{display:'flex',gap:8}}>
-            <Stepper label={tr('Save','Svg')} value={dSave} onChange={setDSave} min={-2} max={4} signed size="sm" style={{flex:1}}/>
-            <Stepper label={tr('Attacks','Attaques')} value={dA} onChange={setDA} min={0} max={8} signed size="sm" style={{flex:1}}/>
-            <Stepper label={tr('Strength','Force')} value={dS} onChange={setDS} min={-2} max={4} signed size="sm" style={{flex:1}}/>
+            <Stepper label={tr('Save','Svg')} value={dSave} onChange={setDSave} min={-2} max={4} signed style={{flex:1}}/>
+            <Stepper label={tr('Strength','Force')} value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
           </div>
-          <Stepper label={tr('Ward save (0 = none)','Save invul. (0 = aucune)')} value={ward} onChange={setWard} min={0} max={6}/>
+          <div style={{display:'flex',gap:8}}>
+            <Stepper label={tr('Attacks','Attaques')} value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
+            <Stepper label={tr('Initiative','Initiative')} value={dI} onChange={setDI} min={-3} max={6} signed style={{flex:1}}/>
+          </div>
+          <Stepper label={tr('Ward / invulnerable save (0 = none)','Save invulnérable (0 = aucune)')} value={ward} onChange={setWard} min={0} max={6}/>
+          <Card elevation={3} style={{padding:'2px var(--sp-3)',marginTop:6}}>
+            <Switch label={tr('Regeneration','Régénération')} checked={regen} onChange={setRegen}/>
+          </Card>
         </div>
         {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
           <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('No options listed — use the manual adjustments.','Aucune option listée — utilise les ajustements manuels.')}</div>}
@@ -1609,7 +1631,7 @@ function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }
 const RULE_LABELS = {
   strikeFirst:'Strikes first', strikeLast:'Strikes last', hatred:'Hatred · reroll to hit',
   frenzy:'Frenzy · +1 A', furiousCharge:'Furious Charge · +1 S charge', poisoned:'Poisoned · 6 = wound',
-  killingBlow:'Killing Blow · ignore save', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
+  killingBlow:'Killing Blow · ignore save', monsterSlayer:'Monster Slayer · Killing Blow vs large targets', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
   impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds',
   fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
   stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks',
@@ -1617,12 +1639,12 @@ const RULE_LABELS = {
 const RULE_LABELS_FR = {
   strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance pour toucher',
   frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F en charge', poisoned:'Empoisonné · 6 = blessure',
-  killingBlow:'Coup fatal · ignore la save', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
+  killingBlow:'Coup fatal · ignore la save', monsterSlayer:'Tueur de monstres · Coup fatal vs grandes cibles', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
   impactHits:'Touches d\'impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
   fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité à la psychologie',
   stubborn:'Tenace · ignore le malus', unbreakable:'Indémoralisable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
 };
-const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','ap','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','monsterSlayer','ap','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
 function ruleChipLabel(k, f) {
   if (k === 'ap')   return (LANG==='fr'?'Perce-armure −':'Armour Piercing −') + f.ap;
   if (k === 'ward') return (LANG==='fr'?'Save invul. ':'Ward ') + f.ward + '+';
