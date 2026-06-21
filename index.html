@@ -857,22 +857,26 @@ function Button({ children, variant='primary', size='md', icon=null, block=false
 }
 
 function Stepper({ value, onChange=()=>{}, min=0, max=99, step=1, label=null, signed=false, size='md', style={} }) {
-  const h = size==='lg'?'var(--touch-large)':'var(--touch-comfy)';
+  const h = size==='lg'?'var(--touch-large)':size==='sm'?'42px':'var(--touch-comfy)';
+  const valFs = size==='sm'?'var(--fs-body)':'var(--fs-h3)';
+  const valMin = size==='sm'?'26px':'40px';
+  const glyphFs = size==='sm'?'19px':'22px';
   const clamp = (n)=>Math.max(min,Math.min(max,n));
   const display = signed&&value>0?`+${value}`:`${value}`;
   const btn = (dir,glyph)=>(
     <button type="button" aria-label={dir>0?'augmenter':'diminuer'}
       onClick={()=>onChange(clamp(value+dir*step))} disabled={dir>0?value>=max:value<=min}
       style={{width:h,height:h,flex:'none',display:'flex',alignItems:'center',justifyContent:'center',
-        background:'transparent',border:'none',cursor:'pointer',color:'var(--text-primary)',fontSize:'22px',
+        background:'transparent',border:'none',cursor:'pointer',color:'var(--text-primary)',fontSize:glyphFs,
         opacity:(dir>0?value>=max:value<=min)?0.3:1,borderRadius:'var(--r-md)'}}>{glyph}</button>);
-  return <div style={style}>
-    {label&&<div style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
-      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-2)'}}>{label}</div>}
+  return <div style={{minWidth:0,...style}}>
+    {label&&<div style={{font:'var(--fw-semibold) var(--fs-label)/1.15 var(--font-ui)',letterSpacing:'var(--ls-label)',
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-2)',
+      overflow:'hidden',textOverflow:'ellipsis'}}>{label}</div>}
     <div style={{display:'flex',alignItems:'center',background:'var(--surface-3)',borderRadius:'var(--r-md)',
       border:'1px solid var(--border-default)'}}>
       {btn(-1,'−')}
-      <div style={{flex:1,textAlign:'center',minWidth:'40px',font:'var(--fw-semibold) var(--fs-h3)/1 var(--font-mono)',
+      <div style={{flex:1,textAlign:'center',minWidth:valMin,font:`var(--fw-semibold) ${valFs}/1 var(--font-mono)`,
         color:'var(--text-primary)',fontVariantNumeric:'tabular-nums'}}>{display}</div>
       {btn(1,'+')}
     </div></div>;
@@ -1073,19 +1077,20 @@ function DiceRoller({ open, onClose }) {
       borderTopRightRadius:'var(--r-xl)',borderTop:'2px solid var(--signal-500)',boxShadow:'var(--shadow-sheet)',
       width:'100%',maxWidth:'min(520px,100%)',alignSelf:'center',
       maxHeight:'88dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      <div style={{width:36,height:4,borderRadius:2,background:'var(--border-strong)',flex:'none',margin:'2px auto 12px'}}/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
         <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>{tr('Roll dice','Lancer les dés')}</span>
         <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
-      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           {DICE_PRESETS.map(p=><ChipToggle key={p.key} label={p.label}
             on={cfg.count===p.cfg.count&&cfg.keepMode===p.cfg.keepMode&&cfg.keep===p.cfg.keep&&cfg.sides===p.cfg.sides}
             onClick={()=>{ setCfg({...p.cfg}); setResult(null); }}/>)}
         </div>
         <div style={{display:'flex',gap:8}}>
-          <Stepper label={tr('Dice','Dés')} value={cfg.count} onChange={v=>set({count:v})} min={1} max={12} style={{flex:1}}/>
-          <Stepper label={tr('Sides','Faces')} value={cfg.sides} onChange={v=>set({sides:v})} min={2} max={20} style={{flex:1}}/>
-          <Stepper label={tr('Modifier','Modif.')} value={cfg.mod} onChange={v=>set({mod:v})} min={-12} max={12} signed style={{flex:1}}/>
+          <Stepper label={tr('Dice','Dés')} value={cfg.count} onChange={v=>set({count:v})} min={1} max={12} size="sm" style={{flex:1}}/>
+          <Stepper label={tr('Sides','Faces')} value={cfg.sides} onChange={v=>set({sides:v})} min={2} max={20} size="sm" style={{flex:1}}/>
+          <Stepper label={tr('Modifier','Modif.')} value={cfg.mod} onChange={v=>set({mod:v})} min={-12} max={12} signed size="sm" style={{flex:1}}/>
         </div>
         <div><SectionLabel>{tr('Keep dice','Dés gardés')}</SectionLabel>
           <Segmented size="sm" value={cfg.keepMode} onChange={v=>set({keepMode:v})}
@@ -1398,11 +1403,12 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
       borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
       width:'100%',maxWidth:'min(640px,100%)',alignSelf:'center',
       maxHeight:'90dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      <div style={{width:36,height:4,borderRadius:2,background:'var(--border-strong)',flex:'none',margin:'2px auto 12px'}}/>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
         <button type="button" onClick={onBack} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="chevron-left" size={22}/></button>
         <span style={{flex:1,font:'600 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unitName(unit)}</span>
         <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accent}}>{total} pts</span></div>
-      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
+      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',display:'flex',flexDirection:'column',gap:'var(--sp-3)'}}>
         <div>
           <SectionLabel style={{color:accent}}>{tr('Combat profile · with options','Profil de combat · avec options')}</SectionLabel>
           <MiniProfile unit={{profile:eng.profile, save:eng.save}}/>
@@ -1422,9 +1428,9 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
         <div>
           <SectionLabel>{tr('Manual adjustment · items, special rules','Ajustement manuel · objets, règles spéciales')}</SectionLabel>
           <div style={{display:'flex',gap:8}}>
-            <Stepper label={tr('Save','Svg')} value={dSave} onChange={setDSave} min={-2} max={4} signed style={{flex:1}}/>
-            <Stepper label={tr('Attacks','Attaques')} value={dA} onChange={setDA} min={0} max={8} signed style={{flex:1}}/>
-            <Stepper label={tr('Strength','Force')} value={dS} onChange={setDS} min={-2} max={4} signed style={{flex:1}}/>
+            <Stepper label={tr('Save','Svg')} value={dSave} onChange={setDSave} min={-2} max={4} signed size="sm" style={{flex:1}}/>
+            <Stepper label={tr('Attacks','Attaques')} value={dA} onChange={setDA} min={0} max={8} signed size="sm" style={{flex:1}}/>
+            <Stepper label={tr('Strength','Force')} value={dS} onChange={setDS} min={-2} max={4} signed size="sm" style={{flex:1}}/>
           </div>
           <Stepper label={tr('Ward save (0 = none)','Save invul. (0 = aucune)')} value={ward} onChange={setWard} min={0} max={6}/>
         </div>
@@ -1479,6 +1485,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
         borderTopRightRadius:'var(--r-xl)',borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',
         width:'100%',maxWidth:'min(680px,100%)',alignSelf:'center',
         maxHeight:'82dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+        <div style={{width:36,height:4,borderRadius:2,background:'var(--border-strong)',flex:'none',margin:'2px auto 12px'}}/>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
           <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:'var(--text-primary)'}}>{title}</span>
           <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',
@@ -1502,7 +1509,7 @@ function UnitSheet({ open, title, accent, units, selectedId, onPick, onClose, co
         {configurable&&<div style={{font:'400 var(--fs-xs)/1.3 var(--font-ui)',color:'var(--text-tertiary)',marginBottom:8}}>
           {tr('Tap a unit to pick it · use the gear to set options/models and add it to a list.',
               'Touche une unité pour la choisir · l\'engrenage pour régler options/figurines et l\'ajouter à une liste.')}</div>}
-        <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',display:'flex',flexDirection:'column',gap:6}}>
+        <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain',display:'flex',flexDirection:'column',gap:6}}>
           {filtered.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('No unit.','Aucune unité.')}</div>}
           {filtered.map(u=>{const on=u.id===selectedId;const p=u.profile;
             return <div key={u.id} style={{display:'flex',alignItems:'stretch',gap:6}}>
