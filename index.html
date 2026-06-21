@@ -531,6 +531,8 @@ function combatFlags(u) {
     impactHits:    has('impact-hits', 'bull-charge', 'ogre-charge', 'thunderous-charge', 'mournfang-charge',
                        'tusker-charge', 'bestial-charge', 'slavering-charge', 'stampede', 'brazen-wheels', 'crushing-bulk'),
     stomp:         has('stomp-attacks'),
+    magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched'),
+    ethereal:      has('ethereal'),
     ap,
     ward:          wardFromRules(r),
   };
@@ -562,18 +564,21 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
   const regenNegated = o.flaming;     // flaming attacks negate regeneration
   const multi = o.multiWounds && def.w > 1; // multiple wounds only matter vs multi-wound models
   let unsaved = 0;
+  const wardNegated = o.noWard;       // some attacks allow no ward save
   for (let i = 0; i < nAttacks; i++) {
     let hit = d6();
     if (hit < hitT) { if (o.hatred) hit = d6(); if (hit < hitT) continue; } // Hatred: reroll a miss
+    if (def.ethereal && !o.magical) continue;                 // Ethereal: only magical attacks can wound it
     let killing = false, autoWound = o.poisoned && hit === 6; // Poisoned: natural 6 to hit auto-wounds
     if (!autoWound) {
       if (woundT === 7) continue;
-      const wr = d6();
+      let wr = d6();
+      if (wr < woundT && o.rerollWound) wr = d6();             // re-roll a failed wound
       if (wr < woundT) continue;
       if (o.killingBlow && wr === 6) killing = true;          // Killing Blow: ignore armour save
     }
     if (!killing && saveT <= 6 && d6() >= saveT) continue;    // armour save
-    if (wardT && d6() >= wardT) continue;                     // invulnerable / ward save
+    if (wardT && !wardNegated && d6() >= wardT) continue;     // invulnerable / ward save
     if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
     unsaved += multi ? Math.min(def.w, 1 + (Math.random() * 3 | 0)) : 1; // Multiple Wounds (≈D3)
   }
@@ -587,11 +592,12 @@ function autoHits(att, def, n, o = {}) {
   if (woundT === 7 || n <= 0) return 0;
   const saveT = effectiveSave(def.save, att.s + (o.ap || 0));
   const wardT = def.ward || 0;
+  if (def.ethereal && !o.magical) return 0;   // Ethereal: non-magical impact/stomp can't wound it
   let unsaved = 0;
   for (let i = 0; i < n; i++) {
     if (d6() < woundT) continue;
     if (saveT <= 6 && d6() >= saveT) continue;
-    if (wardT && d6() >= wardT) continue;
+    if (wardT && !o.noWard && d6() >= wardT) continue;
     if (o.regen && !o.flaming && d6() >= 4) continue;
     unsaved++;
   }
@@ -649,8 +655,8 @@ function simulateOnce(cfg) {
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: me.ward  || fm.ward || 0, w: me.profile.w };
-  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || ff.ward || 0, w: foe.profile.w };
+  const dMe  = { ...meEff,  save: me.save,  ward: me.ward  || fm.ward || 0, w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
+  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || ff.ward || 0, w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
   // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
   const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
   const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
@@ -658,8 +664,9 @@ function simulateOnce(cfg) {
   const meRegen  = fm.regen || !!me.regen;
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap, hitPenalty:myHitPen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap, hitPenalty:foeHitPen };
+  const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
+  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap, magical:meMagical,  rerollWound:!!me.rerollWound,  noWard:!!me.noWard,  hitPenalty:myHitPen };
+  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap, magical:foeMagical, rerollWound:!!foe.rerollWound, noWard:!!foe.noWard, hitPenalty:foeHitPen };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
@@ -1298,6 +1305,7 @@ function listCandidates(list, sideKey) {
       e.profile = { ...e.profile, ...u.eng.profile };
       e.save = u.eng.save; e.strikeLast = u.eng.strikeLast;
       e.strikeFirst = u.eng.strikeFirst; e.chargeS = u.eng.chargeS || 0; e.ward = u.eng.ward || 0; e.regen = !!u.eng.regen;
+      e.magical = !!u.eng.magical; e.ethereal = !!u.eng.ethereal;
     } else if (u.opts && u.opts.length) {
       const mount = u.opts.find(o => /mont|cheval|destrier|warhorse|pegas|griffon|dragon|char|sanglier|loup/i.test(o));
       const r = resolveEquipment({ profile: e.profile, save: e.save }, u.opts, mount || null);
@@ -1354,7 +1362,10 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
   const [dS, setDS]           = useState(0);  // manual: Force +/-
   const [dI, setDI]           = useState(0);  // manual: Initiative +/- (items / magic)
   const [ward, setWard]       = useState(unit.ward || 0);  // invulnerable save target (auto-filled from the unit, editable for items)
-  const [regen, setRegen]     = useState(!!unit.regen || (unit.rules||[]).some(r=>/regeneration|too-horrible-to-die/.test(r)));
+  const ur = unit.rules || [];
+  const [regen, setRegen]     = useState(!!unit.regen || ur.some(r=>/regeneration|too-horrible-to-die/.test(r)));
+  const [magical, setMagical] = useState(!!unit.magical || ur.some(r=>/magical-attacks|ensorcelled-weapons|daemonic|ethereal|warpstone-weapons/.test(r)));
+  const [ethereal, setEthereal] = useState(!!unit.ethereal || ur.includes('ethereal'));
   const [target, setTarget]   = useState(() => lists.length ? 0 : 'new');
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
 
@@ -1386,11 +1397,13 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
     strikeFirst: eqRes.strikeFirst || (unit.rules||[]).some(r=>/strike-first|always-strikes-first/.test(r)),
     chargeS: eqRes.chargeS,
     ward: ward >= 2 ? ward : 0,
-    regen,
+    regen, magical, ethereal,
   };
   const engNotes = eqRes.notes.slice();
   if (eng.ward) engNotes.push('ward ' + eng.ward + '+');
   if (eng.regen) engNotes.push(tr('regeneration','régénération'));
+  if (eng.ethereal) engNotes.push(tr('ethereal','éthéré'));
+  if (eng.magical) engNotes.push(tr('magical attacks','attaques magiques'));
   if (dI) engNotes.push((dI>0?'+':'') + dI + ' I');
   if (eng.strikeFirst) engNotes.push('strikes first');
 
@@ -1455,6 +1468,10 @@ function UnitConfig({ unit, side, lists, accent, onBack, onQuickUse, onAdd }) {
           <Stepper label={tr('Ward / invulnerable save (0 = none)','Save invulnérable (0 = aucune)')} value={ward} onChange={setWard} min={0} max={6}/>
           <Card elevation={3} style={{padding:'2px var(--sp-3)',marginTop:6}}>
             <Switch label={tr('Regeneration','Régénération')} checked={regen} onChange={setRegen}/>
+            <div style={{height:1,background:'var(--border-subtle)'}}/>
+            <Switch label={tr('Magical attacks','Attaques magiques')} checked={magical} onChange={setMagical}/>
+            <div style={{height:1,background:'var(--border-subtle)'}}/>
+            <Switch label={tr('Ethereal (only magical attacks wound it)','Éthéré (seules les attaques magiques le blessent)')} checked={ethereal} onChange={setEthereal}/>
           </Card>
         </div>
         {!eq.length&&!ar.length&&!mo.length&&!op.length&&!cm.length&&
@@ -1634,7 +1651,8 @@ const RULE_LABELS = {
   killingBlow:'Killing Blow · ignore save', monsterSlayer:'Monster Slayer · Killing Blow vs large targets', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
   impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds',
   fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
-  stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks',
+  stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks · negates Regen',
+  magical:'Magical Attacks', ethereal:'Ethereal · hit only by magic',
 };
 const RULE_LABELS_FR = {
   strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance pour toucher',
@@ -1642,9 +1660,10 @@ const RULE_LABELS_FR = {
   killingBlow:'Coup fatal · ignore la save', monsterSlayer:'Tueur de monstres · Coup fatal vs grandes cibles', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
   impactHits:'Touches d\'impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
   fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité à la psychologie',
-  stubborn:'Tenace · ignore le malus', unbreakable:'Indémoralisable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées',
+  stubborn:'Tenace · ignore le malus', unbreakable:'Indémoralisable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées · annule Régén',
+  magical:'Attaques magiques', ethereal:'Éthéré · touché seulement par la magie',
 };
-const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','monsterSlayer','ap','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','monsterSlayer','ap','magical','ethereal','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
 function ruleChipLabel(k, f) {
   if (k === 'ap')   return (LANG==='fr'?'Perce-armure −':'Armour Piercing −') + f.ap;
   if (k === 'ward') return (LANG==='fr'?'Save invul. ':'Ward ') + f.ward + '+';
