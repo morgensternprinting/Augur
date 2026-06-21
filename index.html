@@ -2444,7 +2444,7 @@ function QuickRef() {
         </RefBlock>
 
         <RefBlock title={tr('Miscast table (2D6)','Tableau des Fiascos (2D6)')} accent="var(--signal-400)"
-          note={tr('Detailed effects to be filled in from the book (summary p.344).','Effets détaillés à compléter depuis le livre (résumé p.344).')}>
+          note={tr('Roll 2D6 and read the full result on the Miscast table in your rulebook (p.108-109).','Lance 2D6 et lis le résultat complet sur le Tableau des Fiascos de ton livre de règles (p.108-109).')}>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {FIASCO_ROWS.map(r=><RefRow key={r.band} left={r.band} right={LANG==='fr'?r.fr:r.name} hl={fiasco!=null&&bandHas(r.band,fiasco)}/>)}
           </div>
@@ -2453,10 +2453,10 @@ function QuickRef() {
         </RefBlock>
 
         <RefBlock title={tr('Shooting incidents — war machines','Incidents de tir — machines de guerre')} accent="var(--foe-400)"
-          note={tr("Catapults and black-powder weapons: on a misfire, roll on the Misfire table. Generic results to be filled in from the book (p.347). Army war machines (Hellcannon, Warp Lightning, Organ Gun…) have their own misfire table.",
-                   "Catapultes et machines à poudre : sur un incident, jet sur la table d'incident. Résultats génériques à compléter depuis le livre (p.347). Les machines spéciales d'armée (Canon Infernal, Éclair Warp, Orgue…) ont leur propre table d'incident.")}>
-          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
-            {tr('To fill in: D6 results for Catapults and Black-Powder weapons.','À renseigner : résultats D6 pour Catapultes et Machines à Poudre.')}</div>
+          note={tr("Army war machines (Hellcannon, Warp Lightning, Organ Gun…) each have their own misfire table — see the unit's special rules.",
+                   "Les machines de guerre d'armée (Canon Infernal, Éclair Warp, Orgue…) ont chacune leur propre table d'incident — voir les règles spéciales de l'unité.")}>
+          <RefRow left={tr('Catapults','Catapultes')} right={tr('on a misfire, roll on the Misfire table in your rulebook','sur un incident, jet sur la table d\'incident de ton livre de règles')}/>
+          <RefRow left={tr('Black powder','Poudre noire')} right={tr('on a misfire, roll on the Misfire table in your rulebook','sur un incident, jet sur la table d\'incident de ton livre de règles')}/>
         </RefBlock>
       </Fragment>) : grid(<Fragment>
 
