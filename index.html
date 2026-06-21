@@ -1075,6 +1075,7 @@ const TABS = [
   {key:'result',label:'Forecast',icon:'dices'},
   {key:'assistant',label:'Assistant',icon:'list-checks'},
   {key:'tracker',label:'Game',icon:'map'},
+  {key:'ref',label:'Tables',icon:'book-open'},
 ];
 function TabBar({ active, onChange }) {
   return <div className="augur-tabbar" style={{flex:'none',display:'flex',padding:'8px 8px calc(8px + var(--safe-bottom))',
@@ -2249,6 +2250,130 @@ function Splash({ onEnter }) {
   </div></Portal>;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   8 · SCREEN 5 — Quick reference tables (rulebook end-of-book summary)
+   ════════════════════════════════════════════════════════════════ */
+const FIASCO_ROWS = [
+  { band:'2–4',   name:'Cascade Dimensionnelle' },
+  { band:'5–6',   name:'Déflagration Calamiteuse' },
+  { band:'7',     name:'Conjuration Imprudente' },
+  { band:'8–9',   name:'Pouvoir à Peine Contrôlé' },
+  { band:'10–12', name:'Drain de Magie' },
+];
+const bandHas = (band, v) => { const m=String(band).match(/(\d+)(?:\D+(\d+))?/); const lo=+m[1], hi=m[2]?+m[2]:lo; return v>=lo && v<=hi; };
+
+function RefCell({ children, hd, hl }) {
+  return <div style={{padding:'6px 3px',textAlign:'center',
+    background: hl?'var(--signal-soft)':hd?'var(--surface-3)':'transparent',
+    color: hd?'var(--text-secondary)':(hl?'var(--signal-300)':'var(--text-primary)'),
+    font:`${(hd||hl)?700:500} var(--fs-xs)/1 var(--font-mono)`,
+    borderBottom:'1px solid var(--border-subtle)',borderRight:'1px solid var(--border-subtle)'}}>{children}</div>;
+}
+function MatrixTable({ corner, head, rows }) {
+  const items=[<RefCell key="c" hd>{corner}</RefCell>];
+  head.forEach((h,i)=>items.push(<RefCell key={'h'+i} hd>{h}</RefCell>));
+  rows.forEach((row,ri)=>{ items.push(<RefCell key={'r'+ri} hd>{row.label}</RefCell>);
+    row.cells.forEach((c,ci)=>items.push(<RefCell key={'x'+ri+'_'+ci}>{c}</RefCell>)); });
+  return <div style={{display:'grid',gridTemplateColumns:`minmax(34px,auto) repeat(${head.length},1fr)`,
+    border:'1px solid var(--border-default)',borderRadius:'var(--r-sm)',overflow:'hidden'}}>{items}</div>;
+}
+function RefRow({ left, right, hl }) {
+  return <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',borderRadius:'var(--r-sm)',
+    background:hl?'var(--signal-soft)':'var(--surface-2)',border:`1px solid ${hl?'var(--signal-500)':'var(--border-subtle)'}`}}>
+    <span style={{flex:'none',minWidth:48,font:'700 var(--fs-sm)/1 var(--font-mono)',color:hl?'var(--signal-300)':'var(--text-secondary)'}}>{left}</span>
+    <span style={{flex:1,minWidth:0,font:'500 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-primary)'}}>{right}</span>
+  </div>;
+}
+function RefBlock({ title, accent, children, note }) {
+  return <Card elevation={1} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:8}}>
+    <div style={{font:'600 var(--fs-h3)/1.1 var(--font-display)',color:accent||'var(--text-primary)'}}>{title}</div>
+    {children}
+    {note&&<div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>{note}</div>}
+  </Card>;
+}
+function QuickRef() {
+  const wide = useIsWide();
+  const [view,setView] = useState('incidents');
+  const [fiasco,setFiasco] = useState(null);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+
+  const range=[1,2,3,4,5,6,7,8,9,10];
+  const ccRows=range.map(a=>({label:String(a),cells:range.map(d=>toHitTarget(a,d)+'+')}));
+  const wRows=range.map(s=>({label:String(s),cells:range.map(t=>{const n=toWoundTarget(s,t);return n===7?'—':n+'+';})}));
+  const grid=(children)=><div style={{display:wide?'grid':'block',gridTemplateColumns:wide?'1fr 1fr':undefined,
+    gap:wide?12:'var(--sp-3)',alignItems:'start'}}>{children}</div>;
+
+  return <Fragment>
+    <ScreenHeader eyebrow="Quick reference" title="Tables"/>
+    <div style={{flex:'none',padding:'0 var(--screen-pad) 10px'}}>
+      <Segmented value={view} onChange={setView} size="sm"
+        options={[{value:'incidents',label:'Incidents & Fiasco'},{value:'combat',label:'Touches · Blessures'}]}/>
+    </div>
+    <Body>
+      {view==='incidents' ? grid(<Fragment>
+        <RefBlock title="Magie — l'essentiel" accent="var(--signal-400)"
+          note="Phase de Stratégie, sous-phase de Conjuration. Seuls les sorts Enchantement (alliés) et Hex (ennemis) se lancent ici.">
+          <RefRow left="Lancer" right="2D6 + Niveau ≥ Valeur de lancement du sort"/>
+          <RefRow left="6 · 6" right="Pouvoir irrésistible — le sort passe, puis Fiasco"/>
+          <RefRow left="1 · 1" right="Fiasco — jet sur le Tableau des Fiascos"/>
+          <RefRow left="Dissip." right={'2D6 + Niveau · portée Niv 1-2 = 18", Niv 3-4 = 24"'}/>
+        </RefBlock>
+
+        <RefBlock title="Tableau des Fiascos (2D6)" accent="var(--signal-400)"
+          note="Effets détaillés à compléter depuis le livre (résumé p.344).">
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {FIASCO_ROWS.map(r=><RefRow key={r.band} left={r.band} right={r.name} hl={fiasco!=null&&bandHas(r.band,fiasco)}/>)}
+          </div>
+          <Button variant="secondary" onClick={()=>setFiasco(roll2d6())} icon={<Icon name="dices" size={18}/>}>
+            {fiasco!=null ? ('Résultat : '+fiasco+' — relancer') : 'Lancer 2D6'}</Button>
+        </RefBlock>
+
+        <RefBlock title="Incidents de tir — machines de guerre" accent="var(--foe-400)"
+          note="Catapultes et machines à poudre : sur un incident, jet sur la table d'incident. Résultats génériques à compléter depuis le livre (p.347). Les machines spéciales d'armée (Canon Infernal, Éclair Warp, Orgue…) ont leur propre table d'incident.">
+          <div style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
+            À renseigner : résultats D6 pour Catapultes et Machines à Poudre.</div>
+        </RefBlock>
+      </Fragment>) : grid(<Fragment>
+
+        <RefBlock title="Toucher au tir (CT)" accent="var(--signal-400)"
+          note="Modificateurs : −1 tireur déplacé · −1 longue portée · −1 Tenir-et-tirer · −1 couvert léger · −2 couvert lourd.">
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {[['CT 1','6+'],['CT 2','5+'],['CT 3','4+'],['CT 4','3+'],['CT 5+','2+']].map(([a,b])=>
+              <RefRow key={a} left={a} right={'touche sur '+b}/>)}
+          </div>
+        </RefBlock>
+
+        <RefBlock title="Toucher au combat" accent="var(--signal-400)"
+          note="Lignes = CC de l'attaquant, colonnes = CC de la cible. CC supérieure → 3+, CC ennemie ≥ 2× → 5+, sinon 4+.">
+          <MatrixTable corner="CC" head={range.map(String)} rows={ccRows}/>
+        </RefBlock>
+
+        <RefBlock title="Blesser (Force vs Endurance)" accent="var(--signal-400)"
+          note="Lignes = Force, colonnes = Endurance. « — » = impossible (Force inférieure de 3+ à l'Endurance).">
+          <MatrixTable corner="F\\E" head={range.map(String)} rows={wRows}/>
+        </RefBlock>
+
+        <RefBlock title="Résultat de combat" accent="var(--foe-400)">
+          {[['+1','par blessure infligée'],['+1','par rang complet (max +3)'],['+1','étendard'],['+1','grande bannière'],
+            ['+1','attaque de flanc'],['+2','attaque de dos'],['+1','position dominante'],['+1','par blessure en excès (Carnage / défi)']].map(([a,b],i)=>
+            <RefRow key={i} left={a} right={b}/>)}
+        </RefBlock>
+
+        <RefBlock title="Moral, charge & marche" accent="var(--foe-400)">
+          <RefRow left="Moral" right="2D6 + écart de résultat, comparé au Commandement"/>
+          <RefRow left="Réussi" right="l'unité tient en bon ordre"/>
+          <RefRow left="Raté" right="démoralisée — cède du terrain ou fuite"/>
+          <RefRow left="1 · 1" right="cède du terrain (ne fuit jamais)"/>
+          <div style={{height:1,background:'var(--border-subtle)',margin:'2px 0'}}/>
+          <RefRow left="Charge" right="2D6 (garder le plus haut) + Mouvement"/>
+          <RefRow left="Marche" right={'×2 M (×3 en colonne) ; test de Cd si ≤ 8" d\'un ennemi'}/>
+        </RefBlock>
+      </Fragment>)}
+      <div style={{height:8}}/>
+    </Body>
+  </Fragment>;
+}
+
 function App() {
   const [splash, setSplash] = useState(true);
   const [tab, setTab] = useState('select');
@@ -2344,6 +2469,7 @@ function App() {
     onResolve={()=>setTab('assistant')} onAdjust={()=>setTab('select')}/>;
   else if (tab==='assistant') screen = <CombatAssistant
     me={myUnit} foe={foeUnit} sel={sel} onDone={()=>setTab('tracker')}/>;
+  else if (tab==='ref') screen = <QuickRef/>;
   else screen = <GameTracker game={game} setGame={setGame}/>;
 
   return <Fragment>
