@@ -477,17 +477,20 @@ function rollDiceSet({ count = 2, sides = 6, keep = 0, keepMode = 'all', mod = 0
 // To-hit: attacker WS vs defender WS (classic table)
 function toHitTarget(aWS, dWS) {
   if (aWS <= 0) aWS = 1; if (dWS <= 0) dWS = 1;
-  if (aWS > dWS) return 3;
-  if (dWS >= 2 * aWS) return 5;
-  return 4;
+  if (aWS > 2 * dWS) return 2;   // WS more than double the target → 2+ (official To Hit chart)
+  if (aWS > dWS) return 3;        // higher WS → 3+
+  if (dWS > 2 * aWS) return 5;    // target's WS more than double → 5+
+  return 4;                       // otherwise → 4+
 }
 // To-wound: Strength vs Toughness. Returns 2..6, or 7 = impossible.
 function toWoundTarget(s, t) {
-  const diff = s - t;
-  let need = 4 - diff;
-  if (need < 2) need = 2;
-  if (need > 6) return diff <= -3 ? 7 : 6;
-  return need;
+  const diff = s - t;                 // official To Wound chart
+  if (diff >= 2) return 2;            // S ≥ T+2 → 2+
+  if (diff === 1) return 3;           // S = T+1 → 3+
+  if (diff === 0) return 4;           // equal → 4+
+  if (diff === -1) return 5;          // S = T−1 → 5+
+  if (diff >= -5) return 6;           // S down to T−5 → 6+
+  return 7;                           // T ≥ S+6 → impossible
 }
 // Effective save after Strength armour-penetration modifier.
 function effectiveSave(save, s) {
