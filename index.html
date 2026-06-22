@@ -2011,7 +2011,7 @@ function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, ac
       icon={<Icon name="plus" size={18}/>}>{tr('Add +','Ajouter +')}{Math.min(5,Math.round(r.avgOverkill))}{tr(' to your combat result',' à ton résultat de combat')}</Button>
   </Fragment>;
 }
-function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onSimulate }) {
+function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onDeleteList, onSimulate }) {
   const [sheet, setSheet] = useState(null); // 'me' | 'foe' | null
   const set = (patch) => setSel(s => ({ ...s, ...patch }));
   const setF = (side) => (patch) => setSel(s => ({ ...s, [side]: { ...s[side], ...patch } }));
@@ -2054,6 +2054,18 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
           <Button variant="secondary" block onClick={()=>pickFile('foe')} icon={<Icon name="upload" size={16}/>}
             style={{borderColor:accentFoe,color:accentFoe}}>{tr('Import · enemy','Importer · adverse')}</Button>
         </div>
+        {lists.length>0 && <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:2}}>
+          <SectionLabel style={{margin:0}}>{tr('Saved lists','Listes enregistrées')}</SectionLabel>
+          {lists.map((l,i)=><div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',
+            background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-sm)'}}>
+            <span style={{flex:1,minWidth:0,font:'500 var(--fs-xs)/1.2 var(--font-ui)',color:'var(--text-secondary)',
+              overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>📋 {l.name||(tr('List ','Liste ')+(i+1))}
+              <span style={{color:'var(--text-tertiary)'}}> · {(l.units||[]).length} {tr('units','unités')}</span></span>
+            <button type="button" onClick={()=>{ if(onDeleteList&&confirm(tr('Delete this saved list?','Supprimer cette liste enregistrée ?')))onDeleteList(i); }}
+              aria-label={tr('Delete list','Supprimer la liste')} style={{flex:'none',width:28,height:28,background:'transparent',
+              border:'none',cursor:'pointer',color:'var(--out-flee)',display:'flex',alignItems:'center',justifyContent:'center',font:'400 18px/1 var(--font-ui)'}}>×</button>
+          </div>)}
+        </div>}
       </Card>
 
       {/* one vertical block per side: army (or list) + its unit selection */}
@@ -2595,8 +2607,8 @@ function UnitRow({ unit, onCycle, onDelete }) {
       <StatusDot status={unit.status} showLabel={true} style={{justifyContent:'flex-end'}}/>
       <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3}}>{unit.points*unit.size} pts</div></button>
     {onDelete&&<button type="button" onClick={onDelete} aria-label={tr('Remove','Retirer')}
-      style={{flex:'none',background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex',padding:4}}>
-      <Icon name="x" size={16}/></button>}</div>;
+      style={{flex:'none',width:32,height:32,background:'transparent',border:'none',cursor:'pointer',color:'var(--out-flee)',
+        display:'flex',alignItems:'center',justifyContent:'center',font:'400 20px/1 var(--font-ui)'}}>×</button>}</div>;
 }
 const STATUS_CYCLE = ['full','weak','fleeing','destroyed'];
 function ArmyPanel({ title, roster, side, onCycle, onDelete, onClear, onAdd, onLoadList, lists }) {
@@ -3369,6 +3381,17 @@ function App() {
     r.readAsText(file);
   };
 
+  // Delete a saved imported list and repair any per-side source that referenced it
+  // (a side pointing at the deleted list reverts to the catalogue; later indices shift down).
+  const deleteList = (idx) => {
+    setLists(prev => prev.filter((_, i) => i !== idx));
+    setSel(s => {
+      const fix = (src) => { if (!src || src.indexOf('list:') !== 0) return src;
+        const n = +src.slice(5); return n === idx ? 'catalog' : (n > idx ? 'list:' + (n - 1) : src); };
+      return { ...s, mySrc: fix(s.mySrc), foeSrc: fix(s.foeSrc) };
+    });
+  };
+
   // Add a configured unit to a list (existing index, or 'new'), then select it.
   const addUnit = (entry, side, target) => {
     setLists(prev => {
@@ -3416,7 +3439,7 @@ function App() {
 
   let screen;
   if (tab==='select') screen = <CombatSelect game={game} setGame={setGame} sel={sel} setSel={setSel}
-    lists={lists} onImport={importList} onAddUnit={addUnit} onSimulate={runSim}/>;
+    lists={lists} onImport={importList} onAddUnit={addUnit} onDeleteList={deleteList} onSimulate={runSim}/>;
   else if (tab==='result') screen = <ResultProbabilistic result={result} names={names}
     onResolve={()=>setTab('assistant')} onAdjust={()=>setTab('select')}/>;
   else if (tab==='assistant') screen = <CombatAssistant
