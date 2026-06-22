@@ -605,10 +605,17 @@ function combatFlags(u) {
     rerollWound1:  has('murderous'),                          // re-roll a natural-1 To Wound
     gromrilArmour: has('gromril-armour'),                     // re-roll a natural-1 armour save
     choppas:       has('choppas'),                            // on the charge: re-roll To-Wound 1s + AP −1 (non-magical)
-    crownOfAntlers: has('crown-of-antlers'),                  // Impact Hits gain AP −1
+    impactAP1:     has('crown-of-antlers', 'bull-gors'),      // Impact Hits gain AP −1
     grindingWheels: has('grinding-wheels'),                   // Stomp Attacks gain AP −2
     soporificMusk: has('soporific-musk'),                     // enemy can't Strike First; loses it / gains Strike Last
+    blizzardAura:  has('blizzard-aura'),                      // enemy in contact becomes subject to Strike Last
+    carrionFeeders: has('carrion-feeders'),                   // enemy engaged suffers −1 Initiative
     spurtingBileBlood: has('spurting-bile-blood'),            // each wound lost → a S4 AP −1 hit back on the attacker
+    deathblow:     has('deathblow'),                          // each model slain → a S3 AP −1 hit back on the attacker
+    cloudOfFlies:  has('cloud-of-flies'),                     // enemy attacking it suffers −1 To Hit
+    nurgleReroll6: has('daemon-of-nurgle'),                   // enemy attacking it must re-roll natural-6 To Hit
+    beguilingAura: has('beguiling-aura'),                     // enemy must pass Ld or only natural 6s hit it
+    defensiveStance: has('defensive-stance'),                 // if it did not charge: re-roll natural-1 armour saves
     blessingsOfChaos: has('blessings-of-chaos'),              // when combat is chosen, roll D6: Poison / AP −2 / +1 T
     mightyConstitution: has('mighty-constitution'),           // Korhil: +1 S on the charge
     immunePoison:  has('mighty-constitution'),                // immune to Poisoned Attacks
@@ -646,8 +653,9 @@ function wardFromRules(r) {
 function resolveAttacks(att, def, nAttacks, o = {}) {
   // hit/wound targets with item bonuses + guardrails: a natural 1 always misses
   // and you can never need better than 2+ (no save < 2+, no impossible bonus).
-  let hitT = toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0) - (o.hitBonus || 0); // Fear −1, items +1
+  let hitT = toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0) - (o.hitBonus || 0); // Fear −1, Cloud of Flies −1, items +1
   hitT = Math.max(2, Math.min(6, hitT));
+  if (o.onlySixesHit) hitT = 6;               // Beguiling Aura (failed Ld): only natural 6s hit
   let woundT = toWoundTarget(att.s, def.t);
   if (woundT < 7 && o.woundBonus) woundT = Math.max(2, woundT - o.woundBonus);
   const saveT = effectiveSave(def.save, att.s + (o.ap || 0)); // Armour Bane / Cleaving Blow add extra AP
@@ -659,6 +667,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
   let unsaved = 0;
   for (let i = 0; i < nAttacks; i++) {
     let hit = d6();
+    if (o.defRerollHit6 && hit === 6) hit = d6();              // Daemon of Nurgle: enemy must re-roll a natural 6
     if (hit < hitT) {                                          // Hatred re-rolls any miss; Inner Circle / Ithilmar re-roll a natural 1
       if (reHit) hit = d6(); else if (o.rerollHit1 && hit === 1) hit = d6();
       if (hit < hitT) continue;
@@ -755,6 +764,9 @@ function simulateOnce(cfg) {
   const hatesArmy = (atk, def) => (atk.rules||[]).some(s => HATRED_TARGETS[s] && HATRED_TARGETS[s].includes(def.army));
   const meHatred  = fm.hatred || hatesArmy(me, foe);
   const foeHatred = ff.hatred || hatesArmy(foe, me);
+  // Beguiling Aura: an attacker must pass a Ld test or only natural 6s hit the bearer.
+  const meBeguiled  = ff.beguilingAura && roll2d6() > me.profile.ld;
+  const foeBeguiled = fm.beguilingAura && roll2d6() > foe.profile.ld;
 
   // Per-combat conditional buffs: charge-only Choppas, random Blessings of Chaos
   // (rolled fresh each iteration so the Monte-Carlo averages over the D6), Korhil's charge.
@@ -782,17 +794,21 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned||blPoison(meBless), killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0)+(meChoppa?1:0)+blAP(meBless),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1||meChoppa, defRerollSave1:ff.gromrilArmour, noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
-  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned||blPoison(foeBless), killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0)+(foeChoppa?1:0)+blAP(foeBless), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1||foeChoppa, defRerollSave1:fm.gromrilArmour, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned||blPoison(meBless), killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0)+(meChoppa?1:0)+blAP(meBless),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1||meChoppa, defRerollSave1:ff.gromrilArmour||(ff.defensiveStance&&!cfg.foeCharged), defRerollHit6:ff.nurgleReroll6, onlySixesHit:meBeguiled, noWard:!!me.noWard,  hitPenalty:myHitPen+(ff.cloudOfFlies?1:0),  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned||blPoison(foeBless), killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0)+(foeChoppa?1:0)+blAP(foeBless), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1||foeChoppa, defRerollSave1:fm.gromrilArmour||(fm.defensiveStance&&!cfg.myCharged), defRerollHit6:fm.nurgleReroll6, onlySixesHit:foeBeguiled, noWard:!!foe.noWard, hitPenalty:foeHitPen+(fm.cloudOfFlies?1:0), hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   // Soporific Musk: the enemy loses Strike First, and if it didn't have it, gains Strike Last.
+  // Blizzard Aura: the enemy gains Strike Last. Carrion Feeders: the enemy is −1 Initiative.
   let meSF = me.strikeFirst || fm.strikeFirst, meSL = me.strikeLast || fm.strikeLast;
   let foeSF = foe.strikeFirst || ff.strikeFirst, foeSL = foe.strikeLast || ff.strikeLast;
   if (ff.soporificMusk) { if (meSF) meSF = false; else meSL = true; }
   if (fm.soporificMusk) { if (foeSF) foeSF = false; else foeSL = true; }
+  if (ff.blizzardAura) meSL = true;
+  if (fm.blizzardAura) foeSL = true;
+  const meI = me.profile.i - (ff.carrionFeeders ? 1 : 0), foeI = foe.profile.i - (fm.carrionFeeders ? 1 : 0);
   const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? 1 : 0);
-  const eiMe = ei(me.profile.i, meSF, meSL, cfg.myCharged), eiFoe = ei(foe.profile.i, foeSF, foeSL, cfg.foeCharged);
+  const eiMe = ei(meI, meSF, meSL, cfg.myCharged), eiFoe = ei(foeI, foeSF, foeSL, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
     myWounds  = resolveAttacks(meEff,  dFoe, myAtt, offMe);
@@ -808,17 +824,20 @@ function simulateOnce(cfg) {
   }
   // Impact Hits (on the charge) + Stomp (every round) → auto-hits. Crown of Antlers
   // gives Impact Hits AP −1; Grinding Wheels gives Stomp AP −2.
-  const impactO = (o, f) => f.crownOfAntlers ? { ...o, ap: o.ap + 1 } : o;
+  const impactO = (o, f) => f.impactAP1 ? { ...o, ap: o.ap + 1 } : o;
   const stompO  = (o, f) => f.grindingWheels ? { ...o, ap: o.ap + 2 } : o;
   if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.impact,  1 + (Math.random()*6|0)), impactO(offMe, fm));
   if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.impact, 1 + (Math.random()*6|0)), impactO(offFoe, ff));
   if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.stomp,  1 + (Math.random()*3|0)), stompO(offMe, fm));
   if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.stomp, 1 + (Math.random()*3|0)), stompO(offFoe, ff));
 
-  // Spurting Bile Blood: each wound this model loses → a Strength 4 AP −1 hit back on the attacker.
+  // Retaliation: Spurting Bile Blood → a S4 AP −1 hit per wound lost; Deathblow → a
+  // S3 AP −1 hit per model slain (≈ wounds suffered ÷ wounds-per-model).
   const baseMy = myWounds, baseFoe = foeWounds;
   if (ff.spurtingBileBlood && baseMy  > 0) foeWounds += autoHits({ s: 4 }, dMe,  baseMy,  { ap: 1, defRerollSave1: fm.gromrilArmour });
   if (fm.spurtingBileBlood && baseFoe > 0) myWounds  += autoHits({ s: 4 }, dFoe, baseFoe, { ap: 1, defRerollSave1: ff.gromrilArmour });
+  if (ff.deathblow) { const k = Math.floor(baseMy  / Math.max(1, foe.profile.w)); if (k > 0) foeWounds += autoHits({ s: 3 }, dMe,  k, { ap: 1, defRerollSave1: fm.gromrilArmour }); }
+  if (fm.deathblow) { const k = Math.floor(baseFoe / Math.max(1, me.profile.w));  if (k > 0) myWounds  += autoHits({ s: 3 }, dFoe, k, { ap: 1, defRerollSave1: ff.gromrilArmour }); }
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
@@ -920,11 +939,12 @@ function duelWounds(att, def, charged) {
   const attEff = { ...att.profile, a: att.profile.a + (fa.frenzy ? 1 : 0),
     s: att.profile.s + (charged ? ((att.chargeS || 0) + (fa.furiousCharge ? 1 : 0)) : 0) };
   const dDef = { ws: def.profile.ws, t: def.profile.t, save: def.save, w: def.profile.w,
-    ward: bestWard(def.ward, fd.ward, def.wardX || 0, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal };
+    ward: bestWard(def.ward, fd.ward, def.wardX || 0, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal, immunePoison: fd.immunePoison };
   const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: kb, flaming: fa.flaming,
     regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, multiDice: att.dice && att.dice.multi, ap: fa.ap + (att.ap || 0),
     magical: fa.magical || !!att.magical, rerollWound: !!att.rerollWound, rerollHit: !!att.rerollHit,
     rerollHit1: fa.rerollHit1, rerollWound1: fa.rerollWound1, defRerollSave1: fd.gromrilArmour,
+    defRerollHit6: fd.nurgleReroll6, hitPenalty: fd.cloudOfFlies ? 1 : 0,
     hitBonus: att.hitBonus || 0, woundBonus: att.woundBonus || 0 };
   return resolveAttacks(attEff, dDef, Math.max(1, attEff.a), o);
 }
@@ -3118,6 +3138,11 @@ function runEngineSelfTests() {
   const pNo =resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1},6000,{poisoned:true});
   const pImm=resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1,immunePoison:true},6000,{poisoned:true});
   ok(pImm<pNo,'immunePoison negates Poisoned auto-wounds');
+  const eA={ws:4,s:4,t:4,a:1,i:4}, dB={ws:4,t:4,save:7,ward:0,w:1};
+  const base2=resolveAttacks(eA,dB,6000,{});
+  ok(resolveAttacks(eA,dB,6000,{hitPenalty:1})<base2,'Cloud of Flies −1 To Hit cuts wounds');
+  ok(resolveAttacks(eA,dB,6000,{defRerollHit6:true})<base2,'Nurgle re-roll natural-6 To Hit cuts wounds');
+  ok(resolveAttacks(eA,dB,6000,{onlySixesHit:true})<base2,'Beguiling only-6s-hit cuts wounds');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
