@@ -547,6 +547,11 @@ const HATRED_TARGETS = {
   'eternal-hatred': ['high-elf-realms', 'dark-elves'],
   'ancestral-grudge': ['orc-and-goblin-tribes'],
 };
+// Targeted Fear: the unit is itself SUBJECT to Fear when facing these armies
+// (e.g. Goblins "Fear of Elves" → they test Ld / take −1 to hit vs any elf army).
+const FEAR_TARGETS = {
+  'fear-of-elves': ['high-elf-realms', 'dark-elves', 'wood-elf-realms'],
+};
 // Combat-relevant special-rule flags derived from a unit's rule slugs.
 function combatFlags(u) {
   const r = (u && u.rules) || [];
@@ -705,8 +710,11 @@ function simulateOnce(cfg) {
   }
   // Fear: a unit facing a fear/terror-causer (not immune) tests Ld; a failure
   // leaves it shaken → −1 to hit this combat.
-  const fearPen = (def, imm, cf) => (cf.fear || cf.terror) && !imm && roll2d6() > def.profile.ld ? 1 : 0;
-  const myHitPen = fearPen(me, meImm, ff), foeHitPen = fearPen(foe, foeImm, fm);
+  // A unit is shaken if its foe causes Fear/Terror OR if it has a targeted
+  // Fear-of-X rule and the foe belongs to one of those armies (e.g. Fear of Elves).
+  const fearsArmy = (u, opp) => (u.rules || []).some(s => FEAR_TARGETS[s] && FEAR_TARGETS[s].includes(opp.army));
+  const fearPen = (def, imm, cf, opp) => ((cf.fear || cf.terror) || fearsArmy(def, opp)) && !imm && roll2d6() > def.profile.ld ? 1 : 0;
+  const myHitPen = fearPen(me, meImm, ff, foe), foeHitPen = fearPen(foe, foeImm, fm, me);
   // Targeted Hatred only triggers vs the right enemy (both lists are known here).
   const hatesArmy = (atk, def) => (atk.rules||[]).some(s => HATRED_TARGETS[s] && HATRED_TARGETS[s].includes(def.army));
   const meHatred  = fm.hatred || hatesArmy(me, foe);
@@ -3026,6 +3034,14 @@ function runEngineSelfTests() {
   let lo=99,hi=0; for(let i=0;i<400;i++){const v=rollDiceExpr(d61,0); if(v<lo)lo=v; if(v>hi)hi=v;}
   ok(lo>=2 && hi<=7, 'D6+1 stays in [2,7]');
   ok(rollDiceExpr(null,5)===5, 'null dice → fallback');
+  // Targeted Fear: a "Fear of Elves" unit (low Ld) hits worse vs an elf army than vs a non-elf one
+  const gob = {profile:{...u.profile, ld:4}, save:7, rules:['fear-of-elves'], army:'orc-and-goblin-tribes', points:10, size:10};
+  const elfFoe = {profile:{...u.profile}, save:7, rules:[], army:'high-elf-realms', points:10, size:10};
+  const orcFoe = {profile:{...u.profile}, save:7, rules:[], army:'orc-and-goblin-tribes', points:10, size:10};
+  const cfg0 = {myAttacks:20, foeAttacks:0, myStatic:0, foeStatic:0, myCharged:false, foeCharged:false};
+  const vsElf = monteCarlo({...cfg0, me:gob, foe:elfFoe}, 800).casualties.inflictWounds;
+  const vsOrc = monteCarlo({...cfg0, me:gob, foe:orcFoe}, 800).casualties.inflictWounds;
+  ok(vsElf < vsOrc, 'Fear of Elves cuts the unit\'s output vs elf armies only');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
