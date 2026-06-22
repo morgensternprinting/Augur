@@ -211,6 +211,45 @@ function profileFromRaw(p) {
 }
 const rulesOf = (u) => (u.specialRules || []).map(r => r.slug || normName(r.name));
 
+// ── Variable-damage rules: read the EXACT dice from the rule name so each unit
+// uses its own value, e.g. "Impact Hits (D6+1)", "Stomp Attacks (D3)",
+// "Multiple Wounds (2)". parseDiceExpr → {n,die,plus}; rollDiceExpr rolls it. ──
+function parseDiceExpr(s) {
+  const t = String(s || '').toLowerCase().replace(/\s+/g, '');
+  let m = t.match(/^(\d*)d(\d+)(?:\+(\d+))?$/);   // 2D6+1 · D6+1 · D3 · D6
+  if (m) return { n: +(m[1] || 1), die: +m[2], plus: +(m[3] || 0) };
+  m = t.match(/^(\d+)$/);                          // fixed value "(2)"
+  if (m) return { n: 0, die: 0, plus: +m[1] };
+  return null;
+}
+function rollDiceExpr(spec, fallback) {
+  if (!spec) return fallback;
+  let v = spec.plus;
+  for (let i = 0; i < spec.n; i++) v += 1 + (Math.random() * spec.die | 0);
+  return v;
+}
+const IMPACT_SLUGS = ['impact-hits','bull-charge','ogre-charge','thunderous-charge','mournfang-charge',
+  'tusker-charge','bestial-charge','slavering-charge','stampede','brazen-wheels','crushing-bulk','big-stabbas','skullcracker'];
+const STOMP_SLUGS  = ['stomp-attacks','crushing-weight'];
+const MULTI_SLUGS  = ['multiple-wounds','wallop'];
+// Per-unit dice for the three variable-damage rules — only when the rule name
+// carries an explicit "(…)" value; otherwise null → the engine keeps its default.
+function diceFromUnit(u) {
+  const sr = (u && u.specialRules) || [];
+  const slugOf = (r) => r.slug || String(r.name||'').toLowerCase()
+    .replace(/\([^)]*\)/g,'').trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const find = (fam) => {
+    for (const r of sr) {
+      if (fam.includes(slugOf(r))) {
+        const m = String(r.name || '').match(/\(([^)]*)\)/);
+        if (m) { const d = parseDiceExpr(m[1]); if (d) return d; }
+      }
+    }
+    return null;
+  };
+  return { impact: find(IMPACT_SLUGS), stomp: find(STOMP_SLUGS), multi: find(MULTI_SLUGS) };
+}
+
 // Resolve an engine-ready unit straight from a UNIT_DB slug (used by JSON import,
 // where the TOW en 1 builder stores units keyed by UNIT_DB slug + count + ppm).
 function engineUnitFromSlug(slug, name, count, ppm) {
@@ -227,7 +266,7 @@ function engineUnitFromSlug(slug, name, count, ppm) {
     id: slug, name: name || u.name, army: u.army, category: u.category || '',
     profile: profileFromRaw(p), save: parseSave(u.armourValue),
     points: ppm || 0, size: count || num(u.unitSize) || 1,
-    rules, unbreakable: rules.includes('unbreakable'),
+    rules, dice: diceFromUnit(u), unbreakable: rules.includes('unbreakable'),
   };
 }
 
@@ -328,7 +367,7 @@ function rosterUnitFromUDB(army, cat, slug, displayName) {
     army, category: cat,
     points: (owb && owb.points) || 0,
     size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
-    profile: profileFromRaw(p), rules,
+    profile: profileFromRaw(p), rules, dice: diceFromUnit(u),
     unbreakable: rules.includes('unbreakable'),
     strikeFirst: rules.some(r => /strike-first|always-strikes-first/.test(r)),
     strikeLast: rules.some(r => /always-strikes-last/.test(r)),
@@ -389,7 +428,7 @@ function buildRoster() {
       const u = UNIT_DB[k]; const p = pickCombatProfile(u.profiles); if (!p) continue;
       const rules = rulesOf(u);
       units.push({ id: k, udbKey: k, slug: k, name: u.name, army: u.army, category: (u.category||'core').toLowerCase(),
-        points: 0, size: num(u.unitSize) || 1, save: parseSave(u.armourValue), profile: profileFromRaw(p), rules,
+        points: 0, size: num(u.unitSize) || 1, save: parseSave(u.armourValue), profile: profileFromRaw(p), rules, dice: diceFromUnit(u),
         unbreakable: rules.includes('unbreakable') });
     }
   }
@@ -601,7 +640,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
     if (!killing && saveT <= 6 && d6() >= saveT) continue;    // armour save
     if (wardT && !wardNegated && d6() >= wardT) continue;     // invulnerable / ward save
     if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
-    unsaved += multi ? Math.min(def.w, 1 + (Math.random() * 3 | 0)) : 1; // Multiple Wounds (≈D3)
+    unsaved += multi ? Math.min(def.w, rollDiceExpr(o.multiDice, 1 + (Math.random() * 3 | 0))) : 1; // Multiple Wounds (exact dice / ≈D3)
   }
   return unsaved;
 }
@@ -690,8 +729,8 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
-  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
@@ -711,10 +750,10 @@ function simulateOnce(cfg) {
     myWounds = resolveAttacks(meEff, dFoe, myAtt, offMe);
   }
   // Impact Hits (on the charge) + Stomp (large creatures, every round) → auto-hits.
-  if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, 1 + (Math.random()*6|0), offMe);
-  if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  1 + (Math.random()*6|0), offFoe);
-  if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, 1 + (Math.random()*3|0), offMe);
-  if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  1 + (Math.random()*3|0), offFoe);
+  if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.impact,  1 + (Math.random()*6|0)), offMe);
+  if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.impact, 1 + (Math.random()*6|0)), offFoe);
+  if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.stomp,  1 + (Math.random()*3|0)), offMe);
+  if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.stomp, 1 + (Math.random()*3|0)), offFoe);
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
@@ -818,7 +857,7 @@ function duelWounds(att, def, charged) {
   const dDef = { ws: def.profile.ws, t: def.profile.t, save: def.save, w: def.profile.w,
     ward: bestWard(def.ward, fd.ward, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal };
   const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: kb, flaming: fa.flaming,
-    regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, ap: fa.ap + (att.ap || 0),
+    regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, multiDice: att.dice && att.dice.multi, ap: fa.ap + (att.ap || 0),
     magical: fa.magical || !!att.magical, rerollWound: !!att.rerollWound, rerollHit: !!att.rerollHit,
     hitBonus: att.hitBonus || 0, woundBonus: att.woundBonus || 0 };
   return resolveAttacks(attEff, dDef, Math.max(1, attEff.a), o);
@@ -2977,6 +3016,16 @@ function runEngineSelfTests() {
   const r = monteCarlo({me:{...u,profile:{...u.profile}}, foe:{...u,profile:{...u.profile}}, myAttacks:10, foeAttacks:10, myStatic:3, foeStatic:3, myCharged:false, foeCharged:false}, 400);
   ok(Number.isFinite(r.expectedVP), 'VP is finite');
   ok(r.casualties.inflictWounds>=0 && r.casualties.sufferWounds>=0, 'casualties non-negative');
+  // Variable-damage dice parser (exact per-unit values for Impact/Stomp/Multi)
+  const d61 = parseDiceExpr('D6+1'), d3 = parseDiceExpr('D3'), fix2 = parseDiceExpr('2'), bad = parseDiceExpr('x');
+  ok(d61 && d61.n===1 && d61.die===6 && d61.plus===1, 'parse D6+1');
+  ok(d3 && d3.n===1 && d3.die===3 && d3.plus===0, 'parse D3');
+  ok(fix2 && fix2.n===0 && fix2.plus===2, 'parse fixed (2)');
+  ok(bad===null, 'parse rejects junk');
+  ok(rollDiceExpr(fix2,99)===2, 'fixed dice rolls constant');
+  let lo=99,hi=0; for(let i=0;i<400;i++){const v=rollDiceExpr(d61,0); if(v<lo)lo=v; if(v>hi)hi=v;}
+  ok(lo>=2 && hi<=7, 'D6+1 stays in [2,7]');
+  ok(rollDiceExpr(null,5)===5, 'null dice → fallback');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
