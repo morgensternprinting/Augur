@@ -680,7 +680,6 @@ function simulateOnce(cfg) {
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const bestWard = (...vals) => { let w = 0; vals.forEach(v => { if (v >= 2 && v <= 6 && (!w || v < w)) w = v; }); return w; };
   const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
   const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
   // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
@@ -802,6 +801,60 @@ function monteCarlo(cfg, N = 8000) {
     },
     N,
   };
+}
+
+// Best (lowest) valid invulnerable save among several sources; 0 = none.
+function bestWard(...vals) { let w = 0; vals.forEach(v => { if (v >= 2 && v <= 6 && (!w || v < w)) w = v; }); return w; }
+
+/* ── Challenge (1v1 duel between characters) ──────────────────────────────
+   Two single models fight round by round in Initiative order until one dies
+   (or 6 rounds). Overkill = excess unsaved wounds beyond the kill, capped +5,
+   which feeds the main combat result. Reuses the full rule set via resolveAttacks. */
+function duelWounds(att, def, charged) {
+  const fa = combatFlags(att), fd = combatFlags(def);
+  const kb = fa.killingBlow || (fa.monsterSlayer && fd.largeTarget);
+  const attEff = { ...att.profile, a: att.profile.a + (fa.frenzy ? 1 : 0),
+    s: att.profile.s + (charged ? ((att.chargeS || 0) + (fa.furiousCharge ? 1 : 0)) : 0) };
+  const dDef = { ws: def.profile.ws, t: def.profile.t, save: def.save, w: def.profile.w,
+    ward: bestWard(def.ward, fd.ward, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal };
+  const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: kb, flaming: fa.flaming,
+    regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, ap: fa.ap + (att.ap || 0),
+    magical: fa.magical || !!att.magical, rerollWound: !!att.rerollWound, rerollHit: !!att.rerollHit,
+    hitBonus: att.hitBonus || 0, woundBonus: att.woundBonus || 0 };
+  return resolveAttacks(attEff, dDef, Math.max(1, attEff.a), o);
+}
+function simulateDuelOnce(me, foe, cfg) {
+  const fm = combatFlags(me), ff = combatFlags(foe);
+  const ei = (u, f, ch) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
+    - ((u.strikeLast || f.strikeLast) ? 20 : 0) + (ch ? 1 : 0);
+  let mw = me.profile.w, fw = foe.profile.w;
+  for (let round = 0; round < 6; round++) {
+    const ch1 = round === 0 && cfg.myCharged, ch2 = round === 0 && cfg.foeCharged;
+    const eiMe = ei(me, fm, ch1), eiFoe = ei(foe, ff, ch2);
+    if (eiMe === eiFoe) {                       // simultaneous: both strike, then resolve deaths
+      const dF = duelWounds(me, foe, ch1), dM = duelWounds(foe, me, ch2);
+      fw -= dF; mw -= dM;
+      if (fw <= 0 && mw <= 0) return { result: 'draw', overkill: 0 };
+      if (fw <= 0) return { result: 'me', overkill: Math.min(5, -fw) };
+      if (mw <= 0) return { result: 'foe', overkill: Math.min(5, -mw) };
+    } else if (eiMe > eiFoe) {
+      fw -= duelWounds(me, foe, ch1); if (fw <= 0) return { result: 'me', overkill: Math.min(5, -fw) };
+      mw -= duelWounds(foe, me, ch2); if (mw <= 0) return { result: 'foe', overkill: Math.min(5, -mw) };
+    } else {
+      mw -= duelWounds(foe, me, ch2); if (mw <= 0) return { result: 'foe', overkill: Math.min(5, -mw) };
+      fw -= duelWounds(me, foe, ch1); if (fw <= 0) return { result: 'me', overkill: Math.min(5, -fw) };
+    }
+  }
+  return { result: mw < fw ? 'foe' : fw < mw ? 'me' : 'draw', overkill: 0 }; // unresolved → who's ahead
+}
+function monteCarloDuel(me, foe, cfg, N = 5000) {
+  let win = 0, lose = 0, draw = 0, sumOver = 0;
+  for (let i = 0; i < N; i++) {
+    const r = simulateDuelOnce(me, foe, cfg);
+    if (r.result === 'me') { win++; sumOver += r.overkill; }
+    else if (r.result === 'foe') lose++; else draw++;
+  }
+  return { win: win / N, lose: lose / N, draw: draw / N, avgOverkill: win ? sumOver / win : 0 };
 }
 
 // Static combat resolution for one side, from its factor block `s` and the
@@ -1761,6 +1814,44 @@ function RuleChips({ unit, accent }) {
   </div>;
 }
 
+// Challenge: a 1v1 duel between two characters (only characters can issue/accept).
+function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, accentFoe }) {
+  const isChar = (u) => /charact|personn|lord|hero|seigneur|héros/.test(String(u.category||'').toLowerCase())
+    || (u.rules||[]).some(r => /fight-me|skilled-duellist|challenge|grand-master|royal-guard|champions?-of/.test(r));
+  const myChars = myCands.filter(isChar), foeChars = foeCands.filter(isChar);
+  const [myId, setMyId] = useState(null), [foeId, setFoeId] = useState(null);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  if (!myChars.length || !foeChars.length)
+    return <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-tertiary)'}}>
+      {tr('No character available on one side to issue or accept a challenge.','Aucun personnage disponible d\'un côté pour lancer ou accepter un défi.')}</div>;
+  const me = myChars.find(c=>c.id===myId) || myChars[0];
+  const foe = foeChars.find(c=>c.id===foeId) || foeChars[0];
+  const r = React.useMemo(()=> monteCarloDuel(me, foe, { myCharged, foeCharged }), [me.id, foe.id, myCharged, foeCharged]);
+  const pick = (val,onCh,chars,accent) => <select value={val||chars[0].id} onChange={e=>onCh(e.target.value)}
+    style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',border:`1px solid ${accent}`,
+      borderRadius:'var(--r-md)',padding:'9px var(--sp-3)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+    {chars.map(c=><option key={c.id} value={c.id} style={{background:'var(--surface-2)'}}>{unitName(c)}</option>)}</select>;
+  const cells = [[tr('You win','Tu gagnes'),Math.round(r.win*100),'var(--out-win)'],
+    [tr('Draw','Nul'),Math.round(r.draw*100),'var(--out-draw)'],[tr('You lose','Tu perds'),Math.round(r.lose*100),'var(--out-flee)']];
+  return <Fragment>
+    <div style={{display:'flex',gap:8}}>
+      <div style={{flex:1,minWidth:0}}><SectionLabel style={{color:accentMe}}>{tr('Your champion','Ton champion')}</SectionLabel>{pick(myId,setMyId,myChars,'var(--signal-600)')}</div>
+      <div style={{flex:1,minWidth:0}}><SectionLabel style={{color:accentFoe}}>{tr('Enemy champion','Champion adverse')}</SectionLabel>{pick(foeId,setFoeId,foeChars,'var(--foe-600)')}</div>
+    </div>
+    <div style={{display:'flex',gap:8}}><div style={{flex:1,minWidth:0}}><MiniProfile unit={me}/></div><div style={{flex:1,minWidth:0}}><MiniProfile unit={foe}/></div></div>
+    <div style={{display:'flex',gap:8,textAlign:'center'}}>
+      {cells.map(([l,v,c],i)=><div key={i} style={{flex:1,background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-md)',padding:'8px 4px'}}>
+        <div style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:c,fontVariantNumeric:'tabular-nums'}}>{v}%</div>
+        <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'0.03em',textTransform:'uppercase',color:'var(--text-tertiary)',marginTop:3}}>{l}</div></div>)}
+    </div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-md)',padding:'8px var(--sp-3)'}}>
+      <span style={{font:'500 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-secondary)'}}>{tr('Avg overkill when you win (→ combat result)','Surtuerie moyenne si tu gagnes (→ résultat de combat)')}</span>
+      <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accentMe}}>+{r.avgOverkill.toFixed(1)}</span>
+    </div>
+    <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
+      {tr('Report this overkill in the Bonuses panel (Overkill, max +5) to fold it into the full combat forecast.','Reporte cette surtuerie dans le panneau Bonus (Carnage, max +5) pour l\'inclure dans la prévision globale.')}</div>
+  </Fragment>;
+}
 function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onSimulate }) {
   const [sheet, setSheet] = useState(null); // 'me' | 'foe' | null
   const set = (patch) => setSel(s => ({ ...s, ...patch }));
@@ -1886,6 +1977,11 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <FactorPanel side="foe" accent={accentFoe} f={sel.foe} setF={setF('foe')}
           attacks={sel.foeAttacks} setAttacks={v=>set({foeAttacks:v})} charged={foeCharged} cr={foeCR}/>
       </div>
+
+      <Collapsible title={tr('Challenge — duel of champions','Défi — duel de champions')} icon="swords" accent="var(--caution)" defaultOpen={false}
+        summary={tr('1v1','1c1')}>
+        <ChallengePanel myCands={myCands} foeCands={foeCands} myCharged={myCharged} foeCharged={foeCharged} accentMe={accentMe} accentFoe={accentFoe}/>
+      </Collapsible>
 
       <div style={{height:4}}/>
     </Body>
