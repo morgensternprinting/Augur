@@ -1238,17 +1238,17 @@ function StatusDot({ status='full', showLabel=true, style={} }) {
 
 function VPMeter({ value, range=null, size='hero', style={} }) {
   const positive=value>=0;const color=positive?'var(--positive)':'var(--danger)';
-  const dir=positive?'in your favour':'against you';const signed=`${positive?'+':'−'}${Math.abs(value)}`;
+  const dir=positive?tr('in your favour','en ta faveur'):tr('against you','en ta défaveur');const signed=`${positive?'+':'−'}${Math.abs(value)}`;
   const fs=size==='hero'?'var(--fs-hero)':'var(--fs-display)';
   return <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',...style}}>
     <span style={{font:'var(--fw-semibold) var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',
-      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-1)'}}>Expected net VP swing</span>
+      textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:'var(--sp-1)'}}>{tr('Expected net VP swing','Écart de PV net attendu')}</span>
     <span style={{font:`var(--fw-bold) ${fs}/var(--lh-tight) var(--font-display)`,letterSpacing:'var(--ls-tight)',
       color,fontVariantNumeric:'tabular-nums'}}>{signed}</span>
     <div style={{display:'flex',alignItems:'baseline',gap:'var(--sp-2)',marginTop:'var(--sp-1)'}}>
       <span style={{font:'var(--fw-semibold) var(--fs-sm)/1 var(--font-ui)',color}}>{dir}</span>
       {range&&<span style={{font:'var(--fw-regular) var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>
-        range {range[0]>=0?'+':'−'}{Math.abs(range[0])} … {range[1]>=0?'+':'−'}{Math.abs(range[1])}</span>}
+        {tr('range','plage')} {range[0]>=0?'+':'−'}{Math.abs(range[0])} … {range[1]>=0?'+':'−'}{Math.abs(range[1])}</span>}
     </div></div>;
 }
 
@@ -1470,7 +1470,7 @@ function freshGame() {
       { id:'o3', name:'Bridge',       holder:'none' },
     ],
     turn: 1, mission: 'Pitched Battle', pointsCap: 2000,
-    maxRounds: 6, activeSide: 'me', phaseIdx: 0, subIdx: 0,
+    maxRounds: 6, firstSide: 'me', activeSide: 'me', phaseIdx: 0, subIdx: 0,
   };
 }
 function loadGame() {
@@ -2014,8 +2014,8 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
   return <Fragment>
     <ScreenHeader eyebrow={tr('Combat selection','Sélection du combat')} title={tr('Engagement','Engagement')} right={
       <span style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',textAlign:'right'}}>
-        <span style={{color:'var(--signal-400)'}}>you +{myCR}</span><br/>
-        <span style={{color:'var(--foe-400)'}}>foe +{foeCR}</span></span>}/>
+        <span style={{color:'var(--signal-400)'}}>{tr('you','toi')} +{myCR}</span><br/>
+        <span style={{color:'var(--foe-400)'}}>{tr('foe','adv.')} +{foeCR}</span></span>}/>
     <Body>
       {/* source mode */}
       <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
@@ -2194,11 +2194,11 @@ function VariantCadran({ res, names }) {
   return <Fragment>
     <Card elevation={2} style={{padding:'var(--sp-5)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:8}}>Expected net VP swing</div>
+        color:'var(--text-tertiary)',marginBottom:8}}>{tr('Expected net VP swing','Écart de PV net attendu')}</div>
       <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:12}}>
         <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color,letterSpacing:'var(--ls-tight)',
           fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(value)}</span>
-        <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color}}>{positive?'in your favour':'against you'}</span></div>
+        <span style={{font:'600 var(--fs-sm)/1 var(--font-ui)',color}}>{positive?tr('in your favour','en ta faveur'):tr('against you','en ta défaveur')}</span></div>
       <div style={{position:'relative',height:14,borderRadius:'var(--r-pill)',
         background:'linear-gradient(90deg,var(--out-flee-soft),var(--surface-3) 50%,var(--out-win-soft))',
         border:'1px solid var(--border-default)',overflow:'hidden'}}>
@@ -2209,12 +2209,12 @@ function VariantCadran({ res, names }) {
           borderRadius:'50%',background:color,boxShadow:'0 0 10px '+(positive?'rgba(79,176,122,.5)':'var(--out-flee-glow)'),
           border:'2px solid var(--bg-app)'}}/></div>
       <div style={{display:'flex',justifyContent:'space-between',font:'400 var(--fs-xs)/1 var(--font-mono)',
-        color:'var(--text-tertiary)',marginTop:6}}><span>defeat</span><span>0</span><span>victory</span></div>
+        color:'var(--text-tertiary)',marginTop:6}}><span>{tr('defeat','défaite')}</span><span>0</span><span>{tr('victory','victoire')}</span></div>
     </Card>
     {res.badExchange&&<BadExchangeBanner text={tr('Likely win but low VP gain — the enemy holds without breaking.','Victoire probable mais peu de PV — l\'ennemi tient sans céder.')}/>}
     <Card elevation={1} style={{padding:'var(--sp-4)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:12}}>Flee risk</div>
+        color:'var(--text-tertiary)',marginBottom:12}}>{tr('Flee risk','Risque de fuite')}</div>
       <div style={{display:'flex',gap:16}}>
         <FleeDial label={names.meShort} value={res.me.flee}/>
         <div style={{width:1,background:'var(--border-subtle)'}}/>
@@ -2246,7 +2246,7 @@ function VariantDuel({ res, names }) {
   return <Fragment>
     <Card elevation={2} style={{padding:'var(--sp-4) var(--sp-5) var(--sp-5)'}}>
       <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
-        color:'var(--text-tertiary)',marginBottom:10,textAlign:'center'}}>Expected net VP swing</div>
+        color:'var(--text-tertiary)',marginBottom:10,textAlign:'center'}}>{tr('Expected net VP swing','Écart de PV net attendu')}</div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:14}}>
         <span style={{font:'700 var(--fs-hero)/1 var(--font-display)',color:positive?'var(--positive)':'var(--danger)',
           letterSpacing:'var(--ls-tight)',fontVariantNumeric:'tabular-nums'}}>{positive?'+':'−'}{Math.abs(res.expectedVP)}</span></div>
@@ -2704,13 +2704,16 @@ const REACT_RULES = new Set(['counter-charge','fire-and-flee','feigned-flight','
 function PhaseTracker({ game, setGame, lists, sel }) {
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
   const activeSide=game.activeSide||'me', phaseIdx=game.phaseIdx||0, subIdx=game.subIdx||0, maxRounds=game.maxRounds||6, turn=game.turn||1;
+  const firstSide=game.firstSide||'me', secondSide=firstSide==='me'?'foe':'me';
   const setG=(patch)=>setGame(g=>({...g,...patch}));
   const step=(dir)=>{
     let p=phaseIdx, s=subIdx, side=activeSide, t=turn;
-    if(dir>0){ s++; if(s>3){s=0;p++;} if(p>3){p=0; if(side==='me') side='foe'; else { side='me'; t=Math.min(maxRounds,t+1);} } }
-    else { s--; if(s<0){s=3;p--;} if(p<0){p=3; if(side==='foe') side='me'; else { side='foe'; t=Math.max(1,t-1);} } }
+    if(dir>0){ s++; if(s>3){s=0;p++;} if(p>3){p=0; if(side===firstSide) side=secondSide; else { side=firstSide; t=Math.min(maxRounds,t+1);} } }
+    else { s--; if(s<0){s=3;p--;} if(p<0){p=3; if(side===secondSide) side=firstSide; else { side=secondSide; t=Math.max(1,t-1);} } }
     setG({phaseIdx:p,subIdx:s,activeSide:side,turn:t});
   };
+  // Choose who takes the first turn; resets the round pointer to that side, turn 1.
+  const setFirst=(fs)=>setG({firstSide:fs,activeSide:fs,turn:1,phaseIdx:0,subIdx:0});
   const accent = activeSide==='me'?'var(--signal-400)':'var(--foe-400)';
   const otherSide = activeSide==='me'?'foe':'me';
   const reactAccent = otherSide==='me'?'var(--signal-400)':'var(--foe-400)';
@@ -2739,6 +2742,16 @@ function PhaseTracker({ game, setGame, lists, sel }) {
         <div style={{font:'600 var(--fs-sm)/1.2 var(--font-ui)',color:accent}}>{subName(phaseIdx,subIdx)}</div>
       </div>
       <Icon name={TURN_PHASES[phaseIdx].icon} size={28} color={accent} style={{flex:'none'}}/>
+    </div>
+    <div style={{display:'flex',alignItems:'center',gap:8}}>
+      <span style={{font:'500 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-tertiary)',flex:'none'}}>{tr('First turn','Premier tour')}</span>
+      <div style={{display:'flex',gap:6,flex:1}}>
+        {[['me',tr('You','Toi'),'var(--signal-400)'],['foe',tr('Opponent','Adversaire'),'var(--foe-400)']].map(([k,lbl,col])=>
+          <button key={k} type="button" onClick={()=>setFirst(k)}
+            style={{flex:1,cursor:'pointer',padding:'6px 8px',borderRadius:'var(--r-pill)',
+              background:firstSide===k?'var(--surface-3)':'transparent',border:'1px solid '+(firstSide===k?col:'var(--border-default)'),
+              color:firstSide===k?col:'var(--text-secondary)',font:(firstSide===k?600:500)+' var(--fs-xs)/1 var(--font-ui)'}}>{lbl}</button>)}
+      </div>
     </div>
     <div style={{display:'flex',gap:4}}>
       {TURN_PHASES.map((ph,i)=><button key={i} type="button" onClick={()=>setG({phaseIdx:i,subIdx:0})}
@@ -2823,10 +2836,10 @@ function NoData() {
   return <PhoneFrame><div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',
     justifyContent:'center',padding:24,textAlign:'center',gap:12}}>
     <Icon name="database" size={32} color="var(--out-flee)"/>
-    <div style={{font:'600 var(--fs-h3)/1.3 var(--font-display)',color:'var(--text-primary)'}}>Data not found</div>
+    <div style={{font:'600 var(--fs-h3)/1.3 var(--font-display)',color:'var(--text-primary)'}}>{tr('Data not found','Données introuvables')}</div>
     <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-      Augur couldn't load <code style={{font:'var(--font-mono)'}}>unit_db.js</code> / <code style={{font:'var(--font-mono)'}}>owb_unit_data.js</code>.
-      These files must sit in the same folder as <code style={{font:'var(--font-mono)'}}>index.html</code>.</div></div></PhoneFrame>;
+      {tr('Augur could not load','Augur n\'a pas pu charger')} <code style={{font:'var(--font-mono)'}}>unit_db.js</code> / <code style={{font:'var(--font-mono)'}}>owb_unit_data.js</code>.
+      {' '}{tr('These files must sit in the same folder as','Ces fichiers doivent se trouver dans le même dossier que')} <code style={{font:'var(--font-mono)'}}>index.html</code>.</div></div></PhoneFrame>;
 }
 
 const LISTS_KEY = 'augur.lists.v1';
