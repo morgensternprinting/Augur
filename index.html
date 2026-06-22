@@ -1815,7 +1815,7 @@ function RuleChips({ unit, accent }) {
 }
 
 // Challenge: a 1v1 duel between two characters (only characters can issue/accept).
-function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, accentFoe }) {
+function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, accentFoe, onApplyOverkill }) {
   const isChar = (u) => /charact|personn|lord|hero|seigneur|héros/.test(String(u.category||'').toLowerCase())
     || (u.rules||[]).some(r => /fight-me|skilled-duellist|challenge|grand-master|royal-guard|champions?-of/.test(r));
   const myChars = myCands.filter(isChar), foeChars = foeCands.filter(isChar);
@@ -1848,8 +1848,8 @@ function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, ac
       <span style={{font:'500 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-secondary)'}}>{tr('Avg overkill when you win (→ combat result)','Surtuerie moyenne si tu gagnes (→ résultat de combat)')}</span>
       <span style={{font:'700 var(--fs-h2)/1 var(--font-mono)',color:accentMe}}>+{r.avgOverkill.toFixed(1)}</span>
     </div>
-    <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
-      {tr('Report this overkill in the Bonuses panel (Overkill, max +5) to fold it into the full combat forecast.','Reporte cette surtuerie dans le panneau Bonus (Carnage, max +5) pour l\'inclure dans la prévision globale.')}</div>
+    <Button variant="secondary" block disabled={r.avgOverkill < 0.5} onClick={()=>onApplyOverkill && onApplyOverkill(Math.min(5, Math.round(r.avgOverkill)))}
+      icon={<Icon name="plus" size={18}/>}>{tr('Add +','Ajouter +')}{Math.min(5,Math.round(r.avgOverkill))}{tr(' to your combat result',' à ton résultat de combat')}</Button>
   </Fragment>;
 }
 function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onSimulate }) {
@@ -1980,7 +1980,8 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
 
       <Collapsible title={tr('Challenge — duel of champions','Défi — duel de champions')} icon="swords" accent="var(--caution)" defaultOpen={false}
         summary={tr('1v1','1c1')}>
-        <ChallengePanel myCands={myCands} foeCands={foeCands} myCharged={myCharged} foeCharged={foeCharged} accentMe={accentMe} accentFoe={accentFoe}/>
+        <ChallengePanel myCands={myCands} foeCands={foeCands} myCharged={myCharged} foeCharged={foeCharged} accentMe={accentMe} accentFoe={accentFoe}
+          onApplyOverkill={v=>setF('me')({overkill:v})}/>
       </Collapsible>
 
       <div style={{height:4}}/>
