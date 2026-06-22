@@ -1607,11 +1607,12 @@ function listCandidates(list, sideKey) {
     return e;
   }).filter(Boolean);
 }
+// A side's source: 'catalog' → a faction roster; 'list:N' → imported list N.
+const sideSrc = (sel, side) => (side === 'me' ? sel.mySrc : sel.foeSrc) || 'catalog';
+const sideListIdx = (sel, side) => { const s = sideSrc(sel, side); return s.indexOf('list:') === 0 ? +s.slice(5) : -1; };
 function candidatesFor(side, sel, game, lists) {
-  if (sel.source === 'lists') {
-    const li = side === 'me' ? sel.myList : sel.foeList;
-    return listCandidates(lists[li], side);
-  }
+  const li = sideListIdx(sel, side);
+  if (li >= 0) return listCandidates(lists[li], side);
   const army = side === 'me' ? game.myArmy : game.foeArmy;
   const variant = side === 'me' ? game.myVariant : game.foeVariant;
   return armyRoster(army, variant).map(u => ({ ...u, sub: (u.points ? u.points + ' pts' : '') + ' · ' + catName(u.category) }));
@@ -2039,23 +2040,21 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         <span style={{color:'var(--signal-400)'}}>{tr('you','toi')} +{myCR}</span><br/>
         <span style={{color:'var(--foe-400)'}}>{tr('foe','adv.')} +{foeCR}</span></span>}/>
     <Body>
-      {/* source mode */}
-      <Segmented value={sel.source} onChange={v=>set({source:v})} size="sm"
-        options={[{value:'catalog',label:tr('Catalogue','Catalogue')},{value:'lists',label:tr('Imported lists','Listes importées')}]}/>
-
-      {sel.source==='lists' && <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-2)'}}>
-        <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-          {tr('Import a list for each side — its units feed the Game tab (casualty removal + total VP). TOW en 1 (« ⬇ JSON ») or OWB Builder (.owb.json), format auto-detected.',
-              'Importe une liste pour chaque camp — ses unités alimentent l\'onglet Partie (retrait des pertes + PV total). Export TOW en 1 (« ⬇ JSON ») ou OWB Builder (.owb.json), format auto-détecté.')}</div>
+      {/* Import a list (saved locally to this browser only) → it then appears by
+          name in each side's selector below, and feeds the Game tab. */}
+      <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-2)'}}>
+        <div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>
+          {tr('Import a list (.json TOW en 1 or .owb.json) — saved on this device only. It then appears by name in the selectors below, for either side.',
+              'Importer une liste (.json TOW en 1 ou .owb.json) — enregistrée sur cet appareil uniquement. Elle apparaît ensuite par son nom dans les sélecteurs ci-dessous, pour chaque camp.')}</div>
         <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
           onChange={e=>{const f=e.target.files[0];if(f)onImport(f,importSideRef.current);e.target.value='';}}/>
         <div style={{display:'flex',gap:'var(--sp-2)'}}>
           <Button variant="secondary" block onClick={()=>pickFile('me')} icon={<Icon name="upload" size={16}/>}
-            style={{borderColor:accentMe,color:accentMe}}>{tr('Your army','Ton armée')}</Button>
+            style={{borderColor:accentMe,color:accentMe}}>{tr('Import · your army','Importer · ton armée')}</Button>
           <Button variant="secondary" block onClick={()=>pickFile('foe')} icon={<Icon name="upload" size={16}/>}
-            style={{borderColor:accentFoe,color:accentFoe}}>{tr('Enemy army','Armée adverse')}</Button>
+            style={{borderColor:accentFoe,color:accentFoe}}>{tr('Import · enemy','Importer · adverse')}</Button>
         </div>
-      </Card>}
+      </Card>
 
       {/* one vertical block per side: army (or list) + its unit selection */}
       {['me','foe'].map((sd,si)=>{
@@ -2078,19 +2077,30 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
               <span style={{font:'700 var(--fs-sm)/1 var(--font-display)',letterSpacing:'0.02em',color:accent}}>
                 {isMe?tr('Your army','Ton armée'):tr('Enemy army','Armée adverse')}</span>
             </div>
-            {sel.source==='catalog' ? (<Fragment>
-              <ArmySelect value={army} accent={accentDeep} onChange={setArmy}/>
-              {vars.length>1 && <select value={variant} onChange={e=>setVar(e.target.value)}
-                style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
-                  color:variant==='standard'?'var(--text-secondary)':accent,border:`1px solid ${variant==='standard'?'var(--border-default)':accent}`,
-                  borderRadius:'var(--r-md)',padding:'8px var(--sp-3)',font:'600 var(--fs-xs)/1 var(--font-ui)',cursor:'pointer'}}>
-                {vars.map(v=><option key={v.key} value={v.key} style={{background:'var(--surface-2)',color:'var(--text-primary)'}}>{v.name}</option>)}</select>}
-            </Fragment>) : (lists.length>0 &&
-              <select value={isMe?sel.myList:sel.foeList} onChange={e=>{const i=+e.target.value; set(isMe?{myList:i,mine:'me:0'}:{foeList:i,foe:'foe:0'});}}
-                style={{appearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
-                  border:`1px solid ${accentDeep}`,borderRadius:'var(--r-md)',padding:'10px var(--sp-3)',
-                  font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
-                {lists.map((l,i)=><option key={i} value={i}>{l.name||(tr('List ','Liste ')+(i+1))}</option>)}</select>)}
+            {(() => {
+              const src = isMe?sel.mySrc:sel.foeSrc, onList = String(src||'').indexOf('list:')===0;
+              const onPickSrc = (e) => { const v=e.target.value;
+                if (v.indexOf('list:')===0) set(isMe?{mySrc:v, mine:'me:0'}:{foeSrc:v, foe:'foe:0'});
+                else { setArmy(v); set(isMe?{mySrc:'catalog'}:{foeSrc:'catalog'}); } };
+              return <Fragment>
+                <select value={onList?src:army} onChange={onPickSrc}
+                  style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
+                    color:'var(--text-primary)',border:`1px solid ${accentDeep}`,borderRadius:'var(--r-md)',
+                    padding:'10px var(--sp-4)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'}}>
+                  {lists.length>0 && <optgroup label={tr('My imported lists','Mes listes importées')}>
+                    {lists.map((l,i)=><option key={'l'+i} value={'list:'+i} style={{background:'var(--surface-2)'}}>📋 {l.name||(tr('List ','Liste ')+(i+1))}</option>)}
+                  </optgroup>}
+                  <optgroup label={tr('Armies','Armées')}>
+                    {armyList().map(a=><option key={a} value={a} style={{background:'var(--surface-2)'}}>{factionName(a)}</option>)}
+                  </optgroup>
+                </select>
+                {!onList && vars.length>1 && <select value={variant} onChange={e=>setVar(e.target.value)}
+                  style={{appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',
+                    color:variant==='standard'?'var(--text-secondary)':accent,border:`1px solid ${variant==='standard'?'var(--border-default)':accent}`,
+                    borderRadius:'var(--r-md)',padding:'8px var(--sp-3)',font:'600 var(--fs-xs)/1 var(--font-ui)',cursor:'pointer'}}>
+                  {vars.map(v=><option key={v.key} value={v.key} style={{background:'var(--surface-2)',color:'var(--text-primary)'}}>{v.name}</option>)}</select>}
+              </Fragment>;
+            })()}
             <SideSelector label={isMe?tr('Your unit','Ton unité'):tr('Enemy unit','Unité adverse')} accent={accent} unit={unit} onOpen={()=>setSheet(sd)}/>
           </Card>
         </Fragment>;
@@ -2157,10 +2167,10 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
 
     <UnitSheet open={sheet==='me'} title={tr('Your unit','Ton unité')} accent={accentMe} units={myCands}
       selectedId={sel.mine} onPick={id=>set({mine:id})} onClose={()=>setSheet(null)}
-      configurable={sel.source==='catalog'} side="me" lists={lists} onAdd={onAddUnit}/>
+      configurable={sideSrc(sel,'me')==='catalog'} side="me" lists={lists} onAdd={onAddUnit}/>
     <UnitSheet open={sheet==='foe'} title={tr('Enemy unit','Unité adverse')} accent={accentFoe} units={foeCands}
       selectedId={sel.foe} onPick={id=>set({foe:id})} onClose={()=>setSheet(null)}
-      configurable={sel.source==='catalog'} side="foe" lists={lists} onAdd={onAddUnit}/>
+      configurable={sideSrc(sel,'foe')==='catalog'} side="foe" lists={lists} onAdd={onAddUnit}/>
   </Fragment>;
 }
 
@@ -2747,8 +2757,8 @@ function PhaseTracker({ game, setGame, lists, sel }) {
   const otherSide = activeSide==='me'?'foe':'me';
   const reactAccent = otherSide==='me'?'var(--signal-400)':'var(--foe-400)';
   const digestFor=(side,reactOnly)=>{
-    const idx = side==='me'?sel.myList:sel.foeList;
-    const lst = (sel.source==='lists' && lists[idx]) ? lists[idx] : null;
+    const idx = sideListIdx(sel, side);
+    const lst = (idx>=0 && lists[idx]) ? lists[idx] : null;
     if(!lst) return null;                       // null = no list loaded for this side
     const out=[];
     (lst.units||[]).forEach(u=>{
@@ -2943,10 +2953,10 @@ function rosterFromList(list) {
 }
 
 const freshFactors = (charger, ranks) => ({
-  source: 'catalog',
+  // Per-side source: 'catalog' (a faction) or 'list:N' (the user's imported list N).
+  mySrc: 'catalog', foeSrc: 'catalog',
   mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,
   foe:  (armyUnits(DEFAULT_FOE_ARMY)[0]||{}).id,
-  myList: 0, foeList: 0,
   charger: 'me', counterCharge: false, reaction: 'hold', fleeingTarget: false, standShootKills: 0,
   myAttacks: 9, foeAttacks: 6,
   challenge: false,
@@ -3260,9 +3270,9 @@ function App() {
   const defRanks = (u) => Math.max(1, Math.min(3, Math.ceil((u.size||1)/5)));
   const defAtt   = (u) => Math.max(1, u.profile.a * Math.min(5, u.size||5));
   useEffect(()=>{ if(myUnit) setSel(s=>({ ...s, myAttacks: defAtt(myUnit),
-    me:{ ...s.me, ranks: defRanks(myUnit), unbreakable: !!myUnit.unbreakable } })); }, [sel.mine, sel.source, sel.myList]);
+    me:{ ...s.me, ranks: defRanks(myUnit), unbreakable: !!myUnit.unbreakable } })); }, [sel.mine, sel.mySrc]);
   useEffect(()=>{ if(foeUnit) setSel(s=>({ ...s, foeAttacks: defAtt(foeUnit),
-    foe:{ ...s.foe, ranks: defRanks(foeUnit), unbreakable: !!foeUnit.unbreakable } })); }, [sel.foe, sel.source, sel.foeList]);
+    foe:{ ...s.foe, ranks: defRanks(foeUnit), unbreakable: !!foeUnit.unbreakable } })); }, [sel.foe, sel.foeSrc]);
 
   if (ROSTER.coverage === 0) return <NoData/>;
 
@@ -3275,8 +3285,8 @@ function App() {
         setLists(prev => {
           const next = [...prev, list];
           const idx = next.length - 1;
-          setSel(s => ({ ...s, source:'lists',
-            ...(side==='me' ? { myList: idx, mine: 'me:0' } : { foeList: idx, foe: 'foe:0' }) }));
+          setSel(s => ({ ...s,
+            ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:0' } : { foeSrc: 'list:'+idx, foe: 'foe:0' }) }));
           return next;
         });
         // Populate the Game tracker (casualties + total VP) for the chosen side.
@@ -3302,8 +3312,8 @@ function App() {
         next = prev.map((l,i) => i===idx ? { ...l, units: [...l.units, entry] } : l);
       }
       const ui = next[idx].units.length - 1;
-      setSel(s => ({ ...s, source:'lists',
-        ...(side==='me' ? { myList: idx, mine: 'me:'+ui } : { foeList: idx, foe: 'foe:'+ui }) }));
+      setSel(s => ({ ...s,
+        ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:'+ui } : { foeSrc: 'list:'+idx, foe: 'foe:'+ui }) }));
       return next;
     });
   };
