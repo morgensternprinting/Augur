@@ -502,6 +502,12 @@ function effectiveSave(save, s) {
   return eff > 6 ? 7 : eff;
 }
 
+// Targeted Hatred: rule slug → the enemy armies it applies against. Resolved in
+// the engine (where both sides are known) rather than as blanket Hatred.
+const HATRED_TARGETS = {
+  'eternal-hatred': ['high-elf-realms', 'dark-elves'],
+  'ancestral-grudge': ['orc-and-goblin-tribes'],
+};
 // Combat-relevant special-rule flags derived from a unit's rule slugs.
 function combatFlags(u) {
   const r = (u && u.rules) || [];
@@ -510,7 +516,7 @@ function combatFlags(u) {
   const ap = has('cleaving-blow', 'obsidian-blades') ? 2
            : has('armour-bane', 'gromril-weapons', 'ensorcelled-weapons', 'khopesh') ? 1 : 0;
   return {
-    hatred:        has('hatred', 'eternal-hatred', 'ancestral-grudge'),
+    hatred:        has('hatred'),   // generic Hatred; targeted ones resolved vs the actual foe
     poisoned:      has('poisoned-attacks', 'warpstone-weapons', 'spawn-of-nurgle', 'gigantic-spawn-of-nurgle', 'cult-of-the-slithering-serpent'),
     killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death', 'dark-venom'),
     monsterSlayer: has('slayer', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'),
@@ -534,6 +540,7 @@ function combatFlags(u) {
                        'tusker-charge', 'bestial-charge', 'slavering-charge', 'stampede', 'brazen-wheels', 'crushing-bulk',
                        'big-stabbas', 'skullcracker'),
     stomp:         has('stomp-attacks', 'crushing-weight'),
+    parry:         has('parry', 'parry-wood-elves'),
     magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched',
                        'accursed-weapons', 'warpstone-sentinel', 'spectral-hounds', 'spectral-reapers', 'usirians-reaper',
                        'spawn-of-tzeentch', 'gigantic-spawn-of-tzeentch', 'spectral-coach', 'hellbound'),
@@ -566,17 +573,22 @@ function wardFromRules(r) {
 // Roll a unit's attacks against a defender → unsaved wounds inflicted.
 // `o` carries the attacker's offensive rule flags + the defender's regen/ward.
 function resolveAttacks(att, def, nAttacks, o = {}) {
-  const hitT = Math.min(6, toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0)); // Fear: −1 to hit
-  const woundT = toWoundTarget(att.s, def.t);
+  // hit/wound targets with item bonuses + guardrails: a natural 1 always misses
+  // and you can never need better than 2+ (no save < 2+, no impossible bonus).
+  let hitT = toHitTarget(att.ws, def.ws) + (o.hitPenalty || 0) - (o.hitBonus || 0); // Fear −1, items +1
+  hitT = Math.max(2, Math.min(6, hitT));
+  let woundT = toWoundTarget(att.s, def.t);
+  if (woundT < 7 && o.woundBonus) woundT = Math.max(2, woundT - o.woundBonus);
   const saveT = effectiveSave(def.save, att.s + (o.ap || 0)); // Armour Bane / Cleaving Blow add extra AP
-  const wardT = def.ward || 0;        // invulnerable save (magic items), 0 = none
+  const wardT = (def.ward >= 2 && def.ward <= 6) ? def.ward : 0; // valid invulnerable save only
   const regenNegated = o.flaming;     // flaming attacks negate regeneration
   const multi = o.multiWounds && def.w > 1; // multiple wounds only matter vs multi-wound models
-  let unsaved = 0;
   const wardNegated = o.noWard;       // some attacks allow no ward save
+  const reHit = o.hatred || o.rerollHit;
+  let unsaved = 0;
   for (let i = 0; i < nAttacks; i++) {
     let hit = d6();
-    if (hit < hitT) { if (o.hatred) hit = d6(); if (hit < hitT) continue; } // Hatred: reroll a miss
+    if (hit < hitT) { if (reHit) hit = d6(); if (hit < hitT) continue; } // Hatred / re-roll a miss
     if (def.ethereal && !o.magical) continue;                 // Ethereal: only magical attacks can wound it
     let killing = false, autoWound = o.poisoned && hit === 6; // Poisoned: natural 6 to hit auto-wounds
     if (!autoWound) {
@@ -656,6 +668,10 @@ function simulateOnce(cfg) {
   // leaves it shaken → −1 to hit this combat.
   const fearPen = (def, imm, cf) => (cf.fear || cf.terror) && !imm && roll2d6() > def.profile.ld ? 1 : 0;
   const myHitPen = fearPen(me, meImm, ff), foeHitPen = fearPen(foe, foeImm, fm);
+  // Targeted Hatred only triggers vs the right enemy (both lists are known here).
+  const hatesArmy = (atk, def) => (atk.rules||[]).some(s => HATRED_TARGETS[s] && HATRED_TARGETS[s].includes(def.army));
+  const meHatred  = fm.hatred || hatesArmy(me, foe);
+  const foeHatred = ff.hatred || hatesArmy(foe, me);
 
   // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge.
   const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
@@ -664,8 +680,9 @@ function simulateOnce(cfg) {
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: me.ward  || fm.ward || 0, w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
-  const dFoe = { ...foeEff, save: foe.save, ward: foe.ward || ff.ward || 0, w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
+  const bestWard = (...vals) => { let w = 0; vals.forEach(v => { if (v >= 2 && v <= 6 && (!w || v < w)) w = v; }); return w; };
+  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
+  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
   // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
   const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
   const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
@@ -674,8 +691,8 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:fm.hatred, poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  noWard:!!me.noWard,  hitPenalty:myHitPen };
-  const offFoe = { hatred:ff.hatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, noWard:!!foe.noWard, hitPenalty:foeHitPen };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
@@ -1311,8 +1328,12 @@ const ITEM_BY_NAME = (() => {
 })();
 // Parse a (terse, user-written) item description into combat-engine effects.
 function parseItemEffects(d) {
-  d = (d || '').toLowerCase(); const r = { ward:0, regen:false, magical:false, ethereal:false, addRules:[], dS:0, dA:0, dI:0, ap:0 }; let m;
-  if ((m = d.match(/(\d)\+\s*ward/))) r.ward = +m[1];
+  d = (d || '').toLowerCase(); const r = { ward:0, regen:false, magical:false, ethereal:false, addRules:[], dS:0, dA:0, dI:0, ap:0, hitBonus:0, woundBonus:0, rerollHit:false, rerollWound:false }; let m;
+  if ((m = d.match(/(\d)\+\s*ward|ward save[^.]*?(\d)\+|invuln[^.]*?(\d)\+/))) r.ward = +(m[1]||m[2]||m[3]);
+  if ((m = d.match(/\+\s*(\d)\s*to\s*hit|to hit\s*:?\s*\+\s*(\d)|\+\s*(\d)\s*pour\s*touch/))) r.hitBonus = +(m[1]||m[2]||m[3]);
+  if ((m = d.match(/\+\s*(\d)\s*to\s*wound|to wound\s*:?\s*\+\s*(\d)|\+\s*(\d)\s*pour\s*bless/))) r.woundBonus = +(m[1]||m[2]||m[3]);
+  if (/re-?roll[^.]*\b(to\s*hit|missed hits?|failed hits?|hit rolls?)\b|relance[^.]*touch/.test(d)) r.rerollHit = true;
+  if (/re-?roll[^.]*\b(to\s*wound|failed wounds?|wound rolls?)\b|relance[^.]*bless/.test(d)) r.rerollWound = true;
   if (/regenerat|régén/.test(d) && !/ignore|annul|negate|no regen|cannot/.test(d)) r.regen = true;
   if (/magical attack|attaques?\s*magiques/.test(d)) r.magical = true;
   if (/\bethereal\b|éthéré/.test(d)) r.ethereal = true;
@@ -1341,6 +1362,10 @@ function applyItemEffects(e, opts) {
     if (fx.magical) e.magical = true;
     if (fx.ethereal) e.ethereal = true;
     if (fx.ap) e.ap = (e.ap || 0) + fx.ap;
+    if (fx.hitBonus) e.hitBonus = (e.hitBonus || 0) + fx.hitBonus;
+    if (fx.woundBonus) e.woundBonus = (e.woundBonus || 0) + fx.woundBonus;
+    if (fx.rerollHit) e.rerollHit = true;
+    if (fx.rerollWound) e.rerollWound = true;
     if (fx.addRules.length) e.rules = [...(e.rules || []), ...fx.addRules];
     if (fx.dS || fx.dA || fx.dI) e.profile = { ...e.profile, s: e.profile.s + fx.dS, a: e.profile.a + fx.dA, i: (e.profile.i || 0) + fx.dI };
   });
@@ -2835,7 +2860,32 @@ function QuickRef() {
   </Fragment>;
 }
 
+// Engine self-tests: assert key invariants so a regression is caught immediately
+// (logged to the console). Run once on mount.
+function runEngineSelfTests() {
+  const fails = []; const ok = (c, m) => { if (!c) fails.push(m); };
+  ok(toHitTarget(10,1)===2, 'to-hit 10v1 = 2+');
+  ok(toHitTarget(3,3)===4, 'to-hit equal = 4+');
+  ok(toHitTarget(1,10)===5, 'to-hit 1v10 = 5+');
+  ok(toWoundTarget(4,4)===4 && toWoundTarget(10,1)===2 && toWoundTarget(1,7)===7 && toWoundTarget(1,6)===6, 'to-wound chart');
+  ok(effectiveSave(2,10)>=2 && effectiveSave(2,10)<=7, 'save clamped to [2,7]');
+  const A = {ws:4,s:4,t:4,a:1,i:4};
+  ok(resolveAttacks(A,{ws:4,t:4,save:7,ward:0,w:1,ethereal:true},300,{})===0, 'ethereal immune to non-magical');
+  ok(resolveAttacks(A,{ws:4,t:4,save:7,ward:0,w:1,ethereal:true},300,{magical:true})>0, 'ethereal hurt by magical');
+  const noW = resolveAttacks({ws:4,s:5,t:4,a:1,i:4},{ws:4,t:4,save:7,ward:0,w:1},3000,{});
+  const w5  = resolveAttacks({ws:4,s:5,t:4,a:1,i:4},{ws:4,t:4,save:7,ward:5,w:1},3000,{});
+  ok(w5 < noW, 'ward reduces wounds');
+  ok(resolveAttacks(A,{ws:4,t:4,save:7,ward:0,w:1},3000,{hitBonus:1}) > resolveAttacks(A,{ws:4,t:4,save:7,ward:0,w:1},3000,{}), '+1 to hit raises wounds');
+  const u = {profile:{M:4,ws:4,bs:3,s:4,t:4,w:1,i:4,a:1,ld:8}, save:5, rules:[], army:'x', points:10, size:10};
+  const r = monteCarlo({me:{...u,profile:{...u.profile}}, foe:{...u,profile:{...u.profile}}, myAttacks:10, foeAttacks:10, myStatic:3, foeStatic:3, myCharged:false, foeCharged:false}, 400);
+  ok(Number.isFinite(r.expectedVP), 'VP is finite');
+  ok(r.casualties.inflictWounds>=0 && r.casualties.sufferWounds>=0, 'casualties non-negative');
+  if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
+  else console.info('[Augur self-tests] all checks passed ✓');
+  return fails;
+}
 function App() {
+  useEffect(()=>{ try { runEngineSelfTests(); } catch(e){ console.warn('[Augur self-tests] error', e); } }, []);
   const [splash, setSplash] = useState(true);
   const [lang, setLang] = useState(() => { try { return localStorage.getItem('augur.lang')==='fr' ? 'fr' : 'en'; } catch(e){ return 'en'; } });
   LANG = lang; _setLang = setLang;                 // keep the module-level i18n state in sync before children render
