@@ -204,10 +204,14 @@ function pickCombatProfile(profiles) {
   return p;
 }
 function profileFromRaw(p) {
+  // Random Attacks: the A characteristic can be a dice string ("D6+1", "2D3", "D3").
+  // Use the rounded average for the profile + keep the exact dice for per-model rolls.
+  const ad = parseDiceExpr(String(p.A || ''));
+  const aAvg = ad ? Math.max(1, Math.round(ad.plus + ad.n * (ad.die + 1) / 2)) : Math.max(1, num(p.A) || 1);
   return {
     M: num(p.M), ws: num(p.WS), bs: num(p.BS), s: num(p.S),
     t: num(p.T), w: Math.max(1, num(p.W) || 1), i: num(p.I),
-    a: Math.max(1, num(p.A) || 1), ld: num(p.Ld) || 7,
+    a: aAvg, atkDice: ad || null, ld: num(p.Ld) || 7,
   };
 }
 const rulesOf = (u) => (u.specialRules || []).map(r => r.slug || normName(r.name));
@@ -975,7 +979,7 @@ function duelWounds(att, def, charged) {
     rerollHit1: fa.rerollHit1, rerollWound1: fa.rerollWound1, defRerollSave1: fd.gromrilArmour,
     defRerollHit6: fd.nurgleReroll6, hitPenalty: fd.cloudOfFlies ? 1 : 0,
     hitBonus: att.hitBonus || 0, woundBonus: att.woundBonus || 0 };
-  return resolveAttacks(attEff, dDef, Math.max(1, attEff.a), o);
+  return resolveAttacks(attEff, dDef, Math.max(1, rollDiceExpr(attEff.atkDice, attEff.a)), o);
 }
 function simulateDuelOnce(me, foe, cfg) {
   const fm = combatFlags(me), ff = combatFlags(foe);
@@ -3191,6 +3195,12 @@ function runEngineSelfTests() {
   ok(mwStone<mwBase,'Stone Skeleton reduces Multiple Wounds');
   ok(wardFromRules(['runes-of-warding'])===0,'Runes of Warding not a flat ward (flaming-only)');
   ok(wardFromRules(['blackshard-armour'])===0,'Blackshard Armour not a flat ward (flaming-only)');
+  // Random Attacks: dice A characteristic → rounded average + exact dice kept
+  ok(profileFromRaw({A:'D6+1'}).a===5 && profileFromRaw({A:'D6+1'}).atkDice.die===6,'Random Attacks D6+1 → avg 5');
+  ok(profileFromRaw({A:'D3'}).a===2,'Random Attacks D3 → avg 2');
+  ok(profileFromRaw({A:'3'}).a===3,'fixed Attacks 3 unchanged');
+  const ra=profileFromRaw({A:'2D3'}).atkDice; let lo=9,hi=0; for(let q=0;q<300;q++){const v=rollDiceExpr(ra,0);if(v<lo)lo=v;if(v>hi)hi=v;}
+  ok(lo>=2&&hi<=6,'2D3 attacks roll within [2,6]');
   const eA={ws:4,s:4,t:4,a:1,i:4}, dB={ws:4,t:4,save:7,ward:0,w:1};
   const base2=resolveAttacks(eA,dB,6000,{});
   ok(resolveAttacks(eA,dB,6000,{hitPenalty:1})<base2,'Cloud of Flies −1 To Hit cuts wounds');
