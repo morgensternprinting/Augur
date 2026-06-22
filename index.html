@@ -580,7 +580,8 @@ function combatFlags(u) {
     hatred:        has('hatred'),   // generic Hatred; targeted ones resolved vs the actual foe
     poisoned:      has('poisoned-attacks', 'warpstone-weapons', 'spawn-of-nurgle', 'gigantic-spawn-of-nurgle', 'cult-of-the-slithering-serpent'),
     killingBlow:   has('killing-blow', 'heroic-killing-blow', 'cleaving-blow', 'whirlwind-of-death', 'dark-venom'),
-    monsterSlayer: has('slayer', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'),
+    monsterSlayer: has('slayer', 'slayer-of-daemons', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'), // Slayer: To Wound 4+ always succeeds
+    slayerLarge:   has('slayer-of-daemons', 'slayer-of-monsters', 'monster-slayer', 'slayer-of-dragons', 'the-wyrm-slayer', 'disdain-of-the-dragons'), // + Multiple Wounds (D3) vs behemoths
     largeTarget:   has('large-target', 'tree-spirit'),
     regen:         has('regeneration', 'too-horrible-to-die'),
     flaming:       has('flaming-attacks', 'blazing-body', 'born-of-fire', 'wreathed-in-flame'),
@@ -618,6 +619,11 @@ function combatFlags(u) {
     nurgleReroll6: has('daemon-of-nurgle'),                   // enemy attacking it must re-roll natural-6 To Hit
     beguilingAura: has('beguiling-aura', 'ghoulish-glamour'), // enemy must pass Ld or only natural 6s hit it
     defensiveStance: has('defensive-stance'),                 // if it did not charge: re-roll natural-1 armour saves
+    stoicDefenders: has('stoic-defenders'),                   // when charged: +1 Initiative and +1 Attacks
+    stoneSkeleton: has('stone-skeleton'),                     // Multiple Wounds against it: −1 wound (min 1)
+    razorTusks:    has('razor-tusks'),                        // on the charge: hand-weapon AP −1
+    impactAP3:     has('spiked-ball-and-chains'),             // Impact Hits AP −3
+    rampantMutation: has('rampant-mutation'),                 // combat chosen: D6 Poison / AP −2 / Killing Blow
     numbingChill:  has('numbing-chill'),                      // enemy in contact: −1 WS and −1 Initiative
     holyFervour:   has('holy-fervour'),                       // auto-passes Fear tests
     markUndivided: has('mark-of-chaos-undivided'),            // re-roll a failed Fear / Terror test
@@ -640,15 +646,17 @@ function wardFromRules(r) {
   let w = 0; const set = (v) => { if (v && (!w || v < w)) w = v; };
   if (has('daemonic')) set(5);                                              // Daemonic ward
   if (has('the-grail-vow', 'grail-reliquae')) set(5);
-  if (has('runes-of-warding', 'dark-runes', 'arcane-shield', 'favour-of-the-goddess')) set(5);  // Araloth 5+
+  if (has('dark-runes', 'arcane-shield', 'favour-of-the-goddess')) set(5);  // Araloth 5+ (dark-runes ≈ vs non-magical)
   if (has('aura-of-the-lady', 'shield-of-the-lady', 'the-knights-vow', 'the-questing-vow')) set(6);
   if (has('feel-no-pain', 'dragon-armour')) set(6);
   if (has('witness-to-destiny', 'lileaths-blessing', 'blessings-of-the-lady', 'runes-of-protection')) set(6);
-  // NOTE: Blessings of Asuryan / Fire & Chaos / Volcano God are wards ONLY vs Flaming(/Magical) — too conditional to grant flat.
+  // NOTE: wards ONLY vs Flaming(/Magical) are too conditional to grant flat — excluded:
+  // Blessings of Asuryan, Fire & Chaos, Volcano God, Runes of Warding, Blackshard Armour.
+  // "vs non-magical" wards (daemonic, dark-runes, runes-of-protection, feel-no-pain, witness-to-destiny) are kept as a fair approximation.
   if (has('mark-of-tzeentch', 'infernal-favour', 'marque-de-tzeentch')) set(5);
   // additional army wards (confirmed unconditional grants from RULES_DB)
   if (has('future-sight', 'chaos-armour-daemons-of-chaos', 'daughters-of-eternity')) set(4);
-  if (has('blackshard-armour', 'ancestral-shield', 'blessings-of-khaine', 'blessings-of-the-horned-rat')) set(5);
+  if (has('ancestral-shield', 'blessings-of-khaine', 'blessings-of-the-horned-rat')) set(5);  // blackshard-armour excluded (vs Flaming only)
   if (has('wards-of-grimnir', 'prayer-of-the-damned', 'blessings-of-ulric', 'priere-de-la-dame', 'benediction-de-la-dame', 'hellbound')) set(6);
   if (has('ethereal')) set(0);                                             // ethereal handled via save, not ward here
   return w;
@@ -664,6 +672,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
   if (o.onlySixesHit) hitT = 6;               // Beguiling Aura (failed Ld): only natural 6s hit
   let woundT = toWoundTarget(att.s, def.t);
   if (woundT < 7 && o.woundBonus) woundT = Math.max(2, woundT - o.woundBonus);
+  if (o.woundFloor4) woundT = Math.min(woundT, 4);   // Slayer: a 4+ To Wound always succeeds, ignoring Toughness
   const saveT = effectiveSave(def.save, att.s + (o.ap || 0)); // Armour Bane / Cleaving Blow add extra AP
   const wardT = (def.ward >= 2 && def.ward <= 6) ? def.ward : 0; // valid invulnerable save only
   const regenNegated = o.flaming;     // flaming attacks negate regeneration
@@ -696,7 +705,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
     }
     if (wardT && !wardNegated && d6() >= wardT) continue;     // invulnerable / ward save
     if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
-    unsaved += multi ? Math.min(def.w, rollDiceExpr(o.multiDice, 1 + (Math.random() * 3 | 0))) : 1; // Multiple Wounds (exact dice / ≈D3)
+    unsaved += multi ? Math.min(def.w, Math.max(1, rollDiceExpr(o.multiDice, 1 + (Math.random() * 3 | 0)) - (def.stoneSkeleton ? 1 : 0))) : 1; // Multiple Wounds (exact dice; Stone Skeleton −1)
   }
   return unsaved;
 }
@@ -783,33 +792,39 @@ function simulateOnce(cfg) {
   // Per-combat conditional buffs: charge-only Choppas, random Blessings of Chaos
   // (rolled fresh each iteration so the Monte-Carlo averages over the D6), Korhil's charge.
   const meChoppa = fm.choppas && cfg.myCharged, foeChoppa = ff.choppas && cfg.foeCharged;
+  const meRazor  = fm.razorTusks && cfg.myCharged, foeRazor = ff.razorTusks && cfg.foeCharged;
+  const meStoic  = fm.stoicDefenders && cfg.foeCharged, foeStoic = ff.stoicDefenders && cfg.myCharged; // charged → +1 I/A
   const meBless = fm.blessingsOfChaos ? d6() : 0, foeBless = ff.blessingsOfChaos ? d6() : 0;
-  const blAP = (b) => (b >= 3 && b <= 4) ? 2 : 0;   // 3-4: AP −2
+  const meRampant = fm.rampantMutation ? d6() : 0, foeRampant = ff.rampantMutation ? d6() : 0;
+  const blAP = (b) => (b >= 3 && b <= 4) ? 2 : 0;   // Blessings/Mutation 3-4: AP −2
   const blPoison = (b) => b >= 1 && b <= 2;         // 1-2: Poisoned Attacks
-  const blTough = (b) => b >= 5 ? 1 : 0;            // 5-6: +1 Toughness
+  const blTough = (b) => b >= 5 ? 1 : 0;            // Blessings 5-6: +1 Toughness
+  const mutKB = (b) => b >= 5;                      // Rampant Mutation 5-6: Killing Blow
+  // Slayer's bonus Multiple Wounds (D3) only bites a behemoth / large-target defender.
+  const meSlayerMW = fm.slayerLarge && ff.largeTarget, foeSlayerMW = ff.slayerLarge && fm.largeTarget;
   // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge (+ Korhil); Blessings → +1 T.
-  const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
+  const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0) + (meStoic ? 1 : 0),
     s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0) + (fm.mightyConstitution ? 1 : 0)) : 0),
     t: Math.max(1, me.profile.t  + blTough(meBless)  - (ff.censerAura ? 1 : 0)),
     ws: Math.max(1, me.profile.ws  - (ff.numbingChill ? 1 : 0)) };   // Numbing Chill: −1 WS vs the bearer
-  const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
+  const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0) + (foeStoic ? 1 : 0),
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0) + (ff.mightyConstitution ? 1 : 0)) : 0),
     t: Math.max(1, foe.profile.t + blTough(foeBless) - (fm.censerAura ? 1 : 0)),
     ws: Math.max(1, foe.profile.ws - (fm.numbingChill ? 1 : 0)) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal, immunePoison: fm.immunePoison };
-  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, foe.wardX || 0, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal, immunePoison: ff.immunePoison };
-  // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
-  const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
-  const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
+  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal, immunePoison: fm.immunePoison, stoneSkeleton: fm.stoneSkeleton };
+  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, foe.wardX || 0, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal, immunePoison: ff.immunePoison, stoneSkeleton: ff.stoneSkeleton };
+  // Killing Blow (Rampant Mutation 5-6 also grants it this round).
+  const meKB  = fm.killingBlow || mutKB(meRampant);
+  const foeKB = ff.killingBlow || mutKB(foeRampant);
   // Defender's Regeneration: from rules OR a magic item / equipment (unit.regen).
   const meRegen  = fm.regen || !!me.regen;
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned||blPoison(meBless), killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0)+(meChoppa?1:0)+blAP(meBless),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1||meChoppa, defRerollSave1:ff.gromrilArmour||(ff.defensiveStance&&!cfg.foeCharged), defRerollHit6:ff.nurgleReroll6, onlySixesHit:meBeguiled, noWard:!!me.noWard,  hitPenalty:myHitPen+(ff.cloudOfFlies?1:0),  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
-  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned||blPoison(foeBless), killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0)+(foeChoppa?1:0)+blAP(foeBless), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1||foeChoppa, defRerollSave1:fm.gromrilArmour||(fm.defensiveStance&&!cfg.myCharged), defRerollHit6:fm.nurgleReroll6, onlySixesHit:foeBeguiled, noWard:!!foe.noWard, hitPenalty:foeHitPen+(fm.cloudOfFlies?1:0), hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned||blPoison(meBless)||blPoison(meRampant), killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, woundFloor4:fm.monsterSlayer, multiWounds:fm.multiWounds||meSlayerMW, multiDice:(me.dice&&me.dice.multi)||(meSlayerMW?{n:1,die:3,plus:0}:null),  ap:fm.ap+(me.ap||0)+(meChoppa||meRazor?1:0)+blAP(meBless)+blAP(meRampant),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1||meChoppa, defRerollSave1:ff.gromrilArmour||(ff.defensiveStance&&!cfg.foeCharged), defRerollHit6:ff.nurgleReroll6, onlySixesHit:meBeguiled, noWard:!!me.noWard,  hitPenalty:myHitPen+(ff.cloudOfFlies?1:0),  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned||blPoison(foeBless)||blPoison(foeRampant), killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  woundFloor4:ff.monsterSlayer, multiWounds:ff.multiWounds||foeSlayerMW, multiDice:(foe.dice&&foe.dice.multi)||(foeSlayerMW?{n:1,die:3,plus:0}:null), ap:ff.ap+(foe.ap||0)+(foeChoppa||foeRazor?1:0)+blAP(foeBless)+blAP(foeRampant), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1||foeChoppa, defRerollSave1:fm.gromrilArmour||(fm.defensiveStance&&!cfg.myCharged), defRerollHit6:fm.nurgleReroll6, onlySixesHit:foeBeguiled, noWard:!!foe.noWard, hitPenalty:foeHitPen+(fm.cloudOfFlies?1:0), hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   // Soporific Musk: the enemy loses Strike First, and if it didn't have it, gains Strike Last.
@@ -820,7 +835,7 @@ function simulateOnce(cfg) {
   if (fm.soporificMusk) { if (foeSF) foeSF = false; else foeSL = true; }
   if (ff.blizzardAura) meSL = true;
   if (fm.blizzardAura) foeSL = true;
-  const meI = me.profile.i - ((ff.carrionFeeders || ff.numbingChill) ? 1 : 0), foeI = foe.profile.i - ((fm.carrionFeeders || fm.numbingChill) ? 1 : 0);
+  const meI = me.profile.i - ((ff.carrionFeeders || ff.numbingChill) ? 1 : 0) + (meStoic ? 1 : 0), foeI = foe.profile.i - ((fm.carrionFeeders || fm.numbingChill) ? 1 : 0) + (foeStoic ? 1 : 0);
   const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? 1 : 0);
   const eiMe = ei(meI, meSF, meSL, cfg.myCharged), eiFoe = ei(foeI, foeSF, foeSL, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
@@ -838,7 +853,7 @@ function simulateOnce(cfg) {
   }
   // Impact Hits (on the charge) + Stomp (every round) → auto-hits. Crown of Antlers
   // gives Impact Hits AP −1; Grinding Wheels gives Stomp AP −2.
-  const impactO = (o, f) => f.impactAP1 ? { ...o, ap: o.ap + 1 } : o;
+  const impactO = (o, f) => { const b = (f.impactAP1 ? 1 : 0) + (f.impactAP3 ? 3 : 0); return b ? { ...o, ap: o.ap + b } : o; };
   const stompO  = (o, f) => f.grindingWheels ? { ...o, ap: o.ap + 2 } : o;
   if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.impact,  1 + (Math.random()*6|0)), impactO(offMe, fm));
   if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.impact, 1 + (Math.random()*6|0)), impactO(offFoe, ff));
@@ -949,13 +964,13 @@ function bestWard(...vals) { let w = 0; vals.forEach(v => { if (v >= 2 && v <= 6
    which feeds the main combat result. Reuses the full rule set via resolveAttacks. */
 function duelWounds(att, def, charged) {
   const fa = combatFlags(att), fd = combatFlags(def);
-  const kb = fa.killingBlow || (fa.monsterSlayer && fd.largeTarget);
+  const slayerMW = fa.slayerLarge && fd.largeTarget;
   const attEff = { ...att.profile, a: att.profile.a + (fa.frenzy ? 1 : 0),
     s: att.profile.s + (charged ? ((att.chargeS || 0) + (fa.furiousCharge ? 1 : 0)) : 0) };
   const dDef = { ws: def.profile.ws, t: def.profile.t, save: def.save, w: def.profile.w,
-    ward: bestWard(def.ward, fd.ward, def.wardX || 0, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal, immunePoison: fd.immunePoison };
-  const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: kb, flaming: fa.flaming,
-    regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, multiDice: att.dice && att.dice.multi, ap: fa.ap + (att.ap || 0),
+    ward: bestWard(def.ward, fd.ward, def.wardX || 0, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal, immunePoison: fd.immunePoison, stoneSkeleton: fd.stoneSkeleton };
+  const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: fa.killingBlow, woundFloor4: fa.monsterSlayer, flaming: fa.flaming,
+    regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds || slayerMW, multiDice: (att.dice && att.dice.multi) || (slayerMW ? {n:1,die:3,plus:0} : null), ap: fa.ap + (att.ap || 0),
     magical: fa.magical || !!att.magical, rerollWound: !!att.rerollWound, rerollHit: !!att.rerollHit,
     rerollHit1: fa.rerollHit1, rerollWound1: fa.rerollWound1, defRerollSave1: fd.gromrilArmour,
     defRerollHit6: fd.nurgleReroll6, hitPenalty: fd.cloudOfFlies ? 1 : 0,
@@ -1921,7 +1936,7 @@ function FactorPanel({ side, accent, f, setF, attacks, setAttacks, charged, cr }
 const RULE_LABELS = {
   strikeFirst:'Strikes first', strikeLast:'Strikes last', hatred:'Hatred · reroll to hit',
   frenzy:'Frenzy · +1 A', furiousCharge:'Furious Charge · +1 S charge', poisoned:'Poisoned · 6 = wound',
-  killingBlow:'Killing Blow · ignore save', monsterSlayer:'Monster Slayer · Killing Blow vs large targets', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
+  killingBlow:'Killing Blow · ignore save', monsterSlayer:'Slayer · wound on 4+', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
   impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds',
   fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
   stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks · negates Regen',
@@ -1930,7 +1945,7 @@ const RULE_LABELS = {
 const RULE_LABELS_FR = {
   strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance pour toucher',
   frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F en charge', poisoned:'Empoisonné · 6 = blessure',
-  killingBlow:'Coup fatal · ignore la save', monsterSlayer:'Tueur de monstres · Coup fatal vs grandes cibles', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
+  killingBlow:'Coup fatal · ignore la save', monsterSlayer:'Tueur · blesse sur 4+', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
   impactHits:'Touches d\'impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
   fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité à la psychologie',
   stubborn:'Tenace · ignore le malus', unbreakable:'Indémoralisable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées · annule Régén',
@@ -3168,6 +3183,14 @@ function runEngineSelfTests() {
   const pNo =resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1},6000,{poisoned:true});
   const pImm=resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1,immunePoison:true},6000,{poisoned:true});
   ok(pImm<pNo,'immunePoison negates Poisoned auto-wounds');
+  // Slayer (wound on 4+) + Stone Skeleton + conditional-ward corrections
+  const slA={ws:4,s:2,t:6,a:1,i:4}, slD={ws:4,t:6,save:7,ward:0,w:1};
+  ok(resolveAttacks(slA,slD,6000,{woundFloor4:true})>resolveAttacks(slA,slD,6000,{}),'Slayer wounds on 4+ regardless of Toughness');
+  const mwBase=resolveAttacks({ws:4,s:5,t:4,a:1,i:4},{ws:4,t:4,save:7,ward:0,w:6},6000,{multiWounds:true,multiDice:{n:1,die:6,plus:0}});
+  const mwStone=resolveAttacks({ws:4,s:5,t:4,a:1,i:4},{ws:4,t:4,save:7,ward:0,w:6,stoneSkeleton:true},6000,{multiWounds:true,multiDice:{n:1,die:6,plus:0}});
+  ok(mwStone<mwBase,'Stone Skeleton reduces Multiple Wounds');
+  ok(wardFromRules(['runes-of-warding'])===0,'Runes of Warding not a flat ward (flaming-only)');
+  ok(wardFromRules(['blackshard-armour'])===0,'Blackshard Armour not a flat ward (flaming-only)');
   const eA={ws:4,s:4,t:4,a:1,i:4}, dB={ws:4,t:4,save:7,ward:0,w:1};
   const base2=resolveAttacks(eA,dB,6000,{});
   ok(resolveAttacks(eA,dB,6000,{hitPenalty:1})<base2,'Cloud of Flies −1 To Hit cuts wounds');
