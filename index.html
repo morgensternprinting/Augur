@@ -2015,6 +2015,8 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
   const set = (patch) => setSel(s => ({ ...s, ...patch }));
   const setF = (side) => (patch) => setSel(s => ({ ...s, [side]: { ...s[side], ...patch } }));
   const fileRef = useRef(null);
+  const importSideRef = useRef('me');
+  const pickFile = (side) => { importSideRef.current = side; if (fileRef.current) fileRef.current.click(); };
 
   const myUnit  = resolveUnit('me', sel, game, lists);
   const foeUnit = resolveUnit('foe', sel, game, lists);
@@ -2042,13 +2044,17 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         options={[{value:'catalog',label:tr('Catalogue','Catalogue')},{value:'lists',label:tr('Imported lists','Listes importées')}]}/>
 
       {sel.source==='lists' && <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',flexDirection:'column',gap:'var(--sp-2)'}}>
-        {lists.length===0 && <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
-          {tr("Import a list — TOW en 1 export (« ⬇ JSON ») or an OWB Builder file (.owb.json). The format is detected automatically.",
-              'Importe une liste — export TOW en 1 (« ⬇ JSON ») ou un fichier OWB Builder (.owb.json). Le format est détecté automatiquement.')}</div>}
+        <div style={{font:'400 var(--fs-sm)/1.5 var(--font-ui)',color:'var(--text-secondary)'}}>
+          {tr('Import a list for each side — its units feed the Game tab (casualty removal + total VP). TOW en 1 (« ⬇ JSON ») or OWB Builder (.owb.json), format auto-detected.',
+              'Importe une liste pour chaque camp — ses unités alimentent l\'onglet Partie (retrait des pertes + PV total). Export TOW en 1 (« ⬇ JSON ») ou OWB Builder (.owb.json), format auto-détecté.')}</div>
         <input ref={fileRef} type="file" accept=".json,application/json" style={{display:'none'}}
-          onChange={e=>{const f=e.target.files[0];if(f)onImport(f);e.target.value='';}}/>
-        <Button variant="secondary" block onClick={()=>fileRef.current&&fileRef.current.click()}
-          icon={<Icon name="upload" size={18}/>}>{tr('Import a list (.json)','Importer une liste (.json)')}</Button>
+          onChange={e=>{const f=e.target.files[0];if(f)onImport(f,importSideRef.current);e.target.value='';}}/>
+        <div style={{display:'flex',gap:'var(--sp-2)'}}>
+          <Button variant="secondary" block onClick={()=>pickFile('me')} icon={<Icon name="upload" size={16}/>}
+            style={{borderColor:accentMe,color:accentMe}}>{tr('Your army','Ton armée')}</Button>
+          <Button variant="secondary" block onClick={()=>pickFile('foe')} icon={<Icon name="upload" size={16}/>}
+            style={{borderColor:accentFoe,color:accentFoe}}>{tr('Enemy army','Armée adverse')}</Button>
+        </div>
       </Card>}
 
       {/* one vertical block per side: army (or list) + its unit selection */}
@@ -2921,6 +2927,21 @@ function normalizeImported(data) {
   };
 }
 
+// Build a Game-tracker roster (casualty + VP tracking) from an imported list.
+// Each entry carries per-model points × size so computeVP can total it on a kill.
+function rosterFromList(list) {
+  return (list.units || []).map((u, i) => {
+    const size = u.count || u.size || 1;
+    const ppm  = u.ppm || (u.pts && size ? Math.round(u.pts / size) : u.pts) || u.points || 0;
+    return {
+      ref: String(u.slug || (list.army || 'list') + '/' + i),
+      army: list.army || '',
+      name: (LANG === 'fr' ? (u.name_fr || u.name) : u.name) || u.name || ('Unit ' + (i + 1)),
+      points: ppm, size, fuCurrent: size, fuMax: size, status: 'full',
+    };
+  });
+}
+
 const freshFactors = (charger, ranks) => ({
   source: 'catalog',
   mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,
@@ -3245,20 +3266,25 @@ function App() {
 
   if (ROSTER.coverage === 0) return <NoData/>;
 
-  const importList = (file) => {
+  const importList = (file, side = 'me') => {
     const r = new FileReader();
     r.onload = () => {
       try {
         const list = normalizeImported(JSON.parse(r.result));
-        if (!list.units.length) { alert('No unit found in this file.'); return; }
+        if (!list.units.length) { alert(tr('No unit found in this file.','Aucune unité dans ce fichier.')); return; }
         setLists(prev => {
           const next = [...prev, list];
           const idx = next.length - 1;
-          setSel(s => ({ ...s, source:'lists', myList: idx, foeList: prev.length ? s.foeList : idx,
-            mine: 'me:0', foe: prev.length ? s.foe : 'foe:0' }));
+          setSel(s => ({ ...s, source:'lists',
+            ...(side==='me' ? { myList: idx, mine: 'me:0' } : { foeList: idx, foe: 'foe:0' }) }));
           return next;
         });
-      } catch (e) { alert('Invalid JSON file: ' + e.message); }
+        // Populate the Game tracker (casualties + total VP) for the chosen side.
+        const roster = rosterFromList(list);
+        setGame(g => ({ ...g,
+          [side==='me' ? 'myRoster' : 'foeRoster']: roster.length ? roster : g[side==='me'?'myRoster':'foeRoster'],
+          ...(list.army ? { [side==='me' ? 'myArmy' : 'foeArmy']: list.army } : {}) }));
+      } catch (e) { alert(tr('Invalid JSON file: ','Fichier JSON invalide : ') + e.message); }
     };
     r.readAsText(file);
   };
