@@ -604,6 +604,14 @@ function combatFlags(u) {
     rerollHit1:    has('inner-circle', 'ithilmar-weapons'),   // re-roll a natural-1 To Hit
     rerollWound1:  has('murderous'),                          // re-roll a natural-1 To Wound
     gromrilArmour: has('gromril-armour'),                     // re-roll a natural-1 armour save
+    choppas:       has('choppas'),                            // on the charge: re-roll To-Wound 1s + AP −1 (non-magical)
+    crownOfAntlers: has('crown-of-antlers'),                  // Impact Hits gain AP −1
+    grindingWheels: has('grinding-wheels'),                   // Stomp Attacks gain AP −2
+    soporificMusk: has('soporific-musk'),                     // enemy can't Strike First; loses it / gains Strike Last
+    spurtingBileBlood: has('spurting-bile-blood'),            // each wound lost → a S4 AP −1 hit back on the attacker
+    blessingsOfChaos: has('blessings-of-chaos'),              // when combat is chosen, roll D6: Poison / AP −2 / +1 T
+    mightyConstitution: has('mighty-constitution'),           // Korhil: +1 S on the charge
+    immunePoison:  has('mighty-constitution'),                // immune to Poisoned Attacks
     magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched',
                        'accursed-weapons', 'warpstone-sentinel', 'spectral-hounds', 'spectral-reapers', 'usirians-reaper',
                        'spawn-of-tzeentch', 'gigantic-spawn-of-tzeentch', 'spectral-coach', 'hellbound'),
@@ -626,7 +634,7 @@ function wardFromRules(r) {
   if (has('runes-of-warding', 'runes-of-protection', 'dark-runes', 'arcane-shield')) set(5);
   if (has('mark-of-tzeentch', 'infernal-favour', 'marque-de-tzeentch')) set(5);
   // additional army wards (confirmed unconditional grants from RULES_DB)
-  if (has('future-sight', 'chaos-armour-daemons-of-chaos')) set(4);
+  if (has('future-sight', 'chaos-armour-daemons-of-chaos', 'daughters-of-eternity')) set(4);
   if (has('blackshard-armour', 'ancestral-shield', 'blessings-of-khaine', 'blessings-of-the-horned-rat')) set(5);
   if (has('wards-of-grimnir', 'prayer-of-the-damned', 'blessings-of-ulric', 'priere-de-la-dame', 'benediction-de-la-dame', 'hellbound')) set(6);
   if (has('ethereal')) set(0);                                             // ethereal handled via save, not ward here
@@ -656,7 +664,7 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
       if (hit < hitT) continue;
     }
     if (def.ethereal && !o.magical) continue;                 // Ethereal: only magical attacks can wound it
-    let killing = false, autoWound = o.poisoned && hit === 6; // Poisoned: natural 6 to hit auto-wounds
+    let killing = false, autoWound = o.poisoned && hit === 6 && !def.immunePoison; // Poisoned: natural 6 to hit auto-wounds (unless immune)
     if (!autoWound) {
       if (woundT === 7) continue;
       let wr = d6();
@@ -748,15 +756,24 @@ function simulateOnce(cfg) {
   const meHatred  = fm.hatred || hatesArmy(me, foe);
   const foeHatred = ff.hatred || hatesArmy(foe, me);
 
-  // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge.
+  // Per-combat conditional buffs: charge-only Choppas, random Blessings of Chaos
+  // (rolled fresh each iteration so the Monte-Carlo averages over the D6), Korhil's charge.
+  const meChoppa = fm.choppas && cfg.myCharged, foeChoppa = ff.choppas && cfg.foeCharged;
+  const meBless = fm.blessingsOfChaos ? d6() : 0, foeBless = ff.blessingsOfChaos ? d6() : 0;
+  const blAP = (b) => (b >= 3 && b <= 4) ? 2 : 0;   // 3-4: AP −2
+  const blPoison = (b) => b >= 1 && b <= 2;         // 1-2: Poisoned Attacks
+  const blTough = (b) => b >= 5 ? 1 : 0;            // 5-6: +1 Toughness
+  // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge (+ Korhil); Blessings → +1 T.
   const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
-    s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0)) : 0) };
+    s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0) + (fm.mightyConstitution ? 1 : 0)) : 0),
+    t: me.profile.t  + blTough(meBless) };
   const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
-    s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
+    s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0) + (ff.mightyConstitution ? 1 : 0)) : 0),
+    t: foe.profile.t + blTough(foeBless) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
-  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, foe.wardX || 0, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
+  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal, immunePoison: fm.immunePoison };
+  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, foe.wardX || 0, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal, immunePoison: ff.immunePoison };
   // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
   const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
   const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
@@ -765,13 +782,17 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1, defRerollSave1:ff.gromrilArmour, noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
-  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1, defRerollSave1:fm.gromrilArmour, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned||blPoison(meBless), killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0)+(meChoppa?1:0)+blAP(meBless),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1||meChoppa, defRerollSave1:ff.gromrilArmour, noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned||blPoison(foeBless), killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0)+(foeChoppa?1:0)+blAP(foeBless), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1||foeChoppa, defRerollSave1:fm.gromrilArmour, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
-  const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
-    - ((u.strikeLast || f.strikeLast) ? 20 : 0) + (charged ? 1 : 0);
-  const eiMe = ei(me, fm, cfg.myCharged), eiFoe = ei(foe, ff, cfg.foeCharged);
+  // Soporific Musk: the enemy loses Strike First, and if it didn't have it, gains Strike Last.
+  let meSF = me.strikeFirst || fm.strikeFirst, meSL = me.strikeLast || fm.strikeLast;
+  let foeSF = foe.strikeFirst || ff.strikeFirst, foeSL = foe.strikeLast || ff.strikeLast;
+  if (ff.soporificMusk) { if (meSF) meSF = false; else meSL = true; }
+  if (fm.soporificMusk) { if (foeSF) foeSF = false; else foeSL = true; }
+  const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? 1 : 0);
+  const eiMe = ei(me.profile.i, meSF, meSL, cfg.myCharged), eiFoe = ei(foe.profile.i, foeSF, foeSL, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
     myWounds  = resolveAttacks(meEff,  dFoe, myAtt, offMe);
@@ -785,11 +806,19 @@ function simulateOnce(cfg) {
     myAtt = Math.max(0, myAtt - Math.floor(foeWounds / Math.max(1, me.profile.w)) * meAPM);
     myWounds = resolveAttacks(meEff, dFoe, myAtt, offMe);
   }
-  // Impact Hits (on the charge) + Stomp (large creatures, every round) → auto-hits.
-  if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.impact,  1 + (Math.random()*6|0)), offMe);
-  if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.impact, 1 + (Math.random()*6|0)), offFoe);
-  if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.stomp,  1 + (Math.random()*3|0)), offMe);
-  if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.stomp, 1 + (Math.random()*3|0)), offFoe);
+  // Impact Hits (on the charge) + Stomp (every round) → auto-hits. Crown of Antlers
+  // gives Impact Hits AP −1; Grinding Wheels gives Stomp AP −2.
+  const impactO = (o, f) => f.crownOfAntlers ? { ...o, ap: o.ap + 1 } : o;
+  const stompO  = (o, f) => f.grindingWheels ? { ...o, ap: o.ap + 2 } : o;
+  if (cfg.myCharged  && fm.impactHits) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.impact,  1 + (Math.random()*6|0)), impactO(offMe, fm));
+  if (cfg.foeCharged && ff.impactHits) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.impact, 1 + (Math.random()*6|0)), impactO(offFoe, ff));
+  if (fm.stomp) myWounds  += autoHits(meEff,  dFoe, rollDiceExpr(me.dice && me.dice.stomp,  1 + (Math.random()*3|0)), stompO(offMe, fm));
+  if (ff.stomp) foeWounds += autoHits(foeEff, dMe,  rollDiceExpr(foe.dice && foe.dice.stomp, 1 + (Math.random()*3|0)), stompO(offFoe, ff));
+
+  // Spurting Bile Blood: each wound this model loses → a Strength 4 AP −1 hit back on the attacker.
+  const baseMy = myWounds, baseFoe = foeWounds;
+  if (ff.spurtingBileBlood && baseMy  > 0) foeWounds += autoHits({ s: 4 }, dMe,  baseMy,  { ap: 1, defRerollSave1: fm.gromrilArmour });
+  if (fm.spurtingBileBlood && baseFoe > 0) myWounds  += autoHits({ s: 4 }, dFoe, baseFoe, { ap: 1, defRerollSave1: ff.gromrilArmour });
 
   const myRes  = myWounds  + cfg.myStatic;
   const foeRes = foeWounds + cfg.foeStatic;
@@ -3085,6 +3114,10 @@ function runEngineSelfTests() {
   const hNo=resolveAttacks({ws:4,s:4,t:4,a:1,i:4},{ws:10,t:4,save:7,ward:0,w:1},6000,{});
   const hRe=resolveAttacks({ws:4,s:4,t:4,a:1,i:4},{ws:10,t:4,save:7,ward:0,w:1},6000,{rerollHit1:true});
   ok(hRe>hNo,'re-roll natural-1 To Hit raises wounds');
+  ok(wardFromRules(['daughters-of-eternity'])===4, 'Daughters of Eternity = 4+ ward');
+  const pNo =resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1},6000,{poisoned:true});
+  const pImm=resolveAttacks({ws:4,s:2,t:4,a:1,i:4},{ws:4,t:6,save:7,ward:0,w:1,immunePoison:true},6000,{poisoned:true});
+  ok(pImm<pNo,'immunePoison negates Poisoned auto-wounds');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
