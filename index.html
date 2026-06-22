@@ -606,7 +606,8 @@ function combatFlags(u) {
     gromrilArmour: has('gromril-armour'),                     // re-roll a natural-1 armour save
     choppas:       has('choppas'),                            // on the charge: re-roll To-Wound 1s + AP −1 (non-magical)
     impactAP1:     has('crown-of-antlers', 'bull-gors'),      // Impact Hits gain AP −1
-    grindingWheels: has('grinding-wheels'),                   // Stomp Attacks gain AP −2
+    grindingWheels: has('grinding-wheels', 'great-censer'),   // Stomp Attacks gain AP −2
+    censerAura:    has('great-censer'),                       // enemy in contact suffers −1 Toughness
     soporificMusk: has('soporific-musk'),                     // enemy can't Strike First; loses it / gains Strike Last
     blizzardAura:  has('blizzard-aura'),                      // enemy in contact becomes subject to Strike Last
     carrionFeeders: has('carrion-feeders'),                   // enemy engaged suffers −1 Initiative
@@ -614,7 +615,7 @@ function combatFlags(u) {
     deathblow:     has('deathblow'),                          // each model slain → a S3 AP −1 hit back on the attacker
     cloudOfFlies:  has('cloud-of-flies'),                     // enemy attacking it suffers −1 To Hit
     nurgleReroll6: has('daemon-of-nurgle'),                   // enemy attacking it must re-roll natural-6 To Hit
-    beguilingAura: has('beguiling-aura'),                     // enemy must pass Ld or only natural 6s hit it
+    beguilingAura: has('beguiling-aura', 'ghoulish-glamour'), // enemy must pass Ld or only natural 6s hit it
     defensiveStance: has('defensive-stance'),                 // if it did not charge: re-roll natural-1 armour saves
     blessingsOfChaos: has('blessings-of-chaos'),              // when combat is chosen, roll D6: Poison / AP −2 / +1 T
     mightyConstitution: has('mighty-constitution'),           // Korhil: +1 S on the charge
@@ -634,11 +635,12 @@ function wardFromRules(r) {
   const has = (...s) => s.some(x => r.includes(x));
   let w = 0; const set = (v) => { if (v && (!w || v < w)) w = v; };
   if (has('daemonic')) set(5);                                              // Daemonic ward
-  if (has('blessings-of-the-lady', 'the-grail-vow', 'grail-reliquae')) set(5);
+  if (has('the-grail-vow', 'grail-reliquae')) set(5);
+  if (has('runes-of-warding', 'dark-runes', 'arcane-shield', 'favour-of-the-goddess')) set(5);  // Araloth 5+
   if (has('aura-of-the-lady', 'shield-of-the-lady', 'the-knights-vow', 'the-questing-vow')) set(6);
   if (has('feel-no-pain', 'dragon-armour')) set(6);
-  if (has('witness-to-destiny', 'blessings-of-asuryan', 'lileaths-blessing', 'favour-of-the-goddess')) set(6);
-  if (has('runes-of-warding', 'runes-of-protection', 'dark-runes', 'arcane-shield')) set(5);
+  if (has('witness-to-destiny', 'lileaths-blessing', 'blessings-of-the-lady', 'runes-of-protection')) set(6);
+  // NOTE: Blessings of Asuryan / Fire & Chaos / Volcano God are wards ONLY vs Flaming(/Magical) — too conditional to grant flat.
   if (has('mark-of-tzeentch', 'infernal-favour', 'marque-de-tzeentch')) set(5);
   // additional army wards (confirmed unconditional grants from RULES_DB)
   if (has('future-sight', 'chaos-armour-daemons-of-chaos', 'daughters-of-eternity')) set(4);
@@ -778,10 +780,10 @@ function simulateOnce(cfg) {
   // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge (+ Korhil); Blessings → +1 T.
   const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
     s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0) + (fm.mightyConstitution ? 1 : 0)) : 0),
-    t: me.profile.t  + blTough(meBless) };
+    t: Math.max(1, me.profile.t  + blTough(meBless)  - (ff.censerAura ? 1 : 0)) };
   const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0) + (ff.mightyConstitution ? 1 : 0)) : 0),
-    t: foe.profile.t + blTough(foeBless) };
+    t: Math.max(1, foe.profile.t + blTough(foeBless) - (fm.censerAura ? 1 : 0)) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
   const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal, immunePoison: fm.immunePoison };
@@ -3143,6 +3145,11 @@ function runEngineSelfTests() {
   ok(resolveAttacks(eA,dB,6000,{hitPenalty:1})<base2,'Cloud of Flies −1 To Hit cuts wounds');
   ok(resolveAttacks(eA,dB,6000,{defRerollHit6:true})<base2,'Nurgle re-roll natural-6 To Hit cuts wounds');
   ok(resolveAttacks(eA,dB,6000,{onlySixesHit:true})<base2,'Beguiling only-6s-hit cuts wounds');
+  // Ward-value corrections from the RULES_DB audit
+  ok(wardFromRules(['favour-of-the-goddess'])===5, 'Favour of the Goddess = 5+ ward');
+  ok(wardFromRules(['blessings-of-the-lady'])===6, 'Blessings of the Lady = 6+ ward');
+  ok(wardFromRules(['runes-of-protection'])===6, 'Runes of Protection = 6+ ward');
+  ok(wardFromRules(['blessings-of-asuryan'])===0, 'Blessings of Asuryan is NOT a flat ward (flaming-only)');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
