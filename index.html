@@ -152,6 +152,7 @@ button{font-family:inherit;}
 <script src="./owb_unit_data.js"></script>
 <script src="./augur_al.js"></script>
 <script src="./rules_db.js"></script>
+<script src="./rules_fr.js"></script>
 <script src="./items_db.js"></script>
 
 <script type="text/babel" data-presets="react">
@@ -2600,7 +2601,10 @@ const subName = (p,s) => LANG==='fr'?TURN_PHASES[p].subs[s].fr:TURN_PHASES[p].su
 const prettyRule = (s) => String(s).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 // Full rule data (name + the user's own description) from the imported RULES_DB.
 const ruleInfo = (sl) => (typeof RULES_DB !== 'undefined' && RULES_DB[sl]) || null;
-const ruleTitle = (sl) => { const i = ruleInfo(sl); return (i && i.name) || prettyRule(sl); };
+const ruleTitle = (sl) => {
+  if (LANG === 'fr' && typeof RULE_FR !== 'undefined' && RULE_FR[sl]) return RULE_FR[sl];
+  const i = ruleInfo(sl); return (i && i.name) || prettyRule(sl);
+};
 const ruleNote = (sl) => {
   const i = ruleInfo(sl);
   if (LANG === 'fr' && i && i.desc) { const d = i.desc.replace(/\s+/g,' ').trim(); return d.length > 180 ? d.slice(0,178) + '…' : d; }
