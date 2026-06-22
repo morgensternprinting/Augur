@@ -3199,8 +3199,8 @@ function runEngineSelfTests() {
   ok(profileFromRaw({A:'D6+1'}).a===5 && profileFromRaw({A:'D6+1'}).atkDice.die===6,'Random Attacks D6+1 → avg 5');
   ok(profileFromRaw({A:'D3'}).a===2,'Random Attacks D3 → avg 2');
   ok(profileFromRaw({A:'3'}).a===3,'fixed Attacks 3 unchanged');
-  const ra=profileFromRaw({A:'2D3'}).atkDice; let lo=9,hi=0; for(let q=0;q<300;q++){const v=rollDiceExpr(ra,0);if(v<lo)lo=v;if(v>hi)hi=v;}
-  ok(lo>=2&&hi<=6,'2D3 attacks roll within [2,6]');
+  const ra=profileFromRaw({A:'2D3'}).atkDice; let raLo=9,raHi=0; for(let q=0;q<300;q++){const v=rollDiceExpr(ra,0);if(v<raLo)raLo=v;if(v>raHi)raHi=v;}
+  ok(raLo>=2&&raHi<=6,'2D3 attacks roll within [2,6]');
   const eA={ws:4,s:4,t:4,a:1,i:4}, dB={ws:4,t:4,save:7,ward:0,w:1};
   const base2=resolveAttacks(eA,dB,6000,{});
   ok(resolveAttacks(eA,dB,6000,{hitPenalty:1})<base2,'Cloud of Flies −1 To Hit cuts wounds');
