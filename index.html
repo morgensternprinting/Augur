@@ -617,6 +617,9 @@ function combatFlags(u) {
     nurgleReroll6: has('daemon-of-nurgle'),                   // enemy attacking it must re-roll natural-6 To Hit
     beguilingAura: has('beguiling-aura', 'ghoulish-glamour'), // enemy must pass Ld or only natural 6s hit it
     defensiveStance: has('defensive-stance'),                 // if it did not charge: re-roll natural-1 armour saves
+    numbingChill:  has('numbing-chill'),                      // enemy in contact: −1 WS and −1 Initiative
+    holyFervour:   has('holy-fervour'),                       // auto-passes Fear tests
+    markUndivided: has('mark-of-chaos-undivided'),            // re-roll a failed Fear / Terror test
     blessingsOfChaos: has('blessings-of-chaos'),              // when combat is chosen, roll D6: Poison / AP −2 / +1 T
     mightyConstitution: has('mighty-constitution'),           // Korhil: +1 S on the charge
     immunePoison:  has('mighty-constitution'),                // immune to Poisoned Attacks
@@ -746,12 +749,14 @@ function simulateOnce(cfg) {
 
   // Terror: a unit charged by a terror-causer it isn't immune to tests Ld; on a
   // fail it flees before contact — no melee, the charger may run it down.
-  const terrorFlee = (def, charged, cf, imm) => charged && cf.terror && !imm && roll2d6() > def.profile.ld;
-  if (terrorFlee(foe, cfg.myCharged, fm, foeImm)) {
+  // A failed Ld test, with the Mark of Chaos Undivided re-rolling it once.
+  const failsLd = (def, self) => { let f = roll2d6() > def.profile.ld; if (f && self.markUndivided) f = roll2d6() > def.profile.ld; return f; };
+  const terrorFlee = (def, charged, cf, imm, self) => charged && cf.terror && !imm && failsLd(def, self);
+  if (terrorFlee(foe, cfg.myCharged, fm, foeImm, ff)) {
     const caught = pursuitCatch(fm.swiftstride, ff.swiftstride);
     return { meOut:'win', foeOut: caught?'flee':'fallback', vpSwing: caught ? lossPoints(foe, foe.size*foe.profile.w, true) : 0 };
   }
-  if (terrorFlee(me, cfg.foeCharged, ff, meImm)) {
+  if (terrorFlee(me, cfg.foeCharged, ff, meImm, fm)) {
     const caught = pursuitCatch(ff.swiftstride, fm.swiftstride);
     return { meOut: caught?'flee':'fallback', foeOut:'win', vpSwing: caught ? -lossPoints(me, me.size*me.profile.w, true) : 0 };
   }
@@ -760,8 +765,12 @@ function simulateOnce(cfg) {
   // A unit is shaken if its foe causes Fear/Terror OR if it has a targeted
   // Fear-of-X rule and the foe belongs to one of those armies (e.g. Fear of Elves).
   const fearsArmy = (u, opp) => (u.rules || []).some(s => FEAR_TARGETS[s] && FEAR_TARGETS[s].includes(opp.army));
-  const fearPen = (def, imm, cf, opp) => ((cf.fear || cf.terror) || fearsArmy(def, opp)) && !imm && roll2d6() > def.profile.ld ? 1 : 0;
-  const myHitPen = fearPen(me, meImm, ff, foe), foeHitPen = fearPen(foe, foeImm, fm, me);
+  const fearPen = (def, imm, cf, opp, self) => {
+    if (imm || self.holyFervour) return 0;                          // Holy Fervour auto-passes Fear
+    if (!((cf.fear || cf.terror) || fearsArmy(def, opp))) return 0;
+    return failsLd(def, self) ? 1 : 0;
+  };
+  const myHitPen = fearPen(me, meImm, ff, foe, fm), foeHitPen = fearPen(foe, foeImm, fm, me, ff);
   // Targeted Hatred only triggers vs the right enemy (both lists are known here).
   const hatesArmy = (atk, def) => (atk.rules||[]).some(s => HATRED_TARGETS[s] && HATRED_TARGETS[s].includes(def.army));
   const meHatred  = fm.hatred || hatesArmy(me, foe);
@@ -780,10 +789,12 @@ function simulateOnce(cfg) {
   // Effective profiles: Frenzy → +1 A; charge → Strength from lance + Furious Charge (+ Korhil); Blessings → +1 T.
   const meEff  = { ...me.profile,  a: me.profile.a  + (fm.frenzy ? 1 : 0),
     s: me.profile.s  + (cfg.myCharged  ? ((me.chargeS  || 0) + (fm.furiousCharge ? 1 : 0) + (fm.mightyConstitution ? 1 : 0)) : 0),
-    t: Math.max(1, me.profile.t  + blTough(meBless)  - (ff.censerAura ? 1 : 0)) };
+    t: Math.max(1, me.profile.t  + blTough(meBless)  - (ff.censerAura ? 1 : 0)),
+    ws: Math.max(1, me.profile.ws  - (ff.numbingChill ? 1 : 0)) };   // Numbing Chill: −1 WS vs the bearer
   const foeEff = { ...foe.profile, a: foe.profile.a + (ff.frenzy ? 1 : 0),
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0) + (ff.mightyConstitution ? 1 : 0)) : 0),
-    t: Math.max(1, foe.profile.t + blTough(foeBless) - (fm.censerAura ? 1 : 0)) };
+    t: Math.max(1, foe.profile.t + blTough(foeBless) - (fm.censerAura ? 1 : 0)),
+    ws: Math.max(1, foe.profile.ws - (fm.numbingChill ? 1 : 0)) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
   const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal, immunePoison: fm.immunePoison };
@@ -808,7 +819,7 @@ function simulateOnce(cfg) {
   if (fm.soporificMusk) { if (foeSF) foeSF = false; else foeSL = true; }
   if (ff.blizzardAura) meSL = true;
   if (fm.blizzardAura) foeSL = true;
-  const meI = me.profile.i - (ff.carrionFeeders ? 1 : 0), foeI = foe.profile.i - (fm.carrionFeeders ? 1 : 0);
+  const meI = me.profile.i - ((ff.carrionFeeders || ff.numbingChill) ? 1 : 0), foeI = foe.profile.i - ((fm.carrionFeeders || fm.numbingChill) ? 1 : 0);
   const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? 1 : 0);
   const eiMe = ei(meI, meSF, meSL, cfg.myCharged), eiFoe = ei(foeI, foeSF, foeSL, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
