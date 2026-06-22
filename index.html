@@ -249,6 +249,22 @@ function diceFromUnit(u) {
   };
   return { impact: find(IMPACT_SLUGS), stomp: find(STOMP_SLUGS), multi: find(MULTI_SLUGS) };
 }
+// Parametric Ward saves whose value is written in the rule name, e.g.
+// "Celestial Forged Armour (5+)", "Chaos Armour (5+)" → read the (X+).
+const PARAM_WARD_SLUGS = ['celestial-forged-armour-x', 'chaos-armour-warriors-of-chaos'];
+function wardFromUnit(u) {
+  const sr = (u && u.specialRules) || [];
+  const slugOf = (r) => r.slug || String(r.name||'').toLowerCase()
+    .replace(/\([^)]*\)/g,'').trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  let w = 0;
+  for (const r of sr) {
+    if (PARAM_WARD_SLUGS.includes(slugOf(r))) {
+      const m = String(r.name || '').match(/\((\d)\+\)/);
+      if (m) { const v = +m[1]; if (v >= 2 && v <= 6 && (!w || v < w)) w = v; }
+    }
+  }
+  return w;
+}
 
 // Resolve an engine-ready unit straight from a UNIT_DB slug (used by JSON import,
 // where the TOW en 1 builder stores units keyed by UNIT_DB slug + count + ppm).
@@ -266,7 +282,7 @@ function engineUnitFromSlug(slug, name, count, ppm) {
     id: slug, name: name || u.name, army: u.army, category: u.category || '',
     profile: profileFromRaw(p), save: parseSave(u.armourValue),
     points: ppm || 0, size: count || num(u.unitSize) || 1,
-    rules, dice: diceFromUnit(u), unbreakable: rules.includes('unbreakable'),
+    rules, dice: diceFromUnit(u), wardX: wardFromUnit(u), unbreakable: rules.includes('unbreakable'),
   };
 }
 
@@ -367,7 +383,7 @@ function rosterUnitFromUDB(army, cat, slug, displayName) {
     army, category: cat,
     points: (owb && owb.points) || 0,
     size: num(u.unitSize) || 1, save: parseSave(u.armourValue),
-    profile: profileFromRaw(p), rules, dice: diceFromUnit(u),
+    profile: profileFromRaw(p), rules, dice: diceFromUnit(u), wardX: wardFromUnit(u),
     unbreakable: rules.includes('unbreakable'),
     strikeFirst: rules.some(r => /strike-first|always-strikes-first/.test(r)),
     strikeLast: rules.some(r => /always-strikes-last/.test(r)),
@@ -428,7 +444,7 @@ function buildRoster() {
       const u = UNIT_DB[k]; const p = pickCombatProfile(u.profiles); if (!p) continue;
       const rules = rulesOf(u);
       units.push({ id: k, udbKey: k, slug: k, name: u.name, army: u.army, category: (u.category||'core').toLowerCase(),
-        points: 0, size: num(u.unitSize) || 1, save: parseSave(u.armourValue), profile: profileFromRaw(p), rules, dice: diceFromUnit(u),
+        points: 0, size: num(u.unitSize) || 1, save: parseSave(u.armourValue), profile: profileFromRaw(p), rules, dice: diceFromUnit(u), wardX: wardFromUnit(u),
         unbreakable: rules.includes('unbreakable') });
     }
   }
@@ -585,6 +601,9 @@ function combatFlags(u) {
                        'big-stabbas', 'skullcracker'),
     stomp:         has('stomp-attacks', 'crushing-weight'),
     parry:         has('parry', 'parry-wood-elves'),
+    rerollHit1:    has('inner-circle', 'ithilmar-weapons'),   // re-roll a natural-1 To Hit
+    rerollWound1:  has('murderous'),                          // re-roll a natural-1 To Wound
+    gromrilArmour: has('gromril-armour'),                     // re-roll a natural-1 armour save
     magical:       has('magical-attacks', 'ensorcelled-weapons', 'daemonic', 'ethereal', 'warpstone-weapons', 'fay-touched',
                        'accursed-weapons', 'warpstone-sentinel', 'spectral-hounds', 'spectral-reapers', 'usirians-reaper',
                        'spawn-of-tzeentch', 'gigantic-spawn-of-tzeentch', 'spectral-coach', 'hellbound'),
@@ -602,7 +621,7 @@ function wardFromRules(r) {
   if (has('daemonic')) set(5);                                              // Daemonic ward
   if (has('blessings-of-the-lady', 'the-grail-vow', 'grail-reliquae')) set(5);
   if (has('aura-of-the-lady', 'shield-of-the-lady', 'the-knights-vow', 'the-questing-vow')) set(6);
-  if (has('feel-no-pain')) set(6);
+  if (has('feel-no-pain', 'dragon-armour')) set(6);
   if (has('witness-to-destiny', 'blessings-of-asuryan', 'lileaths-blessing', 'favour-of-the-goddess')) set(6);
   if (has('runes-of-warding', 'runes-of-protection', 'dark-runes', 'arcane-shield')) set(5);
   if (has('mark-of-tzeentch', 'infernal-favour', 'marque-de-tzeentch')) set(5);
@@ -632,17 +651,26 @@ function resolveAttacks(att, def, nAttacks, o = {}) {
   let unsaved = 0;
   for (let i = 0; i < nAttacks; i++) {
     let hit = d6();
-    if (hit < hitT) { if (reHit) hit = d6(); if (hit < hitT) continue; } // Hatred / re-roll a miss
+    if (hit < hitT) {                                          // Hatred re-rolls any miss; Inner Circle / Ithilmar re-roll a natural 1
+      if (reHit) hit = d6(); else if (o.rerollHit1 && hit === 1) hit = d6();
+      if (hit < hitT) continue;
+    }
     if (def.ethereal && !o.magical) continue;                 // Ethereal: only magical attacks can wound it
     let killing = false, autoWound = o.poisoned && hit === 6; // Poisoned: natural 6 to hit auto-wounds
     if (!autoWound) {
       if (woundT === 7) continue;
       let wr = d6();
-      if (wr < woundT && o.rerollWound) wr = d6();             // re-roll a failed wound
+      if (wr < woundT) {                                       // re-roll a failed wound (full) or just a natural 1 (Murderous)
+        if (o.rerollWound) wr = d6(); else if (o.rerollWound1 && wr === 1) wr = d6();
+      }
       if (wr < woundT) continue;
       if (o.killingBlow && wr === 6) killing = true;          // Killing Blow: ignore armour save
     }
-    if (!killing && saveT <= 6 && d6() >= saveT) continue;    // armour save
+    if (!killing && saveT <= 6) {                              // armour save (Gromril Armour re-rolls a natural 1)
+      let sv = d6();
+      if (sv === 1 && o.defRerollSave1) sv = d6();
+      if (sv >= saveT) continue;
+    }
     if (wardT && !wardNegated && d6() >= wardT) continue;     // invulnerable / ward save
     if (o.regen && !regenNegated && d6() >= 4) continue;       // Regeneration 4+ ward
     unsaved += multi ? Math.min(def.w, rollDiceExpr(o.multiDice, 1 + (Math.random() * 3 | 0))) : 1; // Multiple Wounds (exact dice / ≈D3)
@@ -661,7 +689,7 @@ function autoHits(att, def, n, o = {}) {
   let unsaved = 0;
   for (let i = 0; i < n; i++) {
     if (d6() < woundT) continue;
-    if (saveT <= 6 && d6() >= saveT) continue;
+    if (saveT <= 6) { let sv = d6(); if (sv === 1 && o.defRerollSave1) sv = d6(); if (sv >= saveT) continue; }
     if (wardT && !o.noWard && d6() >= wardT) continue;
     if (o.regen && !o.flaming && d6() >= 4) continue;
     unsaved++;
@@ -727,8 +755,8 @@ function simulateOnce(cfg) {
     s: foe.profile.s + (cfg.foeCharged ? ((foe.chargeS || 0) + (ff.furiousCharge ? 1 : 0)) : 0) };
   const meAPM  = Math.max(1, meEff.a), foeAPM = Math.max(1, foeEff.a);
   // Defender packs carry save + invulnerable ward + wounds-per-model.
-  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
-  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
+  const dMe  = { ...meEff,  save: me.save,  ward: bestWard(me.ward, fm.ward, me.wardX || 0, fm.parry ? 6 : 0), w: me.profile.w, ethereal: !!me.ethereal  || fm.ethereal };
+  const dFoe = { ...foeEff, save: foe.save, ward: bestWard(foe.ward, ff.ward, foe.wardX || 0, ff.parry ? 6 : 0), w: foe.profile.w, ethereal: !!foe.ethereal || ff.ethereal };
   // Killing Blow, incl. Monster Slayer (Killing Blow only vs Large Targets/monsters).
   const meKB  = fm.killingBlow || (fm.monsterSlayer && ff.largeTarget);
   const foeKB = ff.killingBlow || (ff.monsterSlayer && fm.largeTarget);
@@ -737,8 +765,8 @@ function simulateOnce(cfg) {
   const foeRegen = ff.regen || !!foe.regen;
   // Offensive rule packs (the DEFENDER's regen travels with the attacker call).
   const meMagical  = fm.magical || !!me.magical, foeMagical = ff.magical || !!foe.magical;
-  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
-  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
+  const offMe  = { hatred:meHatred,  poisoned:fm.poisoned, killingBlow:meKB,  flaming:fm.flaming, regen:foeRegen, multiWounds:fm.multiWounds, multiDice:me.dice&&me.dice.multi,  ap:fm.ap+(me.ap||0),  magical:meMagical,  rerollWound:!!me.rerollWound,  rerollHit:!!me.rerollHit,  rerollHit1:fm.rerollHit1, rerollWound1:fm.rerollWound1, defRerollSave1:ff.gromrilArmour, noWard:!!me.noWard,  hitPenalty:myHitPen,  hitBonus:me.hitBonus||0,  woundBonus:me.woundBonus||0 };
+  const offFoe = { hatred:foeHatred, poisoned:ff.poisoned, killingBlow:foeKB, flaming:ff.flaming, regen:meRegen,  multiWounds:ff.multiWounds, multiDice:foe.dice&&foe.dice.multi, ap:ff.ap+(foe.ap||0), magical:foeMagical, rerollWound:!!foe.rerollWound, rerollHit:!!foe.rerollHit, rerollHit1:ff.rerollHit1, rerollWound1:ff.rerollWound1, defRerollSave1:fm.gromrilArmour, noWard:!!foe.noWard, hitPenalty:foeHitPen, hitBonus:foe.hitBonus||0, woundBonus:foe.woundBonus||0 };
   // Strike order from Initiative: profile I + strike-first/last (rules/items) + a
   // +1 Initiative bonus for charging (and counter-charging) in the first round.
   const ei = (u, f, charged) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
@@ -863,10 +891,11 @@ function duelWounds(att, def, charged) {
   const attEff = { ...att.profile, a: att.profile.a + (fa.frenzy ? 1 : 0),
     s: att.profile.s + (charged ? ((att.chargeS || 0) + (fa.furiousCharge ? 1 : 0)) : 0) };
   const dDef = { ws: def.profile.ws, t: def.profile.t, save: def.save, w: def.profile.w,
-    ward: bestWard(def.ward, fd.ward, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal };
+    ward: bestWard(def.ward, fd.ward, def.wardX || 0, fd.parry ? 6 : 0), ethereal: !!def.ethereal || fd.ethereal };
   const o = { hatred: fa.hatred, poisoned: fa.poisoned, killingBlow: kb, flaming: fa.flaming,
     regen: fd.regen || !!def.regen, multiWounds: fa.multiWounds, multiDice: att.dice && att.dice.multi, ap: fa.ap + (att.ap || 0),
     magical: fa.magical || !!att.magical, rerollWound: !!att.rerollWound, rerollHit: !!att.rerollHit,
+    rerollHit1: fa.rerollHit1, rerollWound1: fa.rerollWound1, defRerollSave1: fd.gromrilArmour,
     hitBonus: att.hitBonus || 0, woundBonus: att.woundBonus || 0 };
   return resolveAttacks(attEff, dDef, Math.max(1, attEff.a), o);
 }
@@ -3042,6 +3071,20 @@ function runEngineSelfTests() {
   const vsElf = monteCarlo({...cfg0, me:gob, foe:elfFoe}, 800).casualties.inflictWounds;
   const vsOrc = monteCarlo({...cfg0, me:gob, foe:orcFoe}, 800).casualties.inflictWounds;
   ok(vsElf < vsOrc, 'Fear of Elves cuts the unit\'s output vs elf armies only');
+  // FAQ pass: parametric (X+) ward from the rule name + re-roll-of-1 mechanics
+  ok(wardFromUnit({specialRules:[{slug:'chaos-armour-warriors-of-chaos',name:'Chaos Armour (5+)'}]})===5, 'parse Chaos Armour (5+) ward');
+  ok(wardFromUnit({specialRules:[{slug:'celestial-forged-armour-x',name:'Celestial Forged Armour (4+)'}]})===4, 'parse Celestial Forged Armour (4+)');
+  ok(wardFromRules(['dragon-armour'])===6, 'dragon-armour = 6+ ward');
+  const tA={ws:4,s:4,t:4,a:1,i:4};
+  const sNo=resolveAttacks(tA,{ws:4,t:4,save:4,ward:0,w:1},6000,{});
+  const sGr=resolveAttacks(tA,{ws:4,t:4,save:4,ward:0,w:1},6000,{defRerollSave1:true});
+  ok(sGr<sNo,'Gromril save re-roll reduces wounds suffered');
+  const wNo=resolveAttacks(tA,{ws:4,t:4,save:7,ward:0,w:1},6000,{});
+  const wRe=resolveAttacks(tA,{ws:4,t:4,save:7,ward:0,w:1},6000,{rerollWound1:true});
+  ok(wRe>wNo,'re-roll natural-1 To Wound raises wounds');
+  const hNo=resolveAttacks({ws:4,s:4,t:4,a:1,i:4},{ws:10,t:4,save:7,ward:0,w:1},6000,{});
+  const hRe=resolveAttacks({ws:4,s:4,t:4,a:1,i:4},{ws:10,t:4,save:7,ward:0,w:1},6000,{rerollHit1:true});
+  ok(hRe>hNo,'re-roll natural-1 To Hit raises wounds');
   if (fails.length) console.warn('[Augur self-tests] '+fails.length+' FAILED →', fails);
   else console.info('[Augur self-tests] all checks passed ✓');
   return fails;
