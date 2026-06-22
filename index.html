@@ -1483,7 +1483,7 @@ function freshGame() {
   }));
   return {
     myArmy: myA, foeArmy: foeA, myVariant: 'standard', foeVariant: 'standard',
-    myRoster: pick(myA, 5), foeRoster: pick(foeA, 5),
+    myRoster: [], foeRoster: [],   // start empty — fill via list import or manual add in the Game tab
     objectives: [
       { id:'o1', name:'Centre field', holder:'none' },
       { id:'o2', name:'East hill',    holder:'none' },
@@ -2578,11 +2578,11 @@ function VPScoreboard({ vp, players }) {
       font:'600 var(--fs-sm)/1 var(--font-ui)',color:leading?'var(--out-win)':'var(--out-flee)'}}>
       {lead===0?tr('Dead even','À égalité'):leading?tr('You lead by ','Tu mènes de ')+`${lead} VP`:tr('You trail by ','Tu es mené de ')+`${Math.abs(lead)} VP`}</div></div>;
 }
-function UnitRow({ unit, onCycle }) {
+function UnitRow({ unit, onCycle, onDelete }) {
   const pct=unit.fuMax?unit.fuCurrent/unit.fuMax:0;const dead=unit.status==='destroyed';
   const barCol=unit.status==='weak'?'var(--status-weak)':unit.status==='fleeing'?'var(--status-fleeing)':
     dead?'var(--status-destroyed)':'var(--status-full)';
-  return <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',opacity:dead?0.5:1}}>
+  return <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 0',opacity:dead?0.5:1}}>
     <div style={{flex:1,minWidth:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6}}>
         <span style={{font:'600 var(--fs-body)/1.1 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',
@@ -2590,24 +2590,43 @@ function UnitRow({ unit, onCycle }) {
       <div style={{marginTop:5,height:5,borderRadius:'var(--r-pill)',background:'var(--surface-3)',overflow:'hidden',position:'relative'}}>
         <div style={{position:'absolute',inset:0,width:(pct*100)+'%',background:barCol,borderRadius:'var(--r-pill)'}}/>
         <div style={{position:'absolute',left:'25%',top:-1,bottom:-1,width:2,background:'var(--bg-app)'}}/></div></div>
-    <button type="button" onClick={onCycle} style={{flex:'none',width:104,textAlign:'right',background:'transparent',
+    <button type="button" onClick={onCycle} style={{flex:'none',width:100,textAlign:'right',background:'transparent',
       border:'none',cursor:'pointer',padding:0}}>
       <StatusDot status={unit.status} showLabel={true} style={{justifyContent:'flex-end'}}/>
-      <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3}}>{unit.points*unit.size} pts</div></button></div>;
+      <div style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)',marginTop:3}}>{unit.points*unit.size} pts</div></button>
+    {onDelete&&<button type="button" onClick={onDelete} aria-label={tr('Remove','Retirer')}
+      style={{flex:'none',background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex',padding:4}}>
+      <Icon name="x" size={16}/></button>}</div>;
 }
 const STATUS_CYCLE = ['full','weak','fleeing','destroyed'];
-function ArmyPanel({ title, roster, side, onCycle }) {
+function ArmyPanel({ title, roster, side, onCycle, onDelete, onClear, onAdd, onLoadList, lists }) {
   const lost=roster.filter(u=>u.status==='destroyed').reduce((s,u)=>s+u.points*u.size,0);
+  const accent = side==='enemy'?'var(--foe-400)':'var(--signal-400)';
+  const btn = {display:'inline-flex',alignItems:'center',gap:5,cursor:'pointer',background:'var(--surface-2)',
+    border:`1px solid var(--border-default)`,borderRadius:'var(--r-pill)',padding:'5px 10px',
+    font:'600 var(--fs-xs)/1 var(--font-ui)',color:'var(--text-secondary)'};
   return <div>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',margin:'4px 0 2px'}}>
       <span style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',
         color:side==='enemy'?'var(--out-flee)':'var(--signal-400)'}}>{title}</span>
       <span style={{font:'400 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>{tr('lost ','perdu ')}{lost} pts</span></div>
+    {/* toolbar: load a saved list · add a catalogue unit · clear the side */}
+    <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
+      <button type="button" onClick={onAdd} style={{...btn,borderColor:accent,color:accent}}><Icon name="plus" size={13}/>{tr('Unit','Unité')}</button>
+      {lists&&lists.length>0&&<select value="" onChange={e=>{if(e.target.value!=='')onLoadList(+e.target.value);e.target.value='';}}
+        style={{appearance:'none',WebkitAppearance:'none',cursor:'pointer',background:'var(--surface-2)',color:'var(--text-secondary)',
+          border:'1px solid var(--border-default)',borderRadius:'var(--r-pill)',padding:'5px 10px',font:'600 var(--fs-xs)/1 var(--font-ui)'}}>
+        <option value="">{tr('＋ Load a list…','＋ Charger une liste…')}</option>
+        {lists.map((l,i)=><option key={i} value={i} style={{background:'var(--surface-2)'}}>📋 {l.name||(tr('List ','Liste ')+(i+1))}</option>)}</select>}
+      {roster.length>0&&<button type="button" onClick={()=>{if(confirm(tr('Clear this army from the game?','Effacer cette armée de la partie ?')))onClear();}}
+        style={{...btn,marginLeft:'auto',borderColor:'var(--out-flee)',color:'var(--out-flee)'}}><Icon name="trash-2" size={13}/>{tr('Clear','Vider')}</button>}
+    </div>
     <div style={{background:'var(--surface-1)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-lg)',padding:'0 var(--sp-4)'}}>
-      {roster.length===0&&<div style={{padding:'14px 0',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('No unit.','Aucune unité.')}</div>}
-      {roster.map((u,i)=><Fragment key={u.ref+i}>
+      {roster.length===0&&<div style={{padding:'14px 0',font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
+        {tr('Empty — add a unit or load a list above.','Vide — ajoute une unité ou charge une liste ci-dessus.')}</div>}
+      {roster.map((u,i)=><Fragment key={u.uid||(u.ref+'#'+i)}>
         {i>0&&<div style={{height:1,background:'var(--border-subtle)'}}/>}
-        <UnitRow unit={u} onCycle={()=>onCycle(i)}/></Fragment>)}</div></div>;
+        <UnitRow unit={u} onCycle={()=>onCycle(i)} onDelete={onDelete?()=>onDelete(i):null}/></Fragment>)}</div></div>;
 }
 function Objectives({ items, onSet }) {
   return <div>
@@ -2840,9 +2859,49 @@ function PhaseTracker({ game, setGame, lists, sel }) {
     </div>
   </Card>;
 }
+// Catalogue picker for the Game tab: choose an army → tap a unit to add it to a side's roster.
+function GameUnitPicker({ open, side, accent, onPick, onClose }) {
+  const [army, setArmy] = useState(side==='me'?DEFAULT_MY_ARMY:DEFAULT_FOE_ARMY);
+  const [q, setQ] = useState('');
+  useEffect(()=>{ if(open && window.lucide) window.lucide.createIcons(); });
+  if (!open) return null;
+  const norm = (s)=>String(s||'').toLowerCase();
+  const units = armyUnits(army).filter(u=>norm(unitName(u)).includes(norm(q)));
+  const selStyle = {appearance:'none',WebkitAppearance:'none',width:'100%',background:'var(--surface-2)',color:'var(--text-primary)',
+    border:`1px solid ${accent}`,borderRadius:'var(--r-md)',padding:'10px var(--sp-4)',font:'600 var(--fs-sm)/1 var(--font-ui)',cursor:'pointer'};
+  return <Portal><div className="augur-sheet" onClick={onClose} style={{position:'fixed',inset:0,zIndex:80,display:'flex',flexDirection:'column',
+    justifyContent:'flex-end',background:'rgba(4,6,9,0.6)',backdropFilter:'blur(2px)'}}>
+    <div onClick={e=>e.stopPropagation()} style={{background:'var(--surface-1)',borderTopLeftRadius:'var(--r-xl)',borderTopRightRadius:'var(--r-xl)',
+      borderTop:`2px solid ${accent}`,boxShadow:'var(--shadow-sheet)',width:'100%',maxWidth:'min(680px,100%)',alignSelf:'center',
+      maxHeight:'82dvh',display:'flex',flexDirection:'column',padding:'var(--sp-4)'}}>
+      <div style={{width:36,height:4,borderRadius:2,background:'var(--border-strong)',flex:'none',margin:'2px auto 12px'}}/>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+        <span style={{font:'600 var(--fs-h3)/1 var(--font-display)',color:accent}}>
+          {side==='me'?tr('Add to your army','Ajouter à ton armée'):tr('Add to enemy army','Ajouter à l\'armée adverse')}</span>
+        <button type="button" onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--text-tertiary)',display:'flex'}}><Icon name="x" size={22}/></button></div>
+      <select value={army} onChange={e=>setArmy(e.target.value)} style={{...selStyle,marginBottom:8}}>
+        {armyList().map(a=><option key={a} value={a} style={{background:'var(--surface-2)'}}>{factionName(a)}</option>)}</select>
+      <div style={{display:'flex',alignItems:'center',gap:8,background:'var(--surface-3)',borderRadius:'var(--r-md)',
+        border:'1px solid var(--border-default)',padding:'0 var(--sp-3)',marginBottom:10}}>
+        <Icon name="search" size={16} color="var(--text-tertiary)"/>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder={tr('Search a unit…','Rechercher une unité…')}
+          style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--text-primary)',font:'400 var(--fs-sm)/1 var(--font-ui)',padding:'10px 0'}}/></div>
+      <div style={{flex:1,minHeight:0,overflowY:'auto',WebkitOverflowScrolling:'touch',overscrollBehavior:'contain'}}>
+        {units.length===0&&<div style={{padding:'18px 0',textAlign:'center',font:'400 var(--fs-sm)/1 var(--font-ui)',color:'var(--text-tertiary)'}}>{tr('No unit.','Aucune unité.')}</div>}
+        {units.map(u=><button key={u.id} type="button" onClick={()=>{onPick(u);onClose();}}
+          style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,width:'100%',textAlign:'left',
+            background:'transparent',border:'none',borderBottom:'1px solid var(--border-subtle)',padding:'11px 4px',cursor:'pointer'}}>
+          <span style={{font:'500 var(--fs-sm)/1.2 var(--font-ui)',color:'var(--text-primary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unitName(u)}</span>
+          <span style={{flex:'none',font:'600 var(--fs-xs)/1 var(--font-mono)',color:'var(--text-tertiary)'}}>{u.points?u.points+' pts':'—'}{u.size?' · ×'+u.size:''}</span>
+        </button>)}</div>
+    </div></div></Portal>;
+}
 function GameTracker({ game, setGame, lists, sel }) {
   const vp = computeVP(game);
   useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  const [picker, setPicker] = useState(null); // 'me' | 'foe' | null
+  const rKey = (side)=> side==='me'?'myRoster':'foeRoster';
+  const aKey = (side)=> side==='me'?'myArmy':'foeArmy';
   const cycle = (sideKey) => (i) => setGame(g=>{
     const roster=[...g[sideKey]];const u={...roster[i]};
     const ni=(STATUS_CYCLE.indexOf(u.status)+1)%STATUS_CYCLE.length;u.status=STATUS_CYCLE[ni];
@@ -2850,6 +2909,12 @@ function GameTracker({ game, setGame, lists, sel }) {
       u.status==='fleeing'?Math.max(1,Math.round(u.fuMax*0.5)):u.fuMax;
     roster[i]=u;return {...g,[sideKey]:roster};
   });
+  const delUnit = (sideKey) => (i) => setGame(g=>({...g,[sideKey]:g[sideKey].filter((_,j)=>j!==i)}));
+  const clearSide = (side) => setGame(g=>({...g,[rKey(side)]:[]}));
+  const loadList = (side, idx) => setGame(g=>{ const l=lists[idx]; if(!l) return g;
+    return {...g,[rKey(side)]:rosterFromList(l), ...(l.army?{[aKey(side)]:l.army}:{})}; });
+  const addUnitTo = (side, u) => setGame(g=>({...g,[rKey(side)]:[...g[rKey(side)],
+    {uid:newUid(), ref:String(u.id), army:u.army, name:u.name, points:u.points||0, size:u.size||1, fuCurrent:u.size||1, fuMax:u.size||1, status:'full'}]}));
   const setObj=(id,holder)=>setGame(g=>({...g,objectives:g.objectives.map(o=>o.id===id?{...o,holder}:o)}));
   return <Fragment>
     <ScreenHeader eyebrow={tr('Game tracking','Suivi de partie')} title={tr('Game','Partie')} right={
@@ -2859,8 +2924,14 @@ function GameTracker({ game, setGame, lists, sel }) {
       <PhaseTracker game={game} setGame={setGame} lists={lists} sel={sel}/>
       <VPScoreboard vp={vp} players={{me:factionName(game.myArmy),foe:factionName(game.foeArmy)}}/>
       <Objectives items={game.objectives} onSet={setObj}/>
-      <ArmyPanel title={tr('Your army · ','Ton armée · ')+factionName(game.myArmy)} roster={game.myRoster} side="friendly" onCycle={cycle('myRoster')}/>
-      <ArmyPanel title={tr('Enemy army · ','Armée adverse · ')+factionName(game.foeArmy)} roster={game.foeRoster} side="enemy" onCycle={cycle('foeRoster')}/>
+      <ArmyPanel title={tr('Your army · ','Ton armée · ')+factionName(game.myArmy)} roster={game.myRoster} side="friendly"
+        lists={lists} onCycle={cycle('myRoster')} onDelete={delUnit('myRoster')} onClear={()=>clearSide('me')}
+        onAdd={()=>setPicker('me')} onLoadList={(idx)=>loadList('me',idx)}/>
+      <ArmyPanel title={tr('Enemy army · ','Armée adverse · ')+factionName(game.foeArmy)} roster={game.foeRoster} side="enemy"
+        lists={lists} onCycle={cycle('foeRoster')} onDelete={delUnit('foeRoster')} onClear={()=>clearSide('foe')}
+        onAdd={()=>setPicker('foe')} onLoadList={(idx)=>loadList('foe',idx)}/>
+      <GameUnitPicker open={!!picker} side={picker||'me'} accent={picker==='foe'?'var(--foe-500)':'var(--signal-500)'}
+        onPick={(u)=>addUnitTo(picker,u)} onClose={()=>setPicker(null)}/>
       <div style={{display:'flex',justifyContent:'center'}}>
         <Button variant="ghost" onClick={()=>{ if(confirm(tr('Reset the game?','Réinitialiser la partie ?'))){localStorage.removeItem(STORE_KEY);setGame(freshGame());} }}
           icon={<Icon name="rotate-ccw" size={18}/>}>{tr('Reset the game','Réinitialiser la partie')}</Button></div>
@@ -2939,11 +3010,14 @@ function normalizeImported(data) {
 
 // Build a Game-tracker roster (casualty + VP tracking) from an imported list.
 // Each entry carries per-model points × size so computeVP can total it on a kill.
+let _rosterUid = 0;
+const newUid = () => 'ru' + (++_rosterUid) + '-' + Math.random().toString(36).slice(2, 7);
 function rosterFromList(list) {
   return (list.units || []).map((u, i) => {
     const size = u.count || u.size || 1;
     const ppm  = u.ppm || (u.pts && size ? Math.round(u.pts / size) : u.pts) || u.points || 0;
     return {
+      uid: newUid(),
       ref: String(u.slug || (list.army || 'list') + '/' + i),
       army: list.army || '',
       name: (LANG === 'fr' ? (u.name_fr || u.name) : u.name) || u.name || ('Unit ' + (i + 1)),
@@ -3289,11 +3363,7 @@ function App() {
             ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:0' } : { foeSrc: 'list:'+idx, foe: 'foe:0' }) }));
           return next;
         });
-        // Populate the Game tracker (casualties + total VP) for the chosen side.
-        const roster = rosterFromList(list);
-        setGame(g => ({ ...g,
-          [side==='me' ? 'myRoster' : 'foeRoster']: roster.length ? roster : g[side==='me'?'myRoster':'foeRoster'],
-          ...(list.army ? { [side==='me' ? 'myArmy' : 'foeArmy']: list.army } : {}) }));
+        // The Game tab is filled on demand via its "Load into the game" button.
       } catch (e) { alert(tr('Invalid JSON file: ','Fichier JSON invalide : ') + e.message); }
     };
     r.readAsText(file);
