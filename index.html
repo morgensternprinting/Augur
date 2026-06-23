@@ -1619,7 +1619,7 @@ function candidatesFor(side, sel, game, lists) {
 }
 function resolveUnit(side, sel, game, lists) {
   const cands = candidatesFor(side, sel, game, lists);
-  const id = side === 'me' ? sel.mine : sel.foe;
+  const id = side === 'me' ? sel.mine : sel.theirs;
   return cands.find(c => c.id === id) || cands[0] || null;
 }
 
@@ -2074,8 +2074,8 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
         const accent = isMe?accentMe:accentFoe, accentDeep = isMe?'var(--signal-600)':'var(--foe-600)';
         const aKey=isMe?'myArmy':'foeArmy', vKey=isMe?'myVariant':'foeVariant';
         const army=game[aKey], variant=game[vKey], vars=variantsFor(army);
-        const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(isMe?{mine:(armyRoster(a,'standard')[0]||{}).id}:{foe:(armyRoster(a,'standard')[0]||{}).id}); };
-        const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(isMe?{mine:(armyRoster(army,v)[0]||{}).id}:{foe:(armyRoster(army,v)[0]||{}).id}); };
+        const setArmy=(a)=>{ setGame(g=>({...g,[aKey]:a,[vKey]:'standard'})); set(isMe?{mine:(armyRoster(a,'standard')[0]||{}).id}:{theirs:(armyRoster(a,'standard')[0]||{}).id}); };
+        const setVar=(v)=>{ setGame(g=>({...g,[vKey]:v})); set(isMe?{mine:(armyRoster(army,v)[0]||{}).id}:{theirs:(armyRoster(army,v)[0]||{}).id}); };
         const unit = isMe?myUnit:foeUnit;
         return <Fragment key={sd}>
           {si===1 && <div style={{display:'flex',alignItems:'center',gap:10,margin:'2px 0'}}>
@@ -2092,7 +2092,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
             {(() => {
               const src = isMe?sel.mySrc:sel.foeSrc, onList = String(src||'').indexOf('list:')===0;
               const onPickSrc = (e) => { const v=e.target.value;
-                if (v.indexOf('list:')===0) set(isMe?{mySrc:v, mine:'me:0'}:{foeSrc:v, foe:'foe:0'});
+                if (v.indexOf('list:')===0) set(isMe?{mySrc:v, mine:'me:0'}:{foeSrc:v, theirs:'foe:0'});
                 else { setArmy(v); set(isMe?{mySrc:'catalog'}:{foeSrc:'catalog'}); } };
               return <Fragment>
                 <select value={onList?src:army} onChange={onPickSrc}
@@ -2181,7 +2181,7 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
       selectedId={sel.mine} onPick={id=>set({mine:id})} onClose={()=>setSheet(null)}
       configurable={sideSrc(sel,'me')==='catalog'} side="me" lists={lists} onAdd={onAddUnit}/>
     <UnitSheet open={sheet==='foe'} title={tr('Enemy unit','Unité adverse')} accent={accentFoe} units={foeCands}
-      selectedId={sel.foe} onPick={id=>set({foe:id})} onClose={()=>setSheet(null)}
+      selectedId={sel.theirs} onPick={id=>set({theirs:id})} onClose={()=>setSheet(null)}
       configurable={sideSrc(sel,'foe')==='catalog'} side="foe" lists={lists} onAdd={onAddUnit}/>
   </Fragment>;
 }
@@ -3041,8 +3041,8 @@ function rosterFromList(list) {
 const freshFactors = (charger, ranks) => ({
   // Per-side source: 'catalog' (a faction) or 'list:N' (the user's imported list N).
   mySrc: 'catalog', foeSrc: 'catalog',
-  mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,
-  foe:  (armyUnits(DEFAULT_FOE_ARMY)[0]||{}).id,
+  mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,    // my unit id  (factors live in `me`)
+  theirs: (armyUnits(DEFAULT_FOE_ARMY)[0]||{}).id, // foe unit id (factors live in `foe` — keys must differ!)
   charger: 'me', counterCharge: false, reaction: 'hold', fleeingTarget: false, standShootKills: 0,
   myAttacks: 9, foeAttacks: 6,
   challenge: false,
@@ -3358,7 +3358,7 @@ function App() {
   useEffect(()=>{ if(myUnit) setSel(s=>({ ...s, myAttacks: defAtt(myUnit),
     me:{ ...s.me, ranks: defRanks(myUnit), unbreakable: !!myUnit.unbreakable } })); }, [sel.mine, sel.mySrc]);
   useEffect(()=>{ if(foeUnit) setSel(s=>({ ...s, foeAttacks: defAtt(foeUnit),
-    foe:{ ...s.foe, ranks: defRanks(foeUnit), unbreakable: !!foeUnit.unbreakable } })); }, [sel.foe, sel.foeSrc]);
+    foe:{ ...s.foe, ranks: defRanks(foeUnit), unbreakable: !!foeUnit.unbreakable } })); }, [sel.theirs, sel.foeSrc]);
 
   if (ROSTER.coverage === 0) return <NoData/>;
 
@@ -3372,7 +3372,7 @@ function App() {
           const next = [...prev, list];
           const idx = next.length - 1;
           setSel(s => ({ ...s,
-            ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:0' } : { foeSrc: 'list:'+idx, foe: 'foe:0' }) }));
+            ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:0' } : { foeSrc: 'list:'+idx, theirs: 'foe:0' }) }));
           return next;
         });
         // The Game tab is filled on demand via its "Load into the game" button.
@@ -3406,7 +3406,7 @@ function App() {
       }
       const ui = next[idx].units.length - 1;
       setSel(s => ({ ...s,
-        ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:'+ui } : { foeSrc: 'list:'+idx, foe: 'foe:'+ui }) }));
+        ...(side==='me' ? { mySrc: 'list:'+idx, mine: 'me:'+ui } : { foeSrc: 'list:'+idx, theirs: 'foe:'+ui }) }));
       return next;
     });
   };
