@@ -12,7 +12,18 @@
 <meta name="apple-mobile-web-app-title" content="Augur">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <title>Augur — Omens of the Battlefield</title>
+<script>
+  // Capture the Android/Chrome install prompt so a button can trigger it later.
+  window.__deferredInstall = null; window.__appInstalled = false;
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); window.__deferredInstall = e;
+    window.dispatchEvent(new Event('augur-installable')); });
+  window.addEventListener('appinstalled', function(){ window.__appInstalled = true; window.__deferredInstall = null;
+    window.dispatchEvent(new Event('augur-installed')); });
+</script>
 
 <!-- ══════════════════════════════════════════════════════════════
      Augur — table-side companion for Warhammer: The Old World.
@@ -3184,6 +3195,62 @@ function RefBlock({ title, accent, children, note }) {
     {note&&<div style={{font:'400 var(--fs-xs)/1.45 var(--font-ui)',color:'var(--text-tertiary)'}}>{note}</div>}
   </Card>;
 }
+// Install-to-home-screen: triggers the native prompt where available (Android/Chrome,
+// desktop Chromium), otherwise shows a platform-aware how-to memo (iOS Safari has no API).
+function InstallApp() {
+  const standalone = (typeof window!=='undefined') && ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone===true);
+  const [installable, setInstallable] = useState(!!(typeof window!=='undefined' && window.__deferredInstall));
+  const [installed, setInstalled] = useState(!!(typeof window!=='undefined' && window.__appInstalled) || standalone);
+  useEffect(()=>{ if(window.lucide) window.lucide.createIcons(); });
+  useEffect(()=>{
+    const onI=()=>setInstallable(true), onD=()=>{ setInstalled(true); setInstallable(false); };
+    window.addEventListener('augur-installable',onI); window.addEventListener('augur-installed',onD);
+    return ()=>{ window.removeEventListener('augur-installable',onI); window.removeEventListener('augur-installed',onD); };
+  },[]);
+  const ua = (typeof navigator!=='undefined' && navigator.userAgent) || '';
+  const isIOS = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && typeof document!=='undefined' && 'ontouchend' in document);
+  const isAndroid = /android/i.test(ua);
+  const doInstall = async () => {
+    const dp = window.__deferredInstall;
+    if (dp) { dp.prompt(); try { await dp.userChoice; } catch(e){} window.__deferredInstall=null; setInstallable(false); }
+  };
+  if (installed) return <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',display:'flex',alignItems:'center',gap:10,borderLeft:'3px solid var(--positive)'}}>
+    <Icon name="check-circle" size={20} color="var(--positive)"/>
+    <span style={{font:'600 var(--fs-sm)/1.3 var(--font-ui)',color:'var(--text-secondary)'}}>{tr('Augur is installed on this device.','Augur est installé sur cet appareil.')}</span>
+  </Card>;
+  const steps = isIOS
+    ? [tr('Open this page in Safari.','Ouvre cette page dans Safari.'),
+       tr('Tap the Share button (the square with an up arrow).','Touche le bouton Partager (le carré avec une flèche vers le haut).'),
+       tr('Choose « Add to Home Screen ».','Choisis « Sur l’écran d’accueil ».'),
+       tr('Tap « Add » — the Augur icon appears on your home screen.','Touche « Ajouter » — l’icône Augur apparaît sur ton écran d’accueil.')]
+    : isAndroid
+    ? [tr('Open this page in Chrome.','Ouvre cette page dans Chrome.'),
+       tr('Tap the ⋮ menu (top right).','Touche le menu ⋮ (en haut à droite).'),
+       tr('Choose « Install app » or « Add to Home screen ».','Choisis « Installer l’application » ou « Ajouter à l’écran d’accueil ».'),
+       tr('Confirm — the Augur icon appears on your home screen.','Confirme — l’icône Augur apparaît sur ton écran d’accueil.')]
+    : [tr('In Chrome/Edge, click the install icon in the address bar (or ⋮ menu → Install Augur).','Dans Chrome/Edge, clique sur l’icône d’installation dans la barre d’adresse (ou menu ⋮ → Installer Augur).'),
+       tr('The app opens in its own window and gets a desktop/Start-menu shortcut.','L’app s’ouvre dans sa propre fenêtre et obtient un raccourci bureau / menu Démarrer.')];
+  return <Card elevation={2} style={{padding:'var(--sp-4)',display:'flex',flexDirection:'column',gap:10,borderTop:'2px solid var(--signal-500)'}}>
+    <div style={{display:'flex',alignItems:'center',gap:10}}>
+      <Icon name="smartphone" size={20} color="var(--signal-400)"/>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{font:'700 var(--fs-h3)/1.1 var(--font-display)',color:'var(--text-primary)'}}>{tr('Install Augur','Installer Augur')}</div>
+        <div style={{font:'400 var(--fs-xs)/1.35 var(--font-ui)',color:'var(--text-tertiary)'}}>
+          {tr('Add a home-screen shortcut — opens full-screen like a real app, no app store.',
+              'Ajoute un raccourci sur l’écran d’accueil — s’ouvre en plein écran comme une vraie app, sans store.')}</div>
+      </div>
+    </div>
+    {installable
+      ? <Button variant="primary" block onClick={doInstall} icon={<Icon name="download" size={18}/>}>{tr('Install the app','Installer l’application')}</Button>
+      : <div style={{background:'var(--surface-2)',border:'1px solid var(--border-subtle)',borderRadius:'var(--r-sm)',padding:'var(--sp-3) var(--sp-4)'}}>
+          <div style={{font:'600 var(--fs-label)/1 var(--font-ui)',letterSpacing:'var(--ls-label)',textTransform:'uppercase',color:'var(--text-tertiary)',marginBottom:8}}>
+            {isIOS?tr('On iPhone / iPad','Sur iPhone / iPad'):isAndroid?tr('On Android','Sur Android'):tr('On computer','Sur ordinateur')}</div>
+          <ol style={{margin:0,paddingLeft:18,display:'flex',flexDirection:'column',gap:6}}>
+            {steps.map((s,i)=><li key={i} style={{font:'400 var(--fs-sm)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>{s}</li>)}
+          </ol>
+        </div>}
+  </Card>;
+}
 function QuickRef() {
   const wide = useIsWide();
   const [view,setView] = useState('incidents');
@@ -3203,6 +3270,8 @@ function QuickRef() {
         options={[{value:'incidents',label:tr('Incidents & Miscast','Incidents & Fiasco')},{value:'combat',label:tr('To-hit · To-wound','Touches · Blessures')}]}/>
     </div>
     <Body>
+      <InstallApp/>
+      <div style={{height:8}}/>
       {view==='incidents' ? grid(<Fragment>
         <RefBlock title={tr('Magic — the essentials',"Magie — l'essentiel")} accent="var(--signal-400)"
           note={tr('Strategy phase, Conjuration sub-phase. Only Enchantment (friendly) and Hex (enemy) spells are cast here.',
