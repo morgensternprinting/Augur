@@ -840,7 +840,8 @@ function simulateOnce(cfg) {
   if (ff.blizzardAura) meSL = true;
   if (fm.blizzardAura) foeSL = true;
   const meI = me.profile.i - ((ff.carrionFeeders || ff.numbingChill) ? 1 : 0) + (meStoic ? 1 : 0), foeI = foe.profile.i - ((fm.carrionFeeders || fm.numbingChill) ? 1 : 0) + (foeStoic ? 1 : 0);
-  const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? 1 : 0);
+  const chargeI = (cfg.chargeInit == null ? 1 : cfg.chargeInit);   // charge Initiative bonus (+1/inch, capped)
+  const ei = (i, sf, sl, charged) => i + (sf ? 20 : 0) - (sl ? 20 : 0) + (charged ? chargeI : 0);
   const eiMe = ei(meI, meSF, meSL, cfg.myCharged), eiFoe = ei(foeI, foeSF, foeSL, cfg.foeCharged);
   let myAtt = cfg.myAttacks, foeAtt = cfg.foeAttacks, myWounds, foeWounds;
   if (eiMe === eiFoe) {                       // simultaneous
@@ -983,8 +984,9 @@ function duelWounds(att, def, charged) {
 }
 function simulateDuelOnce(me, foe, cfg) {
   const fm = combatFlags(me), ff = combatFlags(foe);
+  const chargeI = (cfg.chargeInit == null ? 1 : cfg.chargeInit);
   const ei = (u, f, ch) => u.profile.i + ((u.strikeFirst || f.strikeFirst) ? 20 : 0)
-    - ((u.strikeLast || f.strikeLast) ? 20 : 0) + (ch ? 1 : 0);
+    - ((u.strikeLast || f.strikeLast) ? 20 : 0) + (ch ? chargeI : 0);
   let mw = me.profile.w, fw = foe.profile.w;
   for (let round = 0; round < 6; round++) {
     const ch1 = round === 0 && cfg.myCharged, ch2 = round === 0 && cfg.foeCharged;
@@ -1520,7 +1522,7 @@ function ArmySelect({ value, onChange, accent }) {
 function MiniProfile({ unit }) {
   if (!unit) return null;
   const p = unit.profile; const L = statLabels();
-  const stats = [[L.ws,p.ws],[L.s,p.s],[L.t,p.t],[L.a,p.a],[L.sv,unit.save>=7?'—':unit.save+'+'],[L.ld,p.ld]];
+  const stats = [[L.ws,p.ws],[L.s,p.s],[L.t,p.t],[L.i,p.i],[L.a,p.a],[L.sv,unit.save>=7?'—':unit.save+'+'],[L.ld,p.ld]];
   return <div style={{display:'flex',gap:5,marginTop:8}}>
     {stats.map(([k,v])=><StatPill key={k} label={k} value={v} style={{flex:1,minWidth:0}}/>)}
   </div>;
@@ -2011,6 +2013,39 @@ function ChallengePanel({ myCands, foeCands, myCharged, foeCharged, accentMe, ac
       icon={<Icon name="plus" size={18}/>}>{tr('Add +','Ajouter +')}{Math.min(5,Math.round(r.avgOverkill))}{tr(' to your combat result',' à ton résultat de combat')}</Button>
   </Fragment>;
 }
+
+// Who strikes first: Initiative + strike-first/last rules + the charge bonus.
+function StrikeOrder({ myUnit, foeUnit, myCharged, foeCharged, chargeInit, accentMe, accentFoe }) {
+  if (!myUnit || !foeUnit) return null;
+  const info = (u, charged) => {
+    const fl = combatFlags(u);
+    const sf = !!(u.strikeFirst || fl.strikeFirst), sl = !!(u.strikeLast || fl.strikeLast);
+    const base = u.profile.i || 0;
+    return { sf, sl, base, eff: base + (charged ? (chargeInit || 0) : 0), charged };
+  };
+  const m = info(myUnit, myCharged), f = info(foeUnit, foeCharged);
+  const score = (x) => x.eff + (x.sf && !x.sl ? 1000 : 0) - (x.sl && !x.sf ? 1000 : 0);
+  const winner = score(m) === score(f) ? 'sim' : (score(m) > score(f) ? 'me' : 'foe');
+  const accent = winner === 'me' ? accentMe : winner === 'foe' ? accentFoe : 'var(--text-tertiary)';
+  const label = winner === 'sim' ? tr('Simultaneous', 'Simultané')
+    : winner === 'me' ? tr('You strike first', 'Tu frappes en premier') : tr('Enemy strikes first', 'L\'adversaire frappe en premier');
+  const reason = (x) => [x.sf && !x.sl ? tr('strikes first', 'frappe en premier') : null,
+    x.sl && !x.sf ? tr('strikes last', 'frappe en dernier') : null,
+    x.charged && chargeInit ? ('+' + chargeInit + ' ' + tr('charge', 'charge')) : null].filter(Boolean).join(' · ');
+  return <Card elevation={1} style={{padding:'var(--sp-3) var(--sp-4)',marginTop:6,borderLeft:`3px solid ${accent}`}}>
+    <div style={{display:'flex',alignItems:'center',gap:8}}>
+      <Icon name="swords" size={16} color={accent}/>
+      <span style={{flex:1,font:'700 var(--fs-sm)/1.1 var(--font-display)',color:accent}}>{label}</span></div>
+    <div style={{display:'flex',gap:10,marginTop:6}}>
+      {[['me',myUnit,m,accentMe],['foe',foeUnit,f,accentFoe]].map(([k,u,x,col])=>
+        <div key={k} style={{flex:1,minWidth:0}}>
+          <div style={{font:'600 var(--fs-xs)/1.2 var(--font-ui)',color:col,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{unitName(u)}</div>
+          <div style={{font:'600 var(--fs-sm)/1.2 var(--font-mono)',color:'var(--text-primary)'}}>I {x.eff}{x.eff!==x.base?(' ('+x.base+')'):''}</div>
+          {reason(x)&&<div style={{font:'400 10px/1.3 var(--font-ui)',color:'var(--text-tertiary)'}}>{reason(x)}</div>}
+        </div>)}
+    </div>
+  </Card>;
+}
 function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, onDeleteList, onSimulate }) {
   const [sheet, setSheet] = useState(null); // 'me' | 'foe' | null
   const set = (patch) => setSel(s => ({ ...s, ...patch }));
@@ -2145,11 +2180,14 @@ function CombatSelect({ game, setGame, sel, setSel, lists, onImport, onAddUnit, 
             <div style={{marginTop:4,font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-tertiary)'}}>
               {tr("Roll the shooting for real (BS −1), then enter the wounds: they remove attacks from the charger and add to the defender's result.",
                   'Lance le tir pour de vrai (CT −1), puis saisis les blessures : elles retirent des attaques au chargeur et s\'ajoutent au résultat du défenseur.')}</div></div>}
+        {sel.charger!=='none'&&<Stepper label={tr('Charge Initiative bonus (+1/inch, max +3 / +4 flank)','Bonus d\'Initiative de charge (+1/pouce, max +3 / +4 flanc)')}
+          value={sel.chargeInit} onChange={v=>set({chargeInit:v})} min={0} max={4}/>}
         <Card elevation={3} style={{padding:'2px var(--sp-3)'}}>
           <Switch label={tr('Counter-charge (defender also charges)','Contre-charge (le défenseur charge aussi)')} checked={sel.counterCharge} onChange={v=>set({counterCharge:v})}/>
           <div style={{height:1,background:'var(--border-subtle)'}}/>
           <Switch label={tr('Target already fleeing (overrun)','Cible déjà en fuite (débordement)')} checked={sel.fleeingTarget} onChange={v=>set({fleeingTarget:v})}/>
         </Card>
+        <StrikeOrder myUnit={myUnit} foeUnit={foeUnit} myCharged={myCharged} foeCharged={foeCharged} chargeInit={sel.chargeInit} accentMe={accentMe} accentFoe={accentFoe}/>
         {sel.charger!=='none'&&sel.reaction==='flee'&&
           <div style={{font:'400 var(--fs-xs)/1.4 var(--font-ui)',color:'var(--text-secondary)'}}>
             {tr('The defender tries to flee: the charge may fail. Tick « target already fleeing » to simulate the pursuit.',
@@ -3044,6 +3082,7 @@ const freshFactors = (charger, ranks) => ({
   mine: (armyUnits(DEFAULT_MY_ARMY)[0]||{}).id,    // my unit id  (factors live in `me`)
   theirs: (armyUnits(DEFAULT_FOE_ARMY)[0]||{}).id, // foe unit id (factors live in `foe` — keys must differ!)
   charger: 'me', counterCharge: false, reaction: 'hold', fleeingTarget: false, standShootKills: 0,
+  chargeInit: 1,   // Initiative bonus a charge grants this round (+1/inch, max +3 front / +4 flank-rear)
   myAttacks: 9, foeAttacks: 6,
   challenge: false,
   me:  { ranks: 3, banner: true,  warbanner: false, flankRear: 0, highGround: false, impact: 0, overkill: 0, unbreakable: false },
@@ -3429,7 +3468,7 @@ function App() {
     const cfg = {
       me:{ ...me, unbreakable: sel.me.unbreakable }, foe:{ ...foe, unbreakable: sel.foe.unbreakable },
       myAttacks, foeAttacks, myStatic, foeStatic, fleeingTarget: sel.fleeingTarget,
-      myCharged, foeCharged,
+      myCharged, foeCharged, chargeInit: sel.chargeInit,
     };
     setResult(monteCarlo(cfg));
     const mN = unitName(me), fN = unitName(foe);
