@@ -634,6 +634,7 @@ function combatFlags(u) {
     nurgleReroll6: has('daemon-of-nurgle'),                   // enemy attacking it must re-roll natural-6 To Hit
     beguilingAura: has('beguiling-aura', 'ghoulish-glamour'), // enemy must pass Ld or only natural 6s hit it
     defensiveStance: has('defensive-stance'),                 // if it did not charge: re-roll natural-1 armour saves
+    lanceFormation: has('lance-formation'),                   // on the charge: the 2nd rank also fights (Bretonnian Lance)
     stoicDefenders: has('stoic-defenders'),                   // when charged: +1 Initiative and +1 Attacks
     stoneSkeleton: has('stone-skeleton'),                     // Multiple Wounds against it: −1 wound (min 1)
     razorTusks:    has('razor-tusks'),                        // on the charge: hand-weapon AP −1
@@ -1955,7 +1956,7 @@ const RULE_LABELS = {
   strikeFirst:'Strikes first', strikeLast:'Strikes last', hatred:'Hatred · reroll to hit',
   frenzy:'Frenzy · +1 A', furiousCharge:'Furious Charge · +1 S charge', poisoned:'Poisoned · 6 = wound',
   killingBlow:'Killing Blow · ignore save', monsterSlayer:'Slayer · wound on 4+', regen:'Regeneration · 4+ ward', swiftstride:'Swiftstride',
-  impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds',
+  impactHits:'Impact Hits', stomp:'Stomp', multiWounds:'Multiple Wounds', lanceFormation:'Lance Formation · 2nd rank on the charge',
   fear:'Fear', terror:'Terror · may cause flee', unstable:'Unstable · crumble', immunePsych:'Immune to Psychology',
   stubborn:'Stubborn · ignore modifier', unbreakable:'Unbreakable', coldBlooded:'Cold-Blooded', flaming:'Flaming Attacks · negates Regen',
   magical:'Magical Attacks', ethereal:'Ethereal · hit only by magic',
@@ -1964,12 +1965,12 @@ const RULE_LABELS_FR = {
   strikeFirst:'Frappe en premier', strikeLast:'Frappe en dernier', hatred:'Haine · relance pour toucher',
   frenzy:'Frénésie · +1 A', furiousCharge:'Charge féroce · +1 F en charge', poisoned:'Empoisonné · 6 = blessure',
   killingBlow:'Coup fatal · ignore la save', monsterSlayer:'Tueur · blesse sur 4+', regen:'Régénération · save 4+', swiftstride:'Foulée rapide',
-  impactHits:'Touches d\'impact', stomp:'Piétinement', multiWounds:'Blessures multiples',
+  impactHits:'Touches d\'impact', stomp:'Piétinement', multiWounds:'Blessures multiples', lanceFormation:'Formation en Lance · 2e rang à la charge',
   fear:'Peur', terror:'Terreur · peut faire fuir', unstable:'Instable · effritement', immunePsych:'Immunité à la psychologie',
   stubborn:'Tenace · ignore le malus', unbreakable:'Indémoralisable', coldBlooded:'Sang-froid', flaming:'Attaques enflammées · annule Régén',
   magical:'Attaques magiques', ethereal:'Éthéré · touché seulement par la magie',
 };
-const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','poisoned','killingBlow','monsterSlayer','ap','magical','ethereal','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
+const ORDER_RULES = ['strikeFirst','strikeLast','hatred','frenzy','furiousCharge','lanceFormation','poisoned','killingBlow','monsterSlayer','ap','magical','ethereal','regen','multiWounds','impactHits','stomp','ward','swiftstride','coldBlooded','stubborn','unbreakable','unstable','immunePsych','fear','terror','flaming'];
 function ruleChipLabel(k, f) {
   if (k === 'ap')   return (LANG==='fr'?'Perce-armure −':'Armour Piercing −') + f.ap;
   if (k === 'ward') return (LANG==='fr'?'Save invul. ':'Ward ') + f.ward + '+';
@@ -3420,6 +3421,7 @@ function runEngineSelfTests() {
   ok(mwStone<mwBase,'Stone Skeleton reduces Multiple Wounds');
   ok(wardFromRules(['runes-of-warding'])===0,'Runes of Warding not a flat ward (flaming-only)');
   ok(wardFromRules(['blackshard-armour'])===0,'Blackshard Armour not a flat ward (flaming-only)');
+  ok(combatFlags({rules:['lance-formation']}).lanceFormation===true,'Lance Formation flag detected');
   // Random Attacks: dice A characteristic → rounded average + exact dice kept
   ok(profileFromRaw({A:'D6+1'}).a===5 && profileFromRaw({A:'D6+1'}).atkDice.die===6,'Random Attacks D6+1 → avg 5');
   ok(profileFromRaw({A:'D3'}).a===2,'Random Attacks D3 → avg 2');
@@ -3528,6 +3530,13 @@ function App() {
     let foeStatic = sideStatic(sel.foe, sel.me,  foeCharged);
     let myAttacks  = sel.myAttacks  + (myCharged  ? sel.me.impact  : 0);
     let foeAttacks = sel.foeAttacks + (foeCharged ? sel.foe.impact : 0);
+    // Lance Formation: on the charge the 2nd rank also fights. Add its attacks
+    // (front rank ≈ min(5,size); 2nd-rank models = min(frontWidth, size−frontWidth)).
+    const lanceBonus = (u, charged) => { if (!charged || !combatFlags(u).lanceFormation) return 0;
+      const fw = Math.min(5, u.size || 1), second = Math.max(0, Math.min(fw, (u.size || 1) - fw));
+      return second * (u.profile.a || 1); };
+    myAttacks  += lanceBonus(me, myCharged);
+    foeAttacks += lanceBonus(foe, foeCharged);
     // Stand & Shoot (charge reaction): the defender shoots the charger — the
     // wounds reduce the charger's attacks AND count toward the defender's CR.
     if (sel.charger!=='none' && sel.reaction==='standshoot' && sel.standShootKills>0) {
