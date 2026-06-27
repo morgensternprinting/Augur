@@ -1,4 +1,4 @@
-// Rule name translations (FR) — synced from TOW en 1 (RULE_FR). slug → nom français.
+// Rule name translations (FR) — synced from TOW en 1 (RULE_FR). slug -> nom français.
 window.RULE_FR = {
   "abyssal-howl":`Hurlement Abyssal`,
   "ambushers":`Embusqueurs`,
