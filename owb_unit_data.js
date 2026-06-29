@@ -6999,6 +6999,62 @@ const OWB_UNIT_DATA = {
       {name_fr: "Général", name_en: "General", points: 0}
     ]
   },
+  "bull-centaur-taurruk": {
+    id: "bull-centaur-taurruk",
+    army: "chaos-dwarfs",
+    category: "characters",
+    name_fr: "Taur'ruk Centaure-Taureau",
+    name_en: "Bull Centaur Taur'ruk",
+    points: 145,
+    specialRules: "Arme Perforante (1), Peau Blindée (1), Armure Sombréclat, Armes Ensorcelées, Peur, Première Charge, Touches d'Impact (D3+1), Solitaire, Ruée, Obstiné, Rapide",
+    opts: [
+      {name_fr: "Arme de Sombreforge", name_en: "Darkforged weapon", points: 10, active: false, perModel: true},
+      {name_fr: "Arme de base supplémentaire", name_en: "Additional hand weapon", points: 3, active: false, perModel: true},
+      {name_fr: "Arme lourde", name_en: "Great weapon", points: 4, active: false, perModel: true}
+    ],
+    equip: [
+      {name_fr: "Arme de base", name_en: "Hand weapon", points: 0, active: true, perModel: true}
+    ],
+    armor: [
+      {name_fr: "Armure lourde", name_en: "Heavy armour", points: 0, active: true},
+      {name_fr: "Bouclier", name_en: "Shield", points: 3, active: false}
+    ],
+    mounts: [],
+    magic: {items: [
+      {name_fr: "Objets Magiques", name_en: "Magic Items", types: ["weapon", "armor", "talisman", "enchanted-item"], maxPoints: 75}
+    ], lores: []},
+    command: [
+      {name_fr: "Général", name_en: "General", points: 0}
+    ]
+  },
+  "hobgoblin-wolf-riders": {
+    id: "hobgoblin-wolf-riders",
+    army: "chaos-dwarfs",
+    category: "rare",
+    name_fr: "Chevaucheurs de Loups Hobgobelins",
+    name_en: "Hobgoblin Wolf Riders",
+    points: 12,
+    specialRules: "Coup en Traître, Esquiveur, Cavalerie Rapide, Tir & Fuite, Conscrits, Ordre Lâche, Tirailleurs, Rapide",
+    opts: [
+      {name_fr: "Lances de cavalerie", name_en: "Cavalry spears", points: 0, active: false, perModel: true},
+      {name_fr: "Arcs courts", name_en: "Shortbows", points: 1, active: false, perModel: true},
+      {name_fr: "Fuite Simulée (0-1/1000)", name_en: "Feigned Flight (0-1 per 1000)", points: 2, active: false, perModel: true},
+      {name_fr: "Mouvement de Réserve (0-1/1000)", name_en: "Reserve Move (0-1 per 1000)", points: 1, active: false, perModel: true}
+    ],
+    equip: [
+      {name_fr: "Armes de base", name_en: "Hand weapons", points: 0, active: true, perModel: true}
+    ],
+    armor: [
+      {name_fr: "Armure légère, Bouclier", name_en: "Light armour, Shield", points: 0, active: true, perModel: true}
+    ],
+    mounts: [],
+    magic: null,
+    command: [
+      {name_fr: "Chef (champion)", name_en: "Boss (champion)", points: 8},
+      {name_fr: "Porte-étendard", name_en: "Standard bearer", points: 6},
+      {name_fr: "Musicien", name_en: "Musician", points: 6}
+    ]
+  },
   "infernal-seneschal": {
     id: "infernal-seneschal",
     army: "chaos-dwarfs",

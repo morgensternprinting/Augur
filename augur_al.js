@@ -340,30 +340,32 @@ const AUGUR_AL = {
   "chaos-dwarfs":{
     legacy:true,
     characters:[
-      {n:"Chaos Dwarf Sorcerer-Prophet",s:"chaos-dwarf-sorcerer-prophet"},
-      {n:"Chaos Dwarf Daemonsmith",s:"chaos-dwarf-daemonsmith"},
-      {n:"Chaos Dwarf Castellan",s:"chaos-dwarf-castellan"},
+      {n:"Sorcerer-Prophet",s:"chaos-dwarf-sorcerer-prophet"},
+      {n:"Daemonsmith Sorcerer",s:"chaos-dwarf-daemonsmith"},
       {n:"Infernal Castellan",s:"infernal-castellan"},
+      {n:"Infernal Seneschal",s:"infernal-seneschal"},
+      {n:"Bull Centaur Taur'ruk",s:"bull-centaur-taurruk"},
+      {n:"Hobgoblin Khan",s:"hobgoblin-khan"},
       {n:"Despot (Renegade)",s:"despot"},
     ],
     core:[
-      {n:"Chaos Dwarf Blunderbusses",s:"chaos-dwarf-blunderbusses"},
+      {n:"Infernal Guard",s:"infernal-guard"},
       {n:"Hobgoblin Cutthroats",s:"hobgoblin-cutthroats"},
       {n:"Chaos Dwarf Warriors (Renegade)",s:"chaos-dwarf-warriors-renegade"},
-      {n:"Blunderbuss Decimators (Renegade)",s:"blunderbuss-decimators"},
-      {n:"Infernal Guard",s:"infernal-guard"}
+      {n:"Blunderbuss Decimators (Renegade)",s:"blunderbuss-decimators"}
     ],
     special:[
-      {n:"Hobgoblin Wolf Raiders",s:"hobgoblin-wolf-raiders"},
-      {n:"Bull Centaurs",s:"bull-centaurs"},
-      {n:"Hobgoblin Bolt Thrower",s:"hobgoblin-bolt-thrower"},
-      {n:"Death Rocket",s:"death-rocket"},
-      {n:"Chaos Dwarf Warriors",s:"chaos-dwarf-warriors"},
+      {n:"Infernal Ironsworn",s:"chaos-dwarf-warriors"},
+      {n:"Sneaky Gits",s:"sneaky-gits"},
       {n:"K'daai Fireborn",s:"kdaai-fireborn"},
-      {n:"Iron Daemon War Engine",s:"iron-daemon-war-engine"},
-      {n:"Magma Cannon",s:"magma-cannon"}
+      {n:"Bull Centaur Renders",s:"bull-centaurs"},
+      {n:"Iron Daemon",s:"iron-daemon-war-engine"},
+      {n:"Deathshrieker Rocket Launcher",s:"death-rocket"},
+      {n:"Magma Cannon",s:"magma-cannon"},
+      {n:"Hobgoblin Bolt Thrower",s:"hobgoblin-bolt-thrower"}
     ],
     rare:[
+      {n:"Hobgoblin Wolf Riders",s:"hobgoblin-wolf-raiders"},
       {n:"Dreadquake Mortar",s:"dreadquake-mortar"},
     ],
     mercenaries:[
@@ -372,7 +374,7 @@ const AUGUR_AL = {
       {n:"Goblin Mob (O&G)",s:"goblin-mob"},
       {n:"Night Goblin Mob (O&G)",s:"night-goblin-mob"},
     ],
-    allies:[],
+    allies:["Warriors of Chaos"],
   },
   "daemons-of-chaos":{
     legacy:true,
