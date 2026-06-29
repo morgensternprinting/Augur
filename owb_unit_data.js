@@ -6517,7 +6517,11 @@ const OWB_UNIT_DATA = {
     name_en: "Hunter",
     points: 115,
     specialRules: "Arme Perforante (1), Peur, Touches d’Impact (1), Solitaire, Mouvement à Couvert, Charge Ogre, Courir avec la Meute",
-    opts: [],
+    opts: [
+      {name_fr: "Embusqueurs (à pied)", name_en: "Ambushers", points: 10},
+      {name_fr: "Éclaireurs (à pied)", name_en: "Scouts", points: 5},
+      {name_fr: "Avant-garde (à pied)", name_en: "Vanguard", points: 3}
+    ],
     equip: [
       {name_fr: "Arme de base", name_en: "Hand weapon", points: 0, active: true, equippedDefault: true, perModel: true},
       {name_fr: "Arme de base additionnelle", name_en: "Additional hand weapon", points: 4, active: false, perModel: true},
@@ -6568,7 +6572,9 @@ const OWB_UNIT_DATA = {
     name_en: "Ogre Bulls",
     points: 31,
     specialRules: "Arme Perforante (1), Ordre Serré, Peur, Touches d’Impact (1), Charge Ogre",
-    opts: [],
+    opts: [
+      {name_fr: "Gnoblar Longue-vue (Porte-étendard)", name_en: "Look-out Gnoblar (Standard bearer)", points: 5}
+    ],
     equip: [
       {name_fr: "Arme de base", name_en: "Hand weapon", points: 0, active: true, perModel: true},
       {name_fr: "Armes de base additionnelles", name_en: "Additional hand weapons", points: 3, active: false, perModel: true},
@@ -6716,7 +6722,8 @@ const OWB_UNIT_DATA = {
       {name_fr: "Armes lourdes", name_en: "Great weapons", points: 4},
       {name_fr: "Pistolets Ogres", name_en: "Ogre pistols", points: 6},
       {name_fr: "Paire de pistolets Ogres", name_en: "Brace of Ogre pistols", points: 12},
-      {name_fr: "Armure lourde", name_en: "Heavy armour", points: 3}
+      {name_fr: "Armure lourde", name_en: "Heavy armour", points: 3},
+      {name_fr: "Gnoblar Longue-vue (Porte-étendard)", name_en: "Look-out Gnoblar (Standard bearer)", points: 5}
     ],
     equip: [
       {name_fr: "Armes de base", name_en: "Hand weapons", points: 0, active: true, perModel: true}
@@ -6740,7 +6747,9 @@ const OWB_UNIT_DATA = {
     name_en: "Mournfang Cavalry",
     points: 64,
     specialRules: "Peau Blindée (1), Ordre Serré, Peur, Touches d’Impact (D3), Charge Férox, Rapide",
-    opts: [],
+    opts: [
+      {name_fr: "Paire de pistolets Ogres (Broyeur)", name_en: "Brace of Ogre pistols (Crusher)", points: 12}
+    ],
     equip: [
       {name_fr: "Arme de base, Défenses monstrueuses (Férox)", name_en: "Hand weapon, Monstrous tusks (Mournfang)", points: 0, active: true, equippedDefault: true, perModel: true},
       {name_fr: "Poing d’Acier", name_en: "Ironfist", points: 4, active: false, perModel: true},
