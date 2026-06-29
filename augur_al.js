@@ -621,6 +621,7 @@ const AUGUR_AL = {
   },
 };
 const AUGUR_ALIASES = {
+  'peasant-levy':'peasant-archers',
   'skeleton-warriors-vc':'skeleton-warriors',
   'sword-masters-of-hoeth':'swordmasters',
   'tuskgor-chariots':'tuskgor-chariots-',

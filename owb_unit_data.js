@@ -7665,6 +7665,31 @@ const OWB_UNIT_DATA = {
       {name_fr: "Général", name_en: "General", points: 0}
     ]
   },
+  "astromancer-lord": {
+    id:"astromancer-lord", army:"grand-cathay", category:"characters", name_fr:"Astromancien Suprême", name_en:"Supreme Astromancer", points:125,
+    specialRules:"Magical Attacks, Magic Resistance (-1), Mastery of the Elemental Winds",
+    opts:[{name_fr:"Domaine du Yang", name_en:"Lore of Yang", points:0, active:true},{name_fr:"Domaine du Yin", name_en:"Lore of Yin", points:0},{name_fr:"Sorcier", name_en:"Wizard", points:0, active:true},{name_fr:"Sorcier de niveau 4", name_en:"Level 4 Wizard", points:30}],
+    equip:[{name_fr:"Arme de base", name_en:"Hand weapon", points:0, active:true}], armor:[],
+    mounts:[{name_fr:"À Pied", name_en:"On foot", points:0, active:true},{name_fr:"Destrier Cathayen", name_en:"Cathayan Steed", points:16}],
+    magic:{items:[{name_fr:"Objets Magiques", name_en:"Magic Items", types:["weapon","talisman","enchanted-item","arcane-item"], maxPoints:100}], lores:["battle-magic","elementalism","high-magic","illusion"]},
+    command:[{name_fr:"Général", name_en:"General", points:0}]
+  },
+  "crane-gunners": {
+    id:"crane-gunners", army:"grand-cathay", category:"special", name_fr:"Équipes de Canons Grues", name_en:"Crane Gunner Teams", points:16, unitSize:"3-8",
+    specialRules:"Open Order",
+    opts:[{name_fr:"Embusqueurs (0-1/1000)", name_en:"Ambushers (0-1 per 1000)", points:1, perModel:true},{name_fr:"Mouvement de Réserve", name_en:"Reserve Move", points:2, perModel:true}],
+    equip:[{name_fr:"Armes de base, Canons grues, Pavois", name_en:"Hand weapons, Crane guns, Pavise", points:0, active:true}],
+    armor:[{name_fr:"Armure légère", name_en:"Light armour", points:0, active:true}], mounts:[], magic:null,
+    command:[]
+  },
+  "peasant-archers": {
+    id:"peasant-archers", army:"grand-cathay", category:"core", name_fr:"Levée Paysanne", name_en:"Peasant Levy", points:4, unitSize:"10+",
+    specialRules:"Close Order, Horde, Warband",
+    opts:[{name_fr:"Longues lances", name_en:"Longspears", points:0, perModel:true},{name_fr:"Arcs de guerre", name_en:"Warbows", points:0, perModel:true},{name_fr:"Tirailleurs (au lieu d'Ordre Serré)", name_en:"Skirmishers", points:0, perModel:true},{name_fr:"Embusqueurs (0-1/1000)", name_en:"Ambushers (0-1 per 1000)", points:1, perModel:true}],
+    equip:[{name_fr:"Armes de base", name_en:"Hand weapons", points:0, active:true}],
+    armor:[{name_fr:"Armure légère", name_en:"Light armour", points:1, active:false, perModel:true}], mounts:[], magic:null,
+    command:[{name_fr:"Doyen Paysan (champion)", name_en:"Peasant Elder (champion)", points:8},{name_fr:"Porte-étendard", name_en:"Standard bearer", points:5},{name_fr:"Musicien", name_en:"Musician", points:5}]
+  },
   "peasant-levy": {
     id: "peasant-levy",
     army: "grand-cathay",
