@@ -82,10 +82,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Foebreaker", pts:20, d:"S+1, -. Magical Attacks. On hit: enemy makes Toughness test or -1 WS and -1 Attacks until end of next Combat phase.", df:"F+1, -. Attaques Magiques. Toute figurine ennemie subissant au moins une blessure non sauvegardée fait un test d'Endurance ; échec : -1 en CC et -1 en Attaques (min 1) jusqu'à la fin de la prochaine phase de Combat."},
     ],
     "lizardmen": [
-      {n:"Blade of Revered Tzunki", pts:65, d:"S, AP-2. Attacks made with this weapon have the Killing Blow special rule.", df:"F, PA-2. Les attaques de cette arme ont la règle spéciale Coup Fatal."},
-      {n:"Scimitar of the Sun Resplendent", pts:50, d:"S+1, AP-1. The wielder and any unit they have joined gain the Hatred special rule.", df:"F+1, PA-1. Le porteur et toute unité qu'il a rejointe gagnent la règle spéciale Haine."},
-      {n:"Staff of the Lost Sun", pts:40, d:"S, -. The wielder can cast the Burning Head spell as a Bound Spell (Power Level 3).", df:"F, -. Le porteur peut lancer le sort Burning Head comme sort Lié (Niveau de Pouvoir 3)."},
-      {n:"Piranha Blade", pts:35, d:"S+1, AP-3. The wielder has the Armour Bane (D3) special rule.", df:"F+1, PA-3. Le porteur a la règle spéciale Arme Perforante (D3)."},
+      {n:"Blade of Revered Tzunki", pts:65, d:`Combat weapon: S+1, AP -, with Magical Attacks. Notes: no armour or Ward saves are permitted against wounds caused by this weapon (Regeneration saves can be attempted as normal).`, df:`Arme de Combat : F+1, PA -, avec Attaques Magiques. Notes : aucune sauvegarde d'armure ou Invulnérable n'est permise contre les blessures causées par cette arme (les sauvegardes de Régénération peuvent être tentées normalement).`},
+      {n:"Scimitar of the Sun Resplendent", pts:50, d:`Combat weapon: S, AP -1, with Extra Attacks (+D3), Flaming Attacks and Magical Attacks.`, df:`Arme de Combat : F, PA -1, avec Attaques Supplémentaires (+D3), Attaques Enflammées et Attaques Magiques.`},
+      {n:"Staff of the Lost Sun", pts:40, d:`Has two profiles. Ranged: 12", S 4, AP -3, Magical Attacks, Multiple Shots (3). Combat: S+1, AP -, Magical Attacks, Requires Two Hands. Notes: two profiles, representing use as both a combat and missile weapon.`, df:`Deux profils. Tir : 12", F4, PA -3, Attaques Magiques, Tirs Multiples (3). Combat : F+1, PA -, Attaques Magiques, Armes à Deux Mains. Notes : deux profils (tir et corps-à-corps).`},
+      {n:"Piranha Blade", pts:35, d:`Combat weapon: S, AP -1, with Magical Attacks and Multiple Wounds (2).`, df:`Arme de Combat : F, PA -1, avec Attaques Magiques et Blessures Multiples (2).`},
     ],
     "ogre-kingdoms": [
       {n:"Thundermace", pts:90, d:`Combat weapon: S+2, AP-2, with Armour Bane (1), Magical Attacks, Requires Two Hands, Strike Last. Notes: instead of attacking normally, the wielder may make a special "Thunderstrike" attack — make a single roll To Hit; if it hits, place a small (3") blast template centred on the hit unit and any enemy model whose base lies under it risks being hit.`, df:`Arme de Combat : F+2, PA-2, avec Arme Perforante (1), Attaques Magiques, Arme à Deux Mains, Frappe en Dernier. Notes : au lieu d'attaquer normalement, le porteur peut faire une attaque spéciale « Frappe-tonnerre » — un seul jet pour Toucher ; en cas de touche, placez le petit gabarit d'explosion (3") centré sur l'unité touchée, toute figurine ennemie dessous risque d'être touchée.`},
@@ -218,8 +218,8 @@ window.MAGIC_ITEMS_DB = {
       {n:"Ironspike Shield", pts:20, d:"Bretonnian Exiles only. Shield. Opponent rolls 1 To Hit or Wound in combat: suffers S3, AP-1 hit.", df:"Armée d'Infamie d'Exilés Bretonniens uniquement. Bouclier. Chaque 1 naturel obtenu par un adversaire à un jet pour toucher ou pour blesser contre le porteur en combat : il subit une touche de F3, PA-1."},
     ],
     "lizardmen": [
-      {n:"Shield of the Mirror Pool", pts:40, d:"Shield. 4+ Ward save vs enemy shooting attacks. Enemies suffer -1 To Hit with missile weapons.", df:"Bouclier. Sauvegarde Invulnérable 4+ contre les attaques de tir ennemies. Les ennemis subissent -1 pour toucher avec leurs armes de tir."},
-      {n:"Hide of the Cold Ones", pts:20, d:"Heavy armour. Wearer is immune to Fear and Terror.", df:"Armure lourde. Le porteur est immunisé à la Peur et à la Terreur."},
+      {n:"Shield of the Mirror Pool", pts:40, d:`This is a shield. In addition, each time the bearer loses one or more Wounds to a Magic Missile, the caster suffers a single Strength 5 hit with AP -2.`, df:`C'est un bouclier. De plus, chaque fois que le porteur perd un ou plusieurs PV à cause d'un Projectile Magique, le lanceur subit une touche de Force 5 avec PA -2.`},
+      {n:"Hide of the Cold Ones", pts:20, d:`May be worn with other armour. Improves the wearer's armour value by 1 (to a maximum of 2+). However, its wearer is also subject to Stupidity.`, df:`Peut être portée avec d'autres armures. Améliore la valeur d'armure du porteur de 1 (max 2+). Cependant, son porteur est soumis à la règle Stupidité.`},
     ],
     "ogre-kingdoms": [
       {n:"Gut Maw", pts:45, d:`The Gut Maw is a suit of heavy armour worn by its bearer. In addition, for each unsaved wound the wearer causes during a Challenge, they recover a single lost Wound.`, df:`La Plaque Ventrale de La Gueule est une armure lourde. De plus, pour chaque blessure non sauvegardée infligée lors d'un Défi, le porteur récupère un PV perdu.`},
@@ -316,8 +316,8 @@ window.MAGIC_ITEMS_DB = {
       {n:"Sirienne's Locket", pts:25, d:"Infantry/cavalry only. Immune to Multiple Wounds (X).", df:"Infanterie/cavalerie uniquement. Immunisé aux Blessures Multiples (X)."},
     ],
     "lizardmen": [
-      {n:"Glyph Necklace", pts:45, d:"5+ Ward save. Magic Resistance (-2).", df:"Sauvegarde Invulnérable 5+. Résistance à la Magie (-2)."},
-      {n:"Aura of Quetzl", pts:40, d:"4+ Ward save.", df:"Sauvegarde Invulnérable 4+."},
+      {n:"Glyph Necklace", pts:45, d:`The bearer has a 5+ Ward save against any wounds suffered and gains Magic Resistance (-2).`, df:`Le porteur a une Sauvegarde Invulnérable 5+ contre toutes les blessures subies et gagne Résistance à la Magie (-2).`},
+      {n:"Aura of Quetzl", pts:40, d:`Any enemy model that directs its attacks against the bearer during the Combat phase suffers a -1 modifier to its rolls To Hit.`, df:`Toute figurine ennemie qui dirige ses attaques contre le porteur pendant la phase de Combat subit un -1 à ses jets pour Toucher.`},
     ],
     "ogre-kingdoms": [
       {n:"Spangleshard", pts:35, d:`The Spangleshard gives its bearer a 4+ Ward save against any wounds suffered. However, if a natural 1 is rolled, the Spangleshard is destroyed and cannot be used again.`, df:`L'Éclat Scintillant donne à son porteur une Sauvegarde Invulnérable 4+ contre toutes les blessures subies. Cependant, si un 1 naturel est obtenu, l'Éclat Scintillant est détruit et ne peut plus être utilisé.`},
@@ -441,10 +441,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Banner of Chalons", pts:20, d:"Enemies cannot declare Stand & Shoot charge reaction against this unit.", df:"Les ennemis ne peuvent pas déclarer la réaction de charge Tenir sa Position et Tirer contre cette unité."},
     ],
     "lizardmen": [
-      {n:"Sun Standard of Chotec", pts:40, d:"Unit re-rolls rolls To Hit of natural 1 in the Shooting phase.", df:"L'unité relance les jets pour toucher de 1 naturel en phase de Tir."},
-      {n:"Skavenpelt Banner", pts:35, d:"Skaven models within 12\" must re-roll passed Ld tests.", df:"Les figurines skavens à moins de 12\" doivent relancer leurs tests de Cd réussis."},
-      {n:"Totem of Prophecy", pts:30, d:"Once per game: ignore a Panic test.", df:"Une fois par partie : ignorer un test de Panique."},
-      {n:"Jaguar Standard", pts:20, d:"Unit gains the Scouts and Vanguard special rules.", df:"L'unité gagne les règles spéciales Éclaireurs et Avant-garde."},
+      {n:"Sun Standard of Chotec", pts:40, d:`Enemy units cannot declare a Stand & Shoot charge reaction against a unit carrying it. In addition, any enemy model that targets the carrying unit during the Shooting phase suffers an additional -1 To Hit modifier.`, df:`Les unités ennemies ne peuvent pas déclarer « Tenir sa position & Tirer » en réaction à une charge contre l'unité porteuse. De plus, toute figurine ennemie ciblant cette unité en phase de Tir subit un -1 supplémentaire pour Toucher.`},
+      {n:"Skavenpelt Banner", pts:35, d:`A unit carrying it gains the Frenzy and Hatred (Skaven) special rules.`, df:`L'unité porteuse gagne les règles Frénésie et Haine (Skaven).`},
+      {n:"Totem of Prophecy", pts:30, d:`A unit carrying it gains the Fear special rule.`, df:`L'unité porteuse gagne la règle Peur.`},
+      {n:"Jaguar Standard", pts:20, d:`When a unit carrying it makes a Pursuit roll, it may roll an extra D6 and discard the lowest result.`, df:`Quand l'unité porteuse effectue un jet de Poursuite, elle peut lancer un D6 supplémentaire et défausser le résultat le plus bas.`},
     ],
     "ogre-kingdoms": [
       {n:"Dragonhide Banner", pts:45, d:`A unit carrying the Dragonhide Banner may re-roll any rolls To Hit of a natural 1. In addition, the unit has the Flaming Attacks special rule.`, df:`Une unité portant la Bannière en Peau de Dragon peut relancer tout jet pour Toucher de 1 naturel. De plus, l'unité a la règle Attaques Enflammées.`},
@@ -581,9 +581,9 @@ window.MAGIC_ITEMS_DB = {
       {n:"Gauntlet of the Duel", pts:5, d:"Challenges issued by bearer cannot be refused. Extremely Common.", df:"Les défis lancés par le porteur ne peuvent être refusés. Extrêmement Commun."},
     ],
     "lizardmen": [
-      {n:"Cloak of Feathers", pts:40, d:"Bearer gains Fly (10) and Swiftstride special rules.", df:"Le porteur gagne les règles spéciales Vol (10) et Rapide."},
-      {n:"Venom of the Firefly Frog", pts:15, d:"Single use. Applied to bearer's weapon: Poisoned Attacks and Flaming Attacks for the rest of the game.", df:"Usage unique. Appliqué à l'arme du porteur : Attaques Empoisonnées et Enflammées pour le restant de la partie."},
-      {n:"Horned One", pts:10, d:"Bearer has the Armoured Hide (1) special rule. Extremely Common.", df:"Le porteur a la règle spéciale Peau Blindée (1). Extrêmement Commun."},
+      {n:"Cloak of Feathers", pts:40, d:`Skink Heroes whose troop type is 'infantry' only. The wearer gains Fly (10) and Swiftstride.`, df:`Héros Skink de type « infanterie » uniquement. Le porteur gagne Vol (10) et Rapide.`},
+      {n:"Venom of the Firefly Frog", pts:15, d:`All attacks made during the Combat phase by the bearer have Poisoned Attacks and Flaming Attacks. Note: only applies to non-magical weapons and does not apply to a model's mount.`, df:`Toutes les attaques effectuées en phase de Combat par le porteur gagnent Attaques Empoisonnées et Attaques Enflammées. Note : ne s'applique qu'aux armes non magiques et pas à la monture.`},
+      {n:"Horned One", pts:10, d:`Extremely Common. May only be taken by a Saurus Hero mounted on a Cold One. The mount loses Stupidity and has a Movement characteristic of 8.`, df:`Extrêmement Commun. Uniquement pour un Héros Saurus monté sur un Sang-froid. La monture perd la règle Stupidité et a un Mouvement de 8.`},
     ],
     "ogre-kingdoms": [
       {n:"Jade Lion", pts:25, d:`The bearer of the Jade Lion and their unit may re-roll any failed Fear, Panic, Rally or Terror test.`, df:`Le porteur du Lion de Jade et son unité peuvent relancer tout test de Peur, Panique, Ralliement ou Terreur raté.`},
@@ -697,9 +697,9 @@ window.MAGIC_ITEMS_DB = {
       {n:"Flamestrike Wand", pts:15, d:"Bretonnian Exiles only. Single use. Cast Fireball (Battle Magic) as Bound Spell (PL 3).", df:"Armée d'Infamie d'Exilés Bretonniens uniquement. Usage unique. Lance Boule de Feu (Magie de Bataille) comme sort Lié (Niveau de Pouvoir 3)."},
     ],
     "lizardmen": [
-      {n:"Cupped Hands of the Old Ones", pts:55, d:"Single use. Re-roll any single dice in the game before it is resolved.", df:"Usage unique. Relancer un dé quelconque de la partie avant qu'il soit résolu."},
-      {n:"Cube of Darkness", pts:50, d:"Single use. Remove from play: dispel all spells currently in play including Remains in Play spells. Extremely Common.", df:"Usage unique. Retirer du jeu : dissipe tous les sorts en jeu, y compris les sorts Restent en Jeu. Extrêmement Commun."},
-      {n:"Itxi Grub", pts:30, d:"Single use. +D3 to next Casting roll. Extremely Common.", df:"Usage unique. +D3 au prochain jet de Lancement. Extrêmement Commun."},
+      {n:"Cupped Hands of the Old Ones", pts:55, d:`Should the bearer miscast a spell, roll a D6. On a 1, roll on the Miscast table as normal. On a 2+, instead nominate an enemy character; centre a 3" blast template over them; every model whose base lies underneath risks a single Strength 6 hit with AP -2.`, df:`Si le porteur provoque un Fiasco, lancez un D6. Sur 1 : jet normal sur le Tableau des Fiascos. Sur 2+ : désignez un personnage ennemi ; centrez un gabarit d'explosion de 3" sur lui ; chaque figurine dessous risque une touche de Force 6, PA -2.`},
+      {n:"Cube of Darkness", pts:50, d:`Extremely Common. Single use. A Wizard may use this instead of making a dispel attempt: the spell is automatically dispelled with no Dispel roll. In addition, all 'remains in play' spells currently in play are dispelled, including those cast by friendly Wizards.`, df:`Extrêmement Commun. Usage unique. Un Sorcier peut l'utiliser au lieu d'une tentative de dissipation : le sort est automatiquement dissipé sans jet. De plus, tous les sorts « restant en jeu » sont dissipés, y compris ceux de Sorciers amis.`},
+      {n:"Itxi Grub", pts:30, d:`Extremely Common. Single use. Before making a Casting roll, the bearer may attempt to consume an Itxi Grub by making a Toughness test. If passed, apply +3 to the Casting roll. If failed, the bearer immediately loses a single Wound.`, df:`Extrêmement Commun. Usage unique. Avant un jet de Lancement, le porteur peut tenter de consommer une Larve d'Itxi via un test d'Endurance. Réussi : +3 au jet de Lancement. Raté : il perd immédiatement un PV.`},
     ],
     "ogre-kingdoms": [
       {n:"Grut's Sickle", pts:40, d:`After making a Casting roll, the bearer may use Grut's Sickle to roll an additional D3 and add its result to their Casting roll. However, a single friendly model within 3" immediately loses a single Wound. Note: this additional D3 cannot cause a miscast or a perfect invocation.`, df:`Après un jet de Lancement de Sort, le porteur peut utiliser la Serpe de Grut pour lancer un D3 supplémentaire et ajouter son résultat à son jet. Cependant, une figurine amie dans les 3" perd immédiatement un PV. Note : ce D3 supplémentaire ne peut pas provoquer de fiasco ni d'invocation parfaite.`},
@@ -851,13 +851,13 @@ window.MAGIC_ITEMS_DB = {
       {n:"Prophetic Foresight", pts:0, d:"Chars +10pts, Units +10pts. Enemies deploying via Scouts cannot be within 18\" (vs 12\"). Ambushers cannot be within 12\" (vs 8\").", df:"Perso +10 pts, Unités +10 pts. Les ennemis se déployant via Éclaireurs ne peuvent être à moins de 18\" (au lieu de 12\"). Les Embusqueurs ne peuvent être à moins de 12\" (au lieu de 8\")."},
     ],
     "lizardmen-disciplines": [
-      {n:"Higher State of Mind", pts:60, d:"Slann only. Slann can re-roll any single dice per Magic phase.", df:"Slann uniquement. Le Slann peut relancer un dé par phase de Magie."},
-      {n:"Becalming Cogitation", pts:50, d:"Slann only. Once per game: automatically dispel one spell with no Dispel roll.", df:"Slann uniquement. Une fois par partie : dissipe automatiquement un sort sans jet de Dissipation."},
-      {n:"Wandering Deliberations", pts:40, d:"Slann only. Once per Magic phase: know any one spell from any lore as if it were the Slann's lore.", df:"Slann uniquement. Une fois par phase de Magie : connaît un sort de n'importe quel domaine comme s'il appartenait au domaine du Slann."},
-      {n:"Transcendent Healing", pts:35, d:"Slann only. Once per game: Slann recovers D3 Wounds.", df:"Slann uniquement. Une fois par partie : le Slann récupère D3 PV."},
-      {n:"Sorcerous Void", pts:30, d:"Slann only. Once per game: remove all Power and Dispel dice from both pools.", df:"Slann uniquement. Une fois par partie : retirer tous les dés de Pouvoir et de Dissipation des deux réserves."},
-      {n:"Harrowing Scrutiny", pts:20, d:"Slann only. Enemy Wizards within Dispel range must re-roll Casting rolls of a natural double 1 through 3.", df:"Slann uniquement. Les Sorciers ennemis à portée de Dissipation doivent relancer les jets de Lancement d'un double naturel de 1 à 3."},
-      {n:"Soul of Stone", pts:10, d:"Slann only. Slann does not scatter when casting a Magical Vortex.", df:"Slann uniquement. Le Slann ne dévie pas en lançant un Vortex Magique."},
+      {n:"Higher State of Mind", pts:60, d:`Slann only. The Slann gains the Ethereal special rule.`, df:`Slann uniquement. Le Slann gagne la règle Éthéré.`},
+      {n:"Becalming Cogitation", pts:50, d:`Slann only. Once per turn, the Slann may re-roll one of the D6 when making a Wizardly dispel attempt. In addition, increases their Dispel range by 3".`, df:`Slann uniquement. Une fois par tour, le Slann peut relancer un des D6 lors d'une tentative de Dissipation. De plus, augmente sa portée de Dissipation de 3".`},
+      {n:"Wandering Deliberations", pts:40, d:`Slann only. Instead of generating spells normally, the Slann knows four signature spells chosen from: Battle Magic, Daemonology, Dark Magic, Elementalism, High Magic, Illusion, Necromancy. May discard one in favour of a Lore of Lustria spell.`, df:`Slann uniquement. Au lieu de générer ses sorts normalement, le Slann connaît quatre sorts emblématiques choisis parmi : Magie de Bataille, Démonisme, Magie Noire, Élémentalisme, Haute Magie, Illusionnisme, Nécromancie. Peut en défausser un pour un sort du Domaine de Lustrie.`},
+      {n:"Transcendent Healing", pts:35, d:`Slann only. The Slann gains Regeneration (5+).`, df:`Slann uniquement. Le Slann gagne Régénération (5+).`},
+      {n:"Sorcerous Void", pts:30, d:`Slann only. The Slann gains Magic Resistance (-D3). Roll the D3 before armies are deployed.`, df:`Slann uniquement. Le Slann gagne Résistance à la Magie (-D3). Lancez le D3 avant le déploiement.`},
+      {n:"Harrowing Scrutiny", pts:20, d:`Slann only. The Slann gains the Terror special rule.`, df:`Slann uniquement. Le Slann gagne la règle Terreur.`},
+      {n:"Soul of Stone", pts:10, d:`Slann only. When rolling on the Miscast table, the Slann may modify the result by -1 (min 2) or +1 (max 12).`, df:`Slann uniquement. Lors d'un jet sur le Tableau des Fiascos, le Slann peut modifier le résultat de -1 (min 2) ou +1 (max 12).`},
     ],
     "ogre-kingdoms-bignames": [
       {n:"Mawseeker", pts:30, d:"Infantry only. This model (including their mount, if any) has +1 Toughness. However, this model is also subject to the Stupidity special rule.", df:"Figurine de type « infanterie » uniquement. Cette figurine (y compris sa monture, le cas échéant) gagne +1 Endurance. Cependant, elle est aussi soumise à la règle Stupidité."},

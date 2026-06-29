@@ -4298,8 +4298,8 @@ const OWB_UNIT_DATA = {
     magic: null,
     command: []
   },
-  "salamander-packs": {
-    id: "salamander-packs",
+  "salamander-pack": {
+    id: "salamander-pack",
     army: "lizardmen",
     category: "rare",
     name_fr: "Meute de Salamandres",
@@ -4320,8 +4320,8 @@ const OWB_UNIT_DATA = {
     magic: null,
     command: []
   },
-  "razordon-packs": {
-    id: "razordon-packs",
+  "razordon-pack": {
+    id: "razordon-pack",
     army: "lizardmen",
     category: "rare",
     name_fr: "Meute de Razordons",
