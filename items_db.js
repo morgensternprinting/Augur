@@ -418,7 +418,7 @@ window.MAGIC_ITEMS_DB = {
       {n:"Banner of Nagarythe", pts:65, d:"Unit gains Stubborn. +1 combat result point.", df:"L'unité gagne Obstiné. +1 point de résultat de combat."},
       {n:"Standard of Slaughter", pts:40, d:"On the turn it charged: +D3 combat result points.", df:"Au tour où elle a chargé : +D3 points de résultat de combat."},
       {n:"Banner of Har Ganeth", pts:25, d:"+1 AP on all combat weapons.", df:"+1 PA sur toutes les armes de combat."},
-      {n:"Cold-Blooded Banner", pts:20, d:"Single use. Roll extra D6 for any Ld test and discard highest.", df:"Usage unique. Lancer un D6 supplémentaire pour un test de Cd et écarter le plus haut."},
+      {n:"Cold-Blooded Banner", pts:20, d:"Single use. After making any test against its Leadership characteristic (including a Break test), the unit carrying this banner may re-roll the test.", df:"Usage unique. Après tout test de Commandement (y compris un test de Moral), l'unité portant cette bannière peut relancer ce test."},
     ],
     "high-elf-realms": [
       {n:"Banner of Resilience", pts:80, d:"+1 Toughness to all models in the unit.", df:"+1 Endurance pour toutes les figurines de l'unité."},
