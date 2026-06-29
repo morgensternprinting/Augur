@@ -6478,7 +6478,7 @@ const OWB_UNIT_DATA = {
     magic: {items: [
       {name_fr: "Objets Magiques", name_en: "Magic Items", types: ["enchanted-item", "talisman", "weapon", "arcane-item"], maxPoints: 100},
       {name_fr: "Grand Nom", name_en: "Big Name", types: ["big-name"], maxPoints: 0}
-    ], lores: ["battle-magic", "elementalism", "illusion"]},
+    ], lores: ["battle-magic", "elementalism", "illusion", "lore-of-the-great-maw"]},
     command: [
       {name_fr: "Général", name_en: "General", points: 0}
     ]
@@ -6504,7 +6504,7 @@ const OWB_UNIT_DATA = {
     magic: {items: [
       {name_fr: "Objets Magiques", name_en: "Magic Items", types: ["enchanted-item", "talisman", "weapon", "arcane-item"], maxPoints: 50},
       {name_fr: "Grand Nom", name_en: "Big Name", types: ["big-name"], maxPoints: 0}
-    ], lores: ["battle-magic", "elementalism", "illusion"]},
+    ], lores: ["battle-magic", "elementalism", "illusion", "lore-of-the-great-maw"]},
     command: [
       {name_fr: "Général", name_en: "General", points: 0}
     ]
