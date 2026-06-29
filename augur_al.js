@@ -503,7 +503,7 @@ const AUGUR_AL = {
       {n:"Maneaters",s:"maneaters"}
     ],
     rare:[
-      {n:"Stonehorn",s:"stonehorn"},{n:"Thundertusk",s:"thundertusk"},
+      {n:"Stonehorn",s:"stonehorn-riders"},{n:"Thundertusk",s:"thundertusk-riders"},
       {n:"Gorgers",s:"gorgers"},
       {n:"Giant",s:"giant"},
     ],
