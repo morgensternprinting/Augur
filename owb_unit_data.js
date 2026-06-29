@@ -1196,8 +1196,8 @@ const OWB_UNIT_DATA = {
     magic: null,
     command: []
   },
-  "cold-one-chariots": {
-    id: "cold-one-chariots",
+  "cold-one-chariot": {
+    id: "cold-one-chariot",
     army: "dark-elves",
     category: "special",
     name_fr: "Char à Sang-froid",
@@ -2379,8 +2379,8 @@ const OWB_UNIT_DATA = {
       {name_fr: "Musicien", name_en: "Musician", points: 6}
     ]
   },
-  "gor-herds": {
-    id: "gor-herds",
+  "gor-herd": {
+    id: "gor-herd",
     army: "beastmen-brayherds",
     category: "core",
     name_fr: "Harde de Gor",
@@ -3735,8 +3735,8 @@ const OWB_UNIT_DATA = {
       {name_fr: "Porteur de la Grande Bannière", name_en: "Battle Standard Bearer", points: 25, magic: {"types": ["banner"], "maxPoints": 0}}
     ]
   },
-  "saurus-warrior": {
-    id: "saurus-warrior",
+  "saurus-warriors": {
+    id: "saurus-warriors",
     army: "lizardmen",
     category: "core",
     name_fr: "Guerriers Saurus",
@@ -5467,8 +5467,8 @@ const OWB_UNIT_DATA = {
       {name_fr: "Général", name_en: "General", points: 0}
     ]
   },
-  "settra-the-imperishable-the-great-king-of-nehekhara": {
-    id: "settra-the-imperishable-the-great-king-of-nehekhara",
+  "settra-the-imperishable": {
+    id: "settra-the-imperishable",
     army: "tomb-kings-of-khemri",
     category: "characters",
     name_fr: "Settra l’Impérissable",
@@ -6931,8 +6931,8 @@ const OWB_UNIT_DATA = {
       {name_fr: "Musicien", name_en: "Musician", points: 6}
     ]
   },
-  "k'daai-fireborn": {
-    id: "k'daai-fireborn",
+  "kdaai-fireborn": {
+    id: "kdaai-fireborn",
     army: "chaos-dwarfs",
     category: "special",
     name_fr: "K’daai Rejetons de Feu",
