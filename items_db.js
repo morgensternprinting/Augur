@@ -222,7 +222,7 @@ window.MAGIC_ITEMS_DB = {
       {n:"Hide of the Cold Ones", pts:20, d:"Heavy armour. Wearer is immune to Fear and Terror.", df:"Armure lourde. Le porteur est immunisé à la Peur et à la Terreur."},
     ],
     "ogre-kingdoms": [
-      {n:"Gut Maw", pts:45, d:`The Gut Maw is a suit of heavy armour. In addition, for each unsaved wound the wearer causes during a Challenge, they recover a single lost Wound.`, df:`La Plaque Ventrale de La Gueule est une armure lourde. De plus, pour chaque blessure non sauvegardée infligée lors d'un Défi, le porteur récupère un PV perdu.`},
+      {n:"Gut Maw", pts:45, d:`The Gut Maw is a suit of heavy armour worn by its bearer. In addition, for each unsaved wound the wearer causes during a Challenge, they recover a single lost Wound.`, df:`La Plaque Ventrale de La Gueule est une armure lourde. De plus, pour chaque blessure non sauvegardée infligée lors d'un Défi, le porteur récupère un PV perdu.`},
       {n:"Mastodon Armour", pts:40, d:`The Mastodon Armour is a suit of full plate armour. In addition, its wearer has a 6+ Ward save against any wounds suffered.`, df:`L'Armure Mastodonte est une armure de plates complète. De plus, son porteur a une Sauvegarde Invulnérable 6+ contre toutes les blessures subies.`},
     ],
     "orc-and-goblin-tribes": [
@@ -449,7 +449,7 @@ window.MAGIC_ITEMS_DB = {
     "ogre-kingdoms": [
       {n:"Dragonhide Banner", pts:45, d:`A unit carrying the Dragonhide Banner may re-roll any rolls To Hit of a natural 1. In addition, the unit has the Flaming Attacks special rule.`, df:`Une unité portant la Bannière en Peau de Dragon peut relancer tout jet pour Toucher de 1 naturel. De plus, l'unité a la règle Attaques Enflammées.`},
       {n:"Rune Maw", pts:40, d:`When an enemy Wizard chooses a unit carrying the Rune Maw as the target of a spell, roll a D6. On a 3+, the controlling player must choose another target; if there is no other viable target in range, the spell cannot be cast.`, df:`Quand un Sorcier ennemi choisit l'unité portant la Rune de La Gueule comme cible d'un sort, lancez un D6. Sur 3+, le joueur doit choisir une autre cible ; s'il n'y a pas d'autre cible viable à portée, le sort ne peut être lancé.`},
-      {n:"Cannibal Totem", pts:30, d:`A unit carrying the Cannibal Totem gains Regeneration (5+), but rolls only a single D6 when making a Pursuit roll (rather than the usual 2D6).`, df:`Une unité portant le Totem Cannibale gagne Régénération (5+), mais ne lance qu'un seul D6 pour les jets de Poursuite (au lieu de 2D6).`},
+      {n:"Cannibal Totem", pts:30, d:`A unit carrying the Cannibal Totem gains Regeneration (5+) against any wounds, but rolls only a single D6 for Pursuit rolls (rather than the usual 2D6).`, df:`Une unité portant le Totem Cannibale gagne Régénération (5+), mais ne lance qu'un seul D6 pour les jets de Poursuite (au lieu de 2D6).`},
       {n:"Bull Standard", pts:20, d:`A unit carrying the Bull Standard may re-roll any failed rolls To Wound when resolving Impact Hits.`, df:`Une unité portant l'Étendard du Buffle peut relancer ses jets pour Blesser ratés lors de la résolution des Touches d'Impact.`},
     ],
     "orc-and-goblin-tribes": [
