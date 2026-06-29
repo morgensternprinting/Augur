@@ -1,4 +1,4 @@
-// Listes d'armee + aliases extraits de TOW en 1.
+// Listes d'armee + aliases synced verbatim from TOW en 1 (AL + SLUG_ALIASES).
 const AUGUR_AL = {
   "empire-of-man":{
     characters:[
@@ -32,16 +32,16 @@ const AUGUR_AL = {
       {n:"Demigryph Knights",s:"demigryph-knights"},
       {n:"Inner Circle Knights (0-1)",s:"inner-circle-knights"},
       {n:"Teutogen Guard (cond.)",s:"teutogen-guard"},
-      {n:"Empire Road Wardens (0-1)",s:"empire-road-wardens"},
       {n:"Great Cannon",s:"great-cannon"},
       {n:"Mortar",s:"mortar"},
+      {n:"Empire War Wagon (0-1)",s:"empire-war-wagon"}
     ],
     rare:[
       {n:"Flagellants",s:"flagellants"},
       {n:"Helblaster Volley Gun (0-1)",s:"helblaster-volley-gun"},
       {n:"Helstorm Rocket Battery (0-1)",s:"helstorm-rocket-battery"},
       {n:"Empire Steam Tank (0-1)",s:"empire-steam-tank"},
-      {n:"Empire War Wagon (0-1)",s:"empire-war-wagon"},
+      {n:"Empire Road Wardens (0-1)",s:"empire-road-wardens"}
     ],
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
@@ -60,16 +60,18 @@ const AUGUR_AL = {
     core:[
       {n:"Gor Herd",s:"gor-herd"},{n:"Ungor Herd",s:"ungor-herd"},
       {n:"Ungor Raiders",s:"ungor-raiders"},{n:"Tuskgor Chariots",s:"tuskgor-chariots"},
+      {n:"Razorgor Herd",s:"razorgor-herd"},
+      {n:"Warhounds of Chaos",s:"warhounds-of-chaos"}
     ],
     special:[
       {n:"Bestigors",s:"bestigors"},{n:"Minotaurs",s:"minotaurs"},
-      {n:"Chaos Ogres",s:"chaos-ogres"},{n:"Harpies",s:"harpies"},
-      {n:"Razorgor Herd",s:"razorgor-herd"},{n:"Razorgor Chariot",s:"razorgor-chariot"},
-      {n:"Warhounds of Chaos",s:"warhounds-of-chaos"},
+      {n:"Chaos Ogres",s:"chaos-ogres"},{n:"Harpies",s:"harpies"},{n:"Razorgor Chariot",s:"razorgor-chariot"},
+      {n:"Ghorgon",s:"ghorgon"},
+      {n:"Dragon Ogres",s:"dragon-ogres"}
     ],
     rare:[
       {n:"Chaos Trolls",s:"chaos-trolls"},{n:"Cygor",s:"cygor"},
-      {n:"Ghorgon",s:"ghorgon"},{n:"Dragon Ogres",s:"dragon-ogres"},
+      {n:"Dragon Ogre Shaggoth (0-1)",s:"dragon-ogre-shaggoth"},{n:"Chaos Giant",s:"chaos-giant"},
     ],
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
@@ -88,19 +90,20 @@ const AUGUR_AL = {
     core:[
       {n:"Dwarf Warriors",s:"dwarf-warriors"},{n:"Dwarf Longbeards",s:"dwarf-longbeards"},
       {n:"Dwarf Quarrellers",s:"dwarf-quarrellers"},{n:"Dwarf Thunderers",s:"dwarf-thunderers"},
-      {n:"Dwarf Rangers",s:"dwarf-rangers"},
     ],
     special:[
       {n:"Dwarf Ironbreakers",s:"dwarf-ironbreakers"},{n:"Dwarf Hammerers",s:"dwarf-hammerers"},
-      {n:"Dwarf Slayers",s:"dwarf-slayers"},{n:"Dwarf Miners",s:"dwarf-miners"},
-      {n:"Gyrobombers (0-1)",s:"gyrobombers"},{n:"Gyrocopters",s:"gyrocopters"},
+      {n:"Dwarf Slayers",s:"dwarf-slayers"},{n:"Dwarf Miners",s:"dwarf-miners"},{n:"Gyrocopters",s:"gyrocopters"},
       {n:"Dwarf Bolt Thrower",s:"dwarf-bolt-thrower"},
-      {n:"Dwarf Cannon",s:"dwarf-cannon"},{n:"Dwarf Organ Gun (0-1)",s:"dwarf-organ-gun"},
+      {n:"Dwarf Cannon",s:"dwarf-cannon"},
+      {n:"Dwarf Grudge Thrower",s:"dwarf-grudge-thrower"}
     ],
     rare:[
       {n:"Dwarf Irondrakes",s:"dwarf-irondrakes"},
       {n:"Dwarf Flame Cannon",s:"dwarf-flame-cannon"},
-      {n:"Dwarf Grudge Thrower",s:"dwarf-grudge-thrower"},
+      {n:"Dwarf Rangers",s:"dwarf-rangers"},
+      {n:"Gyrobombers (0-1)",s:"gyrobombers"},
+      {n:"Dwarf Organ Gun (0-1)",s:"dwarf-organ-gun"}
     ],
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
@@ -110,54 +113,57 @@ const AUGUR_AL = {
   },
   "grand-cathay":{
     characters:[
-      {n:"Dragon Blooded Shugengan Lord",s:"dragon-blooded-shugengan-lord"},
-      {n:"Celestial Dragon Emperor (0-1)",s:"celestial-dragon-emperor"},
-      {n:"Cathayan Dragon (0-1)",s:"cathayan-dragon"},
-      {n:"Jade Warrior Captain",s:"jade-warrior-captain"},
-      {n:"Wu Xing War Compass (0-1)",s:"wu-xing-war-compass"},
-      {n:"Astromancer Lord",s:"astromancer-lord"},
+      {n:"Miao Ying, the Storm Dragon (0-1)",s:"miao-ying"},
+      {n:"Cathayan Dragon (0-1 / 1000)",s:"cathayan-dragon"},
+      {n:"Shugengan Lord (0-1 / 1000 of a Lord)",s:"shugengan-lord"},
+      {n:"Gate Master (0-1 / 1000 of a Lord)",s:"gate-master"},
+      {n:"Lord Magistrate (0-1 / 1000 of a Lord)",s:"lord-magistrate"},
+      {n:"Supreme Astromancer (0-1 / 1000 of a Lord)",s:"astromancer-lord"},
+      {n:"Shugengan General",s:"shugengan-general"},
+      {n:"Gate Keeper",s:"gate-keeper"},
+      {n:"Strategist",s:"strategist"},
       {n:"Astromancer",s:"astromancer"},
-      {n:"Monkey King (0-1)",s:"monkey-king"},
     ],
     core:[
-      {n:"Jade Warriors",s:"jade-warriors"},{n:"Peasant Archers",s:"peasant-archers"},
-      {n:"Cathayan Cavalry",s:"cathayan-cavalry"},
-      {n:"Terracotta Sentinel",s:"terracotta-sentinel"},
+      {n:"Jade Warriors",s:"jade-warriors"},
+      {n:"Peasant Levy",s:"peasant-archers"},
+      {n:"Jade Lancers (0-1 as Core if General is a Gate Master/Keeper)",s:"jade-lancers"},
     ],
     special:[
-      {n:"Jade Lancers",s:"jade-lancers"},{n:"Dragon Guard",s:"dragon-guard"},
-      {n:"Sky Lantern (0-1)",s:"sky-lantern"},
-      {n:"Cathayan Celestial Dragon (0-1)",s:"cathayan-celestial-dragon"},
-      {n:"Grand Cannon",s:"grand-cannon"},
+      {n:"Jade Lancers",s:"jade-lancers"},
+      {n:"Crane Gunner Teams",s:"crane-gunners"},
       {n:"Iron Hail Gunners",s:"iron-hail-gunners"},
-      {n:"Crane Gunners",s:"crane-gunners"},
+      {n:"Fire Rain Rocket Battery (0-2 war machines / 1000)",s:"fire-rain-rocket-battery"},
+      {n:"Cathayan Grand Cannon (0-2 war machines / 1000)",s:"cathayan-grand-cannon"},
+      {n:"Cathayan Sentinel (0-1 Special if General is a Shugengan)",s:"cathayan-sentinel"},
+      {n:"Sky Lantern (0-1 Special if General is a Magistrate/Strategist)",s:"sky-lantern"},
     ],
     rare:[
-      {n:"Storm-Dragon Ogres (cond.)",s:"storm-dragon-ogres"},
-      {n:"Flying Boat (0-1)",s:"flying-boat"},
-      {n:"Fire Rain Rocket",s:"fire-rain-rocket"},
+      {n:"Sky Lanterns",s:"sky-lantern"},
+      {n:"Cathayan Sentinels",s:"cathayan-sentinel"},
     ],
-    mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"}],
-    allies:["Empire of Man","Dwarfen Mountain Holds","High Elf Realms"],
+    mercenaries:[],
+    allies:["Dwarfen Mountain Holds","Empire of Man","Kingdom of Bretonnia (Suspect)","Wood Elf Realms (Suspect)","High Elf Realms (Suspect)"],
   },
   "high-elf-realms":{
     characters:[
-      {n:"Prince",s:"prince"},{n:"Princess",s:"princess"},
-      {n:"Loremaster (0-1)",s:"loremaster"},{n:"Noble",s:"noble"},
+      {n:"Prince",s:"prince"},
+      {n:"Noble",s:"noble"},
       {n:"Archmage",s:"archmage"},{n:"Mage",s:"mage"},
-      {n:"Caradryan (0-1)",s:"caradryan"},
-      {n:"Tyrion (0-1)",s:"tyrion"},{n:"Teclis (0-1)",s:"teclis"},
+      
+      
       {n:"Korhil (0-1)",s:"korhil"},
     ],
     core:[
       {n:"Lothern Sea Guard",s:"lothern-sea-guard"},{n:"Spearmen",s:"spearmen"},
       {n:"Archers",s:"archers"},{n:"Ellyrian Reavers",s:"ellyrian-reavers"},
       {n:"Silver Helms",s:"silver-helms"},
+      {n:"White Lions of Chrace",s:"white-lions-of-chrace"},
+      {n:"Sisters of Avelorn",s:"sisters-of-avelorn"}
     ],
     special:[
       {n:"Sword Masters of Hoeth",s:"sword-masters-of-hoeth"},
       {n:"Shadow Warriors",s:"shadow-warriors"},
-      {n:"White Lions of Chrace",s:"white-lions-of-chrace"},
       {n:"Dragon Princes of Caledor",s:"dragon-princes-of-caledor"},
       {n:"Phoenix Guard",s:"phoenix-guard"},
       {n:"Bolt Thrower",s:"bolt-thrower"},
@@ -166,7 +172,6 @@ const AUGUR_AL = {
     ],
     rare:[
       {n:"Lothern Skycutters",s:"lothern-skycutters"},
-      {n:"Sisters of Avelorn",s:"sisters-of-avelorn"},
       {n:"Frostheart Phoenix (0-1)",s:"frostheart-phoenix"},
       {n:"Flamespyre Phoenix (0-1)",s:"flamespyre-phoenix"},
       {n:"Great Eagle",s:"great-eagle"},
@@ -189,13 +194,13 @@ const AUGUR_AL = {
     special:[
       {n:"Questing Knights",s:"questing-knights"},
       {n:"Pegasus Knights",s:"pegasus-knights"},
-      {n:"Trebuchet",s:"trebuchet"},
       {n:"Mounted Yeomen",s:"mounted-yeomen"},
-      {n:"Field Trebuchet",s:"field-trebuchet"},
+      {n:"Grail Reliquae",s:"grail-reliquae"}
     ],
     rare:[
       {n:"Grail Knights",s:"grail-knights"},
-      {n:"Grail Reliquae",s:"grail-reliquae"},
+      {n:"Trebuchet",s:"trebuchet"},
+      {n:"Field Trebuchet",s:"field-trebuchet"}
     ],
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
@@ -210,33 +215,33 @@ const AUGUR_AL = {
       {n:"Orc Shaman",s:"orc-shaman"},{n:"Night Goblin Shaman",s:"night-goblin-shaman"},
       {n:"Goblin Warboss",s:"goblin-warboss"},{n:"Goblin Big Boss",s:"goblin-big-boss"},
       {n:"Goblin Shaman",s:"goblin-shaman"},
-      {n:"Savage Orc Warboss",s:"savage-orc-warboss"},
-      {n:"Savage Orc Big Boss",s:"savage-orc-big-boss"},
+      
+      
     ],
     core:[
       {n:"Orc Boyz",s:"orc-boyz"},{n:"Orc Big Uns",s:"orc-big-uns"},
       {n:"Orc Arrer Boyz",s:"orc-arrer-boyz"},
-      {n:"Savage Orcs",s:"savage-orcs"},{n:"Night Goblins",s:"night-goblins"},
+      {n:"Night Goblins",s:"night-goblins"},
       {n:"Goblins",s:"goblins"},{n:"Forest Goblins",s:"forest-goblins"},
-      {n:"Wolf Riders",s:"wolf-riders"},{n:"Spider Riders",s:"spider-riders"},
-      {n:"Orc Boar Boyz",s:"orc-boar-boyz"},{n:"Orc Boar Chariots",s:"orc-boar-chariots"},
+      {n:"Wolf Riders",s:"wolf-riders"},{n:"Spider Riders",s:"spider-riders"},{n:"Orc Boar Chariots",s:"orc-boar-chariots"},
+      {n:"Black Orcs",s:"black-orcs"},
+      {n:"Squig Herd",s:"squig-herd"},
+      {n:"Snotlings",s:"snotlings"},
+      {n:"Troll Herd",s:"troll-herd"}
     ],
     special:[
-      {n:"Black Orcs",s:"black-orcs"},
-      {n:"Night Goblin Fanatics (cond.)",s:"night-goblin-fanatics"},
-      {n:"Squig Herd",s:"squig-herd"},{n:"Squig Hoppers",s:"squig-hoppers"},
+      {n:"Night Goblin Fanatics (cond.)",s:"night-goblin-fanatics"},{n:"Squig Hoppers",s:"squig-hoppers"},
       {n:"Goblin Wolf Chariots",s:"goblin-wolf-chariots"},
-      {n:"Savage Orc Boar Boyz",s:"savage-orc-boar-boyz"},
-      {n:"Doom Diver Catapult",s:"doom-diver-catapult"},
-      {n:"Rock Lobber",s:"rock-lobber"},
-      {n:"Snotlings",s:"snotlings"},{n:"Giant",s:"giant"},
-      {n:"Troll Herd",s:"troll-herd"},
+      {n:"Orc Boar Boyz",s:"orc-boar-boyz"},
+      {n:"Pump Wagon (cond.)",s:"pump-wagon"}
     ],
     rare:[
       {n:"Arachnarok Spider",s:"arachnarok-spider"},
       {n:"Mangler Squigs",s:"mangler-squigs"},
-      {n:"Pump Wagon (cond.)",s:"pump-wagon"},
       {n:"Nasty Skulkers (cond.)",s:"nasty-skulkers"},
+      {n:"Doom Diver Catapult",s:"doom-diver-catapult"},
+      {n:"Rock Lobber",s:"rock-lobber"},
+      {n:"Giant",s:"giant"}
     ],
     mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"}],
     allies:["Ogre Kingdoms"],
@@ -244,7 +249,7 @@ const AUGUR_AL = {
   "tomb-kings-of-khemri":{
     characters:[
       {n:"Tomb King",s:"tomb-king"},
-      {n:"Tomb King on Bone Dragon",s:"tomb-king-on-necrolith-bone-dragon"},
+      
       {n:"Liche Priest",s:"liche-priest"},{n:"Tomb Herald",s:"tomb-herald"},
       {n:"Settra the Imperishable (0-1)",s:"settra-the-imperishable"},
     ],
@@ -253,18 +258,20 @@ const AUGUR_AL = {
       {n:"Skeleton Archers",s:"skeleton-archers"},
       {n:"Skeleton Horsemen",s:"skeleton-horsemen"},
       {n:"Skeleton Horse Archers",s:"skeleton-horse-archers"},
+      {n:"Ushabti",s:"ushabti"},
+      {n:"Skeleton Chariots",s:"skeleton-chariots"}
     ],
     special:[
-      {n:"Tomb Guard",s:"tomb-guard"},{n:"Ushabti",s:"ushabti"},
+      {n:"Tomb Guard",s:"tomb-guard"},
       {n:"Necropolis Knights",s:"necropolis-knights"},
-      {n:"Skeleton Chariots",s:"skeleton-chariots"},
-      {n:"Screaming Skull Catapult",s:"screaming-skull-catapult"},
-      {n:"Casket of Souls (0-1)",s:"casket-of-souls"},
+      {n:"Bone Giant",s:"bone-giant"},
+      {n:"Necrosphinx",s:"necrosphinx"},
+      {n:"Khemrian Warsphinx",s:"khemrian-warsphinx"},
+      {n:"Carrion",s:"carrion"}
     ],
     rare:[
-      {n:"Bone Giant",s:"bone-giant"},{n:"Hierotitan",s:"hierotitan"},
-      {n:"Necrosphinx",s:"necrosphinx"},{n:"Khemrian Warsphinx",s:"khemrian-warsphinx"},
-      {n:"Carrion",s:"carrion"},
+      {n:"Screaming Skull Catapult",s:"screaming-skull-catapult"},
+      {n:"Casket of Souls (0-1)",s:"casket-of-souls"}
     ],
     mercenaries:[],
     allies:[],
@@ -282,20 +289,22 @@ const AUGUR_AL = {
       {n:"Chaos Marauder Horsemen",s:"chaos-marauder-horsemen"},
       {n:"Chaos Knights",s:"chaos-knights"},
       {n:"Chaos Warhounds",s:"chaos-warhounds"},
+      {n:"Chaos Chariot",s:"chaos-chariot"}
     ],
     special:[
-      {n:"Chaos Chosen",s:"chaos-chosen"},{n:"Chaos Trolls",s:"chaos-trolls"},
+      {n:"Chaos Chosen",s:"chaos-chosen"},
       {n:"Chaos Ogres",s:"chaos-ogres"},{n:"Dragon Ogres",s:"dragon-ogres"},
-      {n:"Chaos Chariot",s:"chaos-chariot"},{n:"Gorebeast Chariot",s:"gorebeast-chariot"},
-      {n:"Hellcannon",s:"hellcannon"},
     ],
     rare:[
       {n:"Dragon Ogre Shaggoth",s:"dragon-ogre-shaggoth"},
-      {n:"Chaos War Mammoth (0-1)",s:"chaos-war-mammoth"},
-      {n:"Skullcrushers of Khorne",s:"skullcrushers-of-khorne"},
+      {n:"Chaos Trolls",s:"chaos-trolls"},
+      {n:"Gorebeast Chariot",s:"gorebeast-chariot"},
+      {n:"Hellcannon",s:"hellcannon"}
     ],
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
+      {n:"Gor Herd (Beastmen)",s:"gor-herd"},
+      {n:"Ungor Herd (Beastmen)",s:"ungor-herd"},
     ],
     allies:["Beastmen Brayherds","Daemons of Chaos (Suspicious)"],
   },
@@ -305,23 +314,25 @@ const AUGUR_AL = {
       {n:"Spellweaver",s:"spellweaver"},{n:"Spellsinger",s:"spellsinger"},
       {n:"Shadowdancer",s:"shadowdancer"},{n:"Waystalker",s:"waystalker"},
       {n:"Orion King of the Hunt (0-1)",s:"orion-king-of-the-hunt"},
-      {n:"Drycha (0-1)",s:"drycha"},
+      
     ],
     core:[
       {n:"Glade Guard",s:"glade-guard"},{n:"Dryads",s:"dryads"},
       {n:"Glade Riders",s:"glade-riders"},
+      {n:"Eternal Guard",s:"eternal-guard"}
     ],
     special:[
-      {n:"Wardancers",s:"wardancers"},{n:"Waywatchers",s:"waywatchers"},
+      {n:"Wardancers",s:"wardancers"},
       {n:"Wildwood Rangers",s:"wildwood-rangers"},
       {n:"Tree Kin",s:"tree-kin"},{n:"Wild Riders",s:"wild-riders"},
       {n:"Deepwood Scouts",s:"deepwood-scouts"},
       {n:"Warhawk Riders",s:"warhawk-riders"},
-      {n:"Great Eagle",s:"great-eagle"},
     ],
     rare:[
       {n:"Treeman Ancient",s:"treeman-ancient"},
-      {n:"Treeman",s:"treeman"},{n:"Eternal Guard",s:"eternal-guard"},
+      {n:"Treeman",s:"treeman"},
+      {n:"Waywatchers",s:"waywatchers"},
+      {n:"Great Eagle",s:"great-eagle"}
     ],
     mercenaries:[],
     allies:["High Elf Realms","Empire of Man (Suspicious)"],
@@ -333,26 +344,34 @@ const AUGUR_AL = {
       {n:"Chaos Dwarf Daemonsmith",s:"chaos-dwarf-daemonsmith"},
       {n:"Chaos Dwarf Castellan",s:"chaos-dwarf-castellan"},
       {n:"Infernal Castellan",s:"infernal-castellan"},
+      {n:"Despot (Renegade)",s:"despot"},
     ],
     core:[
-      {n:"Chaos Dwarf Warriors",s:"chaos-dwarf-warriors"},
       {n:"Chaos Dwarf Blunderbusses",s:"chaos-dwarf-blunderbusses"},
       {n:"Hobgoblin Cutthroats",s:"hobgoblin-cutthroats"},
+      {n:"Chaos Dwarf Warriors (Renegade)",s:"chaos-dwarf-warriors-renegade"},
+      {n:"Blunderbuss Decimators (Renegade)",s:"blunderbuss-decimators"},
+      {n:"Infernal Guard",s:"infernal-guard"}
     ],
     special:[
-      {n:"Infernal Guard",s:"infernal-guard"},
       {n:"Hobgoblin Wolf Raiders",s:"hobgoblin-wolf-raiders"},
       {n:"Bull Centaurs",s:"bull-centaurs"},
       {n:"Hobgoblin Bolt Thrower",s:"hobgoblin-bolt-thrower"},
       {n:"Death Rocket",s:"death-rocket"},
-    ],
-    rare:[
+      {n:"Chaos Dwarf Warriors",s:"chaos-dwarf-warriors"},
       {n:"K'daai Fireborn",s:"kdaai-fireborn"},
       {n:"Iron Daemon War Engine",s:"iron-daemon-war-engine"},
-      {n:"Magma Cannon",s:"magma-cannon"},
+      {n:"Magma Cannon",s:"magma-cannon"}
+    ],
+    rare:[
       {n:"Dreadquake Mortar",s:"dreadquake-mortar"},
     ],
-    mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"}],
+    mercenaries:[
+      {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
+      {n:"Orc Mob (O&G)",s:"orc-mob"},
+      {n:"Goblin Mob (O&G)",s:"goblin-mob"},
+      {n:"Night Goblin Mob (O&G)",s:"night-goblin-mob"},
+    ],
     allies:[],
   },
   "daemons-of-chaos":{
@@ -370,23 +389,30 @@ const AUGUR_AL = {
     ],
     core:[
       {n:"Bloodletters of Khorne",s:"bloodletters-of-khorne"},
-      {n:"Horrors of Tzeentch",s:"horrors-of-tzeentch"},
       {n:"Plaguebearers of Nurgle",s:"plaguebearers-of-nurgle"},
       {n:"Daemonettes of Slaanesh",s:"daemonettes-of-slaanesh"},
+      {n:"Chaos Furies",s:"chaos-furies"},
+      {n:"Brimstone Horrors of Tzeentch",s:"brimstone-horrors-of-tzeentch"}
     ],
     special:[
       {n:"Flesh Hounds of Khorne",s:"flesh-hounds-of-khorne"},
       {n:"Flamers of Tzeentch",s:"flamers-of-tzeentch"},
       {n:"Beasts of Nurgle",s:"beasts-of-nurgle"},
       {n:"Fiends of Slaanesh",s:"fiends-of-slaanesh"},
-      {n:"Chaos Furies",s:"chaos-furies"},
       {n:"Seekers of Slaanesh",s:"seekers-of-slaanesh"},
       {n:"Screamers of Tzeentch",s:"screamers-of-tzeentch"},
+      {n:"Bloodcrushers of Khorne",s:"bloodcrushers-of-khorne"},
+      {n:"Nurglings",s:"nurglings"},
+      {n:"Blue Horrors of Tzeentch",s:"blue-horrors-of-tzeentch"},
+      {n:"Horrors of Tzeentch",s:"horrors-of-tzeentch"},
+      {n:"Exalted Flamers of Tzeentch",s:"exalted-flamers-of-tzeentch"},
+      {n:"Plague Drones of Nurgle",s:"plague-drones-of-nurgle"},
+      {n:"Hellflayer of Slaanesh",s:"hellflayer-of-slaanesh"}
     ],
     rare:[
       {n:"Skull Cannon of Khorne",s:"skull-cannon-of-khorne"},
       {n:"Soul Grinder",s:"soul-grinder"},
-      {n:"Exalted Flamers of Tzeentch",s:"exalted-flamers-of-tzeentch"},
+      {n:"Burning Chariot of Tzeentch",s:"burning-chariot-of-tzeentch"},
     ],
     mercenaries:[],
     allies:["Warriors of Chaos (Suspicious)","Beastmen Brayherds (Suspicious)"],
@@ -394,9 +420,10 @@ const AUGUR_AL = {
   "dark-elves":{
     legacy:true,
     characters:[
-      {n:"Dreadlord",s:"dreadlord"},{n:"Malekith (0-1)",s:"malekith"},
+      {n:"Dreadlord",s:"dreadlord"},
       {n:"Supreme Sorceress",s:"supreme-sorceress"},{n:"Sorceress",s:"sorceress"},
       {n:"Death Hag",s:"death-hag"},{n:"Master",s:"master"},
+      {n:"High Beastmaster",s:"high-beastmaster"},{n:"Khainite Assassin",s:"khainite-assassin"},
     ],
     core:[
       {n:"Dark Elf Warriors",s:"dark-elf-warriors"},
@@ -409,12 +436,17 @@ const AUGUR_AL = {
       {n:"Witch Elves",s:"witch-elves"},
       {n:"Executioners",s:"executioners"},
       {n:"Cold One Chariot",s:"cold-one-chariot"},
-      {n:"Reaper Bolt Thrower",s:"reaper-bolt-thrower"},
+      {n:"Shades",s:"shades"},
+      {n:"Harpies",s:"harpies"},
     ],
     rare:[
       {n:"War Hydra",s:"war-hydra"},
       {n:"Bloodwrack Shrine",s:"bloodwrack-shrine"},
-      {n:"Shades",s:"shades"},
+      {n:"Sisters of Slaughter",s:"sisters-of-slaughter"},
+      {n:"Kharibdyss",s:"kharibdyss"},
+      {n:"Bloodwrack Medusa",s:"bloodwrack-medusa"},
+      {n:"Doomfire Warlocks",s:"doomfire-warlocks"},
+      {n:"Reaper Bolt Thrower",s:"reaper-bolt-thrower"}
     ],
     mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"}],
     allies:[],
@@ -431,6 +463,7 @@ const AUGUR_AL = {
     core:[
       {n:"Saurus Warriors",s:"saurus-warriors"},
       {n:"Skinks",s:"skinks"},{n:"Skink Cohort",s:"skink-cohort"},
+      {n:"Jungle Swarms",s:"jungle-swarms"},
     ],
     special:[
       {n:"Temple Guard",s:"temple-guard"},
@@ -438,13 +471,14 @@ const AUGUR_AL = {
       {n:"Kroxigors",s:"kroxigors"},
       {n:"Chameleon Skinks",s:"chameleon-skinks"},
       {n:"Terradons",s:"terradons"},
+      {n:"Ripperdactyl Riders",s:"ripperdactyl-riders"},
       {n:"Salamander Hunting Pack",s:"salamander-hunting-pack"},
       {n:"Razordon Hunting Pack",s:"razordon-hunting-pack"},
       {n:"Stegadon",s:"stegadon"},
+      {n:"Bastiladon",s:"bastiladon"}
     ],
     rare:[
-      {n:"Ancient Stegadon",s:"ancient-stegadon"},
-      {n:"Bastiladon",s:"bastiladon"},{n:"Troglodon",s:"troglodon"},
+      {n:"Ancient Stegadon",s:"ancient-stegadon"},{n:"Troglodon",s:"troglodon"},
     ],
     mercenaries:[],allies:[],
   },
@@ -453,46 +487,51 @@ const AUGUR_AL = {
     characters:[
       {n:"Tyrant",s:"tyrant"},{n:"Bruiser",s:"bruiser"},
       {n:"Butcher",s:"butcher"},{n:"Slaughtermaster",s:"slaughtermaster"},
-      {n:"Firebelly",s:"firebelly"},
+      {n:"Firebelly",s:"firebelly"},{n:"Hunter",s:"hunter"},
     ],
     core:[
       {n:"Ogre Bulls",s:"ogre-bulls"},{n:"Ironguts",s:"ironguts"},
       {n:"Gnoblars",s:"gnoblars"},
+      {n:"Sabretusk Pack",s:"sabretusk-pack"},{n:"Gnoblar Trappers",s:"gnoblar-trappers"},
     ],
     special:[
       {n:"Leadbelchers",s:"leadbelchers"},{n:"Mournfang Cavalry",s:"mournfang-cavalry"},
       {n:"Yhettis (cond.)",s:"yhettis"},
       {n:"Ironblaster",s:"ironblaster"},{n:"Scraplauncher",s:"scraplauncher"},
+      {n:"Maneaters",s:"maneaters"}
     ],
     rare:[
       {n:"Stonehorn",s:"stonehorn"},{n:"Thundertusk",s:"thundertusk"},
-      {n:"Gorgers",s:"gorgers"},{n:"Maneaters",s:"maneaters"},
+      {n:"Gorgers",s:"gorgers"},
+      {n:"Giant",s:"giant"},
     ],
     mercenaries:[],allies:["Orc & Goblin Tribes"],
   },
   "skaven":{
     legacy:true,
     characters:[
-      {n:"Grey Seer",s:"grey-seer"},{n:"Vermin Lord",s:"vermin-lord"},
+      {n:"Grey Seer",s:"grey-seer"},
       {n:"Warlord",s:"warlord"},{n:"Chieftain",s:"chieftain"},
       {n:"Master Moulder",s:"master-moulder"},{n:"Warlock Engineer",s:"warlock-engineer"},
       {n:"Plague Priest",s:"plague-priest"},
+      {n:"Master Assassin",s:"master-assassin"},
     ],
     core:[
       {n:"Skaven Clanrats",s:"skaven-clanrats"},
-      {n:"Skaven Stormvermin",s:"skaven-stormvermin"},
-      {n:"Skaven Slaves",s:"skaven-slaves"},
+
       {n:"Giant Rats",s:"giant-rats"},
+      {n:"Skaven Dregs",s:"skaven-dregs"},
+      {n:"Rat Swarms",s:"rat-swarms"},
+      {n:"Night Runners",s:"night-runners"},
+      {n:"Warp-Grinder Weapon Team",s:"warp-grinder-weapon-team"}
     ],
     special:[
       {n:"Plague Monks",s:"plague-monks"},
-      {n:"Night Runners",s:"night-runners"},
       {n:"Gutter Runners",s:"gutter-runners"},
       {n:"Rat Ogres",s:"rat-ogres"},
       {n:"Poisoned Wind Mortars",s:"poisoned-wind-mortars"},
       {n:"Warplock Jezzails",s:"warplock-jezzails"},
-      {n:"Plague Censor Bearers",s:"plague-censor-bearers"},
-      {n:"Warp-Grinder Weapon Team",s:"warp-grinder-weapon-team"},
+      {n:"Skaven Stormvermin",s:"skaven-stormvermin"}
     ],
     rare:[
       {n:"Plague Furnace (0-1)",s:"plague-furnace"},
@@ -500,13 +539,15 @@ const AUGUR_AL = {
       {n:"Doomwheel",s:"doomwheel"},
       {n:"Warp Lightning Cannon",s:"warp-lightning-cannon"},
       {n:"Hell Pit Abomination (0-1)",s:"hell-pit-abomination"},
+      {n:"Plagueclaw Catapult",s:"plagueclaw-catapult"},
+      {n:"Plague Censor Bearers",s:"plague-censor-bearers"}
     ],
     mercenaries:[],allies:[],
   },
   "vampire-counts":{
     legacy:true,
     characters:[
-      {n:"Vampire Lord",s:"vampire-lord"},
+      
       {n:"Strigoi Ghoul King",s:"strigoi-ghoul-king"},
       {n:"Necromancer",s:"necromancer"},
       {n:"Vampire",s:"vampire"},{n:"Wight King",s:"wight-king"},
@@ -517,17 +558,17 @@ const AUGUR_AL = {
       {n:"Dire Wolves",s:"dire-wolves"},{n:"Bats",s:"bats"},
     ],
     special:[
-      {n:"Grave Guard",s:"grave-guard"},{n:"Black Knights",s:"black-knights"},
-      {n:"Hexwraiths",s:"hexwraiths"},{n:"Spirit Hosts",s:"spirit-hosts"},
-      {n:"Cairn Wraiths",s:"cairn-wraiths"},
-      {n:"Vargheists",s:"vargheists"},{n:"Corpse Cart",s:"corpse-cart"},
+      {n:"Grave Guard",s:"grave-guard"},{n:"Black Knights",s:"black-knights"},{n:"Spirit Hosts",s:"spirit-hosts"},
+      {n:"Cairn Wraiths",s:"cairn-wraiths"},{n:"Corpse Cart",s:"corpse-cart"},
+      {n:"Terrorgheist (0-1)",s:"terrorgheist"}
     ],
     rare:[
       {n:"Blood Knights",s:"blood-knights"},
-      {n:"Terrorgheist (0-1)",s:"terrorgheist"},
       {n:"Varghulf",s:"varghulf"},
       {n:"Black Coach (0-1)",s:"black-coach"},
       {n:"Mortis Engine (0-1)",s:"mortis-engine"},
+      {n:"Hexwraiths",s:"hexwraiths"},
+      {n:"Vargheists",s:"vargheists"}
     ],
     mercenaries:[],allies:[],
   },
@@ -569,39 +610,18 @@ const AUGUR_AL = {
     core:[
       {n:"Prince Ulther's Dragon Company",s:"prince-ulthers-dragon-company"},
       {n:"Bugman's Rangers",s:"bugmans-rangers"},
-      {n:"Doomseekers",s:"doomseeker"},
     ],
     special:[
       {n:"Golgfag's Mercenary Ogres",s:"golgfags-mercenary-ogres"},
+      {n:"Doomseekers",s:"doomseeker"}
     ],
     rare:[],mercenaries:[],allies:[],
   },
 };
 const AUGUR_ALIASES = {
-  'badlands-ogre-bulls':'badland-ogre-bulls',
-  'bloodwrack-shrine':'bloodwrack-shrines',
-  'empire-war-wagon':'war-wagon',
-  'frostheart-phoenix':'frostheart-phoenix-',
-  'helstorm-rocket-battery':'helstrom-rocket-battery',
-  'kdaai-fireborn':"k'daai-fireborn",
-  'prince-ulthers-dragon-company':"prince-ulther's-dragon-company",
-  'razorgor-chariot':'razergor-chariot',
-  'razorgor-herd':'razorgor-herds',
-  'reaper-bolt-thrower':'reaper-bolt-throwers',
-  'sisters-of-avelorn':'sister-of-avelorn',
   'skeleton-warriors-vc':'skeleton-warriors',
   'sword-masters-of-hoeth':'swordmasters',
-  'tree-kin':'treekin',
   'tuskgor-chariots':'tuskgor-chariots-',
-  'white-lions-of-chrace':'white-lions',
-  'gor-herd':'gor-herds',
-  'chaos-warhounds':'warhounds',
-  'tomb-guard':'tomb-guard-core',
-  'deepwood-scouts':'deepwood-scouts-core',
-  'seekers-of-slaanesh':'seekers-of-slaanesh-core',
-  'cold-one-chariot':'cold-one-chariots',
-  'saurus-warriors':'saurus-warrior',
-  'settra-the-imperishable':'settra-the-imperishable-the-great-king-of-nehekhara',
   'supreme-astromancer':'astromancer-lord',
   'crane-gunner-teams':'crane-gunners',
   'archers':'elven-archers',
@@ -748,8 +768,6 @@ const AUGUR_ALIASES = {
 
 };
 const augurResolveSlug = s => (AUGUR_ALIASES[s] || s);
-
-// Variantes Infamie / Renegade extraites de TOW en 1.
 const AUGUR_INFAMY = {
   'tomb-kings-of-khemri': { lists: [
     { key:'nehekharan-royal-host', name:'Nehekharan Royal Host',
