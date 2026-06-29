@@ -88,10 +88,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Piranha Blade", pts:35, d:"S+1, AP-3. The wielder has the Armour Bane (D3) special rule.", df:"F+1, PA-3. Le porteur a la règle spéciale Arme Perforante (D3)."},
     ],
     "ogre-kingdoms": [
-      {n:"Thundermace", pts:90, d:"S+4, AP-4. The wielder has the Killing Blow special rule.", df:"F+4, PA-4. Le porteur a la règle spéciale Coup Fatal."},
-      {n:"Tenderiser", pts:70, d:"S+2, AP-3. The wielder has the Multiple Wounds (D3) special rule.", df:"F+2, PA-3. Le porteur a la règle spéciale Blessures Multiples (D3)."},
-      {n:"Skullplucker", pts:45, d:"S, AP-2. The wielder has a +2 modifier to their Attacks characteristic.", df:"F, PA-2. Le porteur a un modificateur de +2 à sa caractéristique d'Attaques."},
-      {n:"Bloodcleaver", pts:30, d:"S+2, AP-2. Each unsaved wound inflicted restores 1 lost Wound to the wielder.", df:"F+2, PA-2. Chaque blessure non sauvegardée infligée restaure 1 PV perdu au porteur."},
+      {n:"Thundermace", pts:90, d:`Combat weapon: S+2, AP-2, with Armour Bane (1), Magical Attacks, Requires Two Hands, Strike Last. Notes: instead of attacking normally, the wielder may make a special "Thunderstrike" attack — make a single roll To Hit; if it hits, place a small (3") blast template centred on the hit unit and any enemy model whose base lies under it risks being hit.`, df:`Arme de Combat : F+2, PA-2, avec Arme Perforante (1), Attaques Magiques, Arme à Deux Mains, Frappe en Dernier. Notes : au lieu d'attaquer normalement, le porteur peut faire une attaque spéciale « Frappe-tonnerre » — un seul jet pour Toucher ; en cas de touche, placez le petit gabarit d'explosion (3") centré sur l'unité touchée, toute figurine ennemie dessous risque d'être touchée.`},
+      {n:"Tenderiser", pts:70, d:`Combat weapon: S+2, AP-3, with Extra Attacks (+1), Magical Attacks, Multiple Wounds (D3), Strike Last.`, df:`Arme de Combat : F+2, PA-3, avec Attaques Supplémentaires (+1), Attaques Magiques, Blessures Multiples (D3), Frappe en Dernier.`},
+      {n:"Skullplucker", pts:45, d:`Combat weapon: S, AP-, with Killing Blow, Magical Attacks, Strike First.`, df:`Arme de Combat : F, PA-, avec Coup Fatal, Attaques Magiques, Frappe en Premier.`},
+      {n:"Bloodcleaver", pts:30, d:`Combat weapon: S, AP-1, with Magical Attacks. Notes: Emissaries of the Great Maw only. If the wielder causes one or more unsaved wounds during the Combat phase, they recover a single lost Wound.`, df:`Arme de Combat : F, PA-1, avec Attaques Magiques. Notes : Émissaires de La Gueule uniquement. Si le porteur inflige une ou plusieurs blessures non sauvegardées en phase de Combat, il récupère un PV perdu.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Battleaxe of the Last Big Waaagh!", pts:75, d:"S+3, AP-3. The wielder has the Heroic Killing Blow special rule.", df:"F+3, PA-3. Le porteur a la règle spéciale Coup Fatal Héroïque."},
@@ -222,8 +222,8 @@ window.MAGIC_ITEMS_DB = {
       {n:"Hide of the Cold Ones", pts:20, d:"Heavy armour. Wearer is immune to Fear and Terror.", df:"Armure lourde. Le porteur est immunisé à la Peur et à la Terreur."},
     ],
     "ogre-kingdoms": [
-      {n:"Gut Maw", pts:45, d:"Heavy armour. When bearer wins a combat, enemy unit in base contact must pass a Panic test.", df:"Armure lourde. Quand le porteur gagne un combat, l'unité ennemie au contact socle à socle fait un test de Panique."},
-      {n:"Mastodon Armour", pts:40, d:"Full plate armour. Wearer has the Armoured Hide (2) special rule.", df:"Armure de plate complète. Le porteur a la règle spéciale Peau Blindée (2)."},
+      {n:"Gut Maw", pts:45, d:`The Gut Maw is a suit of heavy armour. In addition, for each unsaved wound the wearer causes during a Challenge, they recover a single lost Wound.`, df:`La Plaque Ventrale de La Gueule est une armure lourde. De plus, pour chaque blessure non sauvegardée infligée lors d'un Défi, le porteur récupère un PV perdu.`},
+      {n:"Mastodon Armour", pts:40, d:`The Mastodon Armour is a suit of full plate armour. In addition, its wearer has a 6+ Ward save against any wounds suffered.`, df:`L'Armure Mastodonte est une armure de plates complète. De plus, son porteur a une Sauvegarde Invulnérable 6+ contre toutes les blessures subies.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Trollhide Trousers", pts:40, d:"Full plate armour. Wearer has the Regeneration (5+) special rule. Extremely Common.", df:"Armure de plate complète. Le porteur a la règle spéciale Régénération (5+). Extrêmement Commun."},
@@ -320,8 +320,8 @@ window.MAGIC_ITEMS_DB = {
       {n:"Aura of Quetzl", pts:40, d:"4+ Ward save.", df:"Sauvegarde Invulnérable 4+."},
     ],
     "ogre-kingdoms": [
-      {n:"Spangleshard", pts:35, d:"5+ Ward save. Once per game, may be used to re-roll a single dice.", df:"Sauvegarde Invulnérable 5+. Une fois par partie : relancer un dé."},
-      {n:"Cathayan Jet Pendant", pts:10, d:"Magic Resistance (-1). Extremely Common.", df:"Résistance à la Magie (-1). Extrêmement Commun."},
+      {n:"Spangleshard", pts:35, d:`The Spangleshard gives its bearer a 4+ Ward save against any wounds suffered. However, if a natural 1 is rolled, the Spangleshard is destroyed and cannot be used again.`, df:`L'Éclat Scintillant donne à son porteur une Sauvegarde Invulnérable 4+ contre toutes les blessures subies. Cependant, si un 1 naturel est obtenu, l'Éclat Scintillant est détruit et ne peut plus être utilisé.`},
+      {n:"Cathayan Jet Pendant", pts:10, d:`Extremely Common. Gives its bearer a 6+ Ward save against any wounds suffered that were caused by a Magic Missile, a Magical Vortex, or an Assailment spell.`, df:`Extrêmement Commun. Donne à son porteur une Sauvegarde Invulnérable 6+ contre toutes les blessures causées par un Projectile Magique, un Vortex Magique ou un sort d'Assaillement.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Sparkly Wizard Finda", pts:45, d:"Magic Resistance (-3). Once per Magic phase, may steal a Power or Dispel dice from the opponent.", df:"Résistance à la Magie (-3). Une fois par phase de Magie : voler un dé de Pouvoir ou de Dissipation à l'adversaire."},
@@ -447,10 +447,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Jaguar Standard", pts:20, d:"Unit gains the Scouts and Vanguard special rules.", df:"L'unité gagne les règles spéciales Éclaireurs et Avant-garde."},
     ],
     "ogre-kingdoms": [
-      {n:"Dragonhide Banner", pts:45, d:"Unit gains Magic Resistance (-2). 5+ Ward save vs Flaming Attacks.", df:"L'unité gagne Résistance à la Magie (-2). Sauvegarde Invulnérable 5+ contre les Attaques Enflammées."},
-      {n:"Rune Maw", pts:40, d:"Once per Magic phase: steal one Power dice from the enemy pool.", df:"Une fois par phase de Magie : voler un dé de Pouvoir à la réserve ennemie."},
-      {n:"Cannibal Totem", pts:30, d:"+1 combat result point for each enemy model eaten (Swallowed Whole).", df:"+1 point de résultat de combat pour chaque figurine ennemie dévorée (Avalé Tout Cru)."},
-      {n:"Bull Standard", pts:20, d:"+1 Strength on the charge.", df:"+1 Force en charge."},
+      {n:"Dragonhide Banner", pts:45, d:`A unit carrying the Dragonhide Banner may re-roll any rolls To Hit of a natural 1. In addition, the unit has the Flaming Attacks special rule.`, df:`Une unité portant la Bannière en Peau de Dragon peut relancer tout jet pour Toucher de 1 naturel. De plus, l'unité a la règle Attaques Enflammées.`},
+      {n:"Rune Maw", pts:40, d:`When an enemy Wizard chooses a unit carrying the Rune Maw as the target of a spell, roll a D6. On a 3+, the controlling player must choose another target; if there is no other viable target in range, the spell cannot be cast.`, df:`Quand un Sorcier ennemi choisit l'unité portant la Rune de La Gueule comme cible d'un sort, lancez un D6. Sur 3+, le joueur doit choisir une autre cible ; s'il n'y a pas d'autre cible viable à portée, le sort ne peut être lancé.`},
+      {n:"Cannibal Totem", pts:30, d:`A unit carrying the Cannibal Totem gains Regeneration (5+), but rolls only a single D6 when making a Pursuit roll (rather than the usual 2D6).`, df:`Une unité portant le Totem Cannibale gagne Régénération (5+), mais ne lance qu'un seul D6 pour les jets de Poursuite (au lieu de 2D6).`},
+      {n:"Bull Standard", pts:20, d:`A unit carrying the Bull Standard may re-roll any failed rolls To Wound when resolving Impact Hits.`, df:`Une unité portant l'Étendard du Buffle peut relancer ses jets pour Blesser ratés lors de la résolution des Touches d'Impact.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Big Red Raggedy Flag", pts:50, d:"Unit gains Frenzy which cannot be lost. When the unit passes a Waaagh! test, all models in the unit gain +1 Attack.", df:"L'unité gagne Frénésie qui ne peut être perdue. Quand l'unité réussit un test de Waaagh!, toutes ses figurines gagnent +1 Attaque."},
@@ -586,9 +586,9 @@ window.MAGIC_ITEMS_DB = {
       {n:"Horned One", pts:10, d:"Bearer has the Armoured Hide (1) special rule. Extremely Common.", df:"Le porteur a la règle spéciale Peau Blindée (1). Extrêmement Commun."},
     ],
     "ogre-kingdoms": [
-      {n:"Jade Lion", pts:25, d:"Enemy models in base contact with bearer suffer -1 to their Weapon Skill.", df:"Les figurines ennemies au contact socle à socle du porteur subissent -1 en CC."},
-      {n:"Daemon-Slayer Scars", pts:20, d:"Bearer has Magic Resistance (-2). Extremely Common.", df:"Le porteur a Résistance à la Magie (-2). Extrêmement Commun."},
-      {n:"Fistful of Laurels", pts:15, d:"Once per combat: bearer may re-roll all failed rolls To Hit. Extremely Common.", df:"Une fois par combat : le porteur peut relancer tous ses jets pour toucher ratés. Extrêmement Commun."},
+      {n:"Jade Lion", pts:25, d:`The bearer of the Jade Lion and their unit may re-roll any failed Fear, Panic, Rally or Terror test.`, df:`Le porteur du Lion de Jade et son unité peuvent relancer tout test de Peur, Panique, Ralliement ou Terreur raté.`},
+      {n:"Daemon-Slayer Scars", pts:20, d:`Extremely Common. The bearer gains the Terror special rule.`, df:`Extrêmement Commun. Le porteur gagne la règle Terreur.`},
+      {n:"Fistful of Laurels", pts:15, d:`Extremely Common. Single use. The bearer and their unit may re-roll the 2D6 when making a Break test.`, df:`Extrêmement Commun. Usage unique. Le porteur et son unité peuvent relancer les 2D6 d'un test de Moral.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Big Boss 'At", pts:50, d:"Wearer gains Inspiring Presence (18\") and General special rule if they are a Big Boss.", df:"Si le porteur est un Grand Chef : il gagne Présence Inspirante (18\") et la règle spéciale Général."},
@@ -702,9 +702,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Itxi Grub", pts:30, d:"Single use. +D3 to next Casting roll. Extremely Common.", df:"Usage unique. +D3 au prochain jet de Lancement. Extrêmement Commun."},
     ],
     "ogre-kingdoms": [
-      {n:"Grut's Sickle", pts:40, d:"Each time bearer successfully casts a spell: one enemy model in base contact suffers D3 S4, AP-2 hits.", df:"Chaque fois que le porteur lance un sort avec succès : une figurine ennemie au contact socle à socle subit D3 touches de F4, PA-2."},
-      {n:"Halfling Cookbook", pts:30, d:"+1 to Casting rolls for all spells from the Lore of the Great Maw.", df:"+1 aux jets de Lancement pour tous les sorts du Domaine de La Gueule."},
-      {n:"Hellheart", pts:20, d:"Single use. All enemy Wizards within 12\" lose their highest-level spell.", df:"Usage unique. Tous les Sorciers ennemis à moins de 12\" perdent leur sort de plus haut niveau."},
+      {n:"Grut's Sickle", pts:40, d:`After making a Casting roll, the bearer may use Grut's Sickle to roll an additional D3 and add its result to their Casting roll. However, a single friendly model within 3" immediately loses a single Wound. Note: this additional D3 cannot cause a miscast or a perfect invocation.`, df:`Après un jet de Lancement de Sort, le porteur peut utiliser la Serpe de Grut pour lancer un D3 supplémentaire et ajouter son résultat à son jet. Cependant, une figurine amie dans les 3" perd immédiatement un PV. Note : ce D3 supplémentaire ne peut pas provoquer de fiasco ni d'invocation parfaite.`},
+      {n:"Halfling Cookbook", pts:30, d:`The bearer increases their Command range, Dispel range and the range of a single spell chosen by their controlling player (not including range 'self' spells) by 3".`, df:`Le porteur augmente de 3" sa portée de Commandement, sa portée de Dissipation et la portée d'un seul sort de son choix (hors sorts de portée « Lanceur »).`},
+      {n:"Hellheart", pts:20, d:`Single use. During the Command sub-phase of their turn, the bearer may consume the Hellheart, immediately losing a single Wound. Until your next Start of Turn sub-phase, if any enemy Wizard rolls any natural double when making a Casting roll, the spell is miscast.`, df:`Usage unique. Lors de la sous-phase de Commandement de son tour, le porteur peut consommer le Cœur Infernal, perdant immédiatement un PV. Jusqu'à votre prochaine sous-phase de Début de Tour, si un Sorcier ennemi obtient un double naturel en lançant un sort, le sort échoue (fiasco).`},
+      {n:"Tooth-Gnoblar", pts:10, ren:1, d:`Renegade. Extremely Common. 0-3 per model. Single use. After making a Casting roll for a spell from the Lore of the Great Maw, the bearer may use a Tooth-Gnoblar to apply a +1 modifier to the result. A model may only use one Tooth-Gnoblar per Casting roll.`, df:`Renegade. Extrêmement Commun. 0-3 par figurine. Usage unique. Après un jet de Lancement pour un sort du Domaine de La Gueule, le porteur peut utiliser un Tooth-Gnoblar pour appliquer un modificateur de +1 au résultat. Une figurine ne peut utiliser qu'un seul Tooth-Gnoblar par jet de Lancement.`},
     ],
     "orc-and-goblin-tribes": [
       {n:"Staff of Baduumm", pts:55, d:"Bearer generates +D3 Power dice at the start of each Magic phase.", df:"Le porteur génère +D3 dés de Pouvoir au début de chaque phase de Magie."},
@@ -859,13 +860,15 @@ window.MAGIC_ITEMS_DB = {
       {n:"Soul of Stone", pts:10, d:"Slann only. Slann does not scatter when casting a Magical Vortex.", df:"Slann uniquement. Le Slann ne dévie pas en lançant un Vortex Magique."},
     ],
     "ogre-kingdoms-bignames": [
-      {n:"Mawseeker", pts:30, d:"Bearer has the Scent of Blood rule and gains +D3 Attacks when fighting monsters.", df:"Le porteur a la règle Odeur du Sang et gagne +D3 Attaques contre les monstres."},
-      {n:"Mountaineater", pts:25, d:"Bearer can re-roll failed rolls To Wound against monsters and giants.", df:"Le porteur peut relancer les jets pour blesser ratés contre les monstres et les géants."},
-      {n:"Giantbreaker", pts:20, d:"Bearer has the Armour Bane (D3) special rule when fighting monsters.", df:"Le porteur a la règle spéciale Arme Perforante (D3) contre les monstres."},
-      {n:"Kineater", pts:15, d:"Bearer gains +1 Weapon Skill and +1 Attacks when fighting Ogres.", df:"Le porteur gagne +1 CC et +1 Attaque contre les Ogres."},
-      {n:"Longstrider", pts:10, d:"Bearer gains the Vanguard special rule.", df:"Le porteur gagne la règle spéciale Avant-garde."},
-      {n:"Beastkiller", pts:5, d:"Bearer gains Killing Blow when fighting Monsters.", df:"Le porteur gagne Coup Fatal contre les Monstres."},
-      {n:"Deathcheater", pts:5, d:"Bearer gains a 6+ Ward save.", df:"Le porteur gagne une Sauvegarde Invulnérable 6+."},
+      {n:"Mawseeker", pts:30, d:"Infantry only. This model (including their mount, if any) has +1 Toughness. However, this model is also subject to the Stupidity special rule.", df:"Figurine de type « infanterie » uniquement. Cette figurine (y compris sa monture, le cas échéant) gagne +1 Endurance. Cependant, elle est aussi soumise à la règle Stupidité."},
+      {n:"Mountaineater", pts:25, d:"Infantry only. This model cannot be wounded by a roll To Wound of 2, regardless of the Strength of the attack.", df:"Figurine de type « infanterie » uniquement. Cette figurine ne peut pas être blessée par un jet pour Blesser de 2, quelle que soit la Force de l'attaque."},
+      {n:"Giantbreaker", pts:20, d:"This model (but not their mount) has +1 Strength. However, this model cannot refuse a challenge and neither they, nor any unit they have joined, can Flee as a charge reaction.", df:"Cette figurine (mais pas sa monture) gagne +1 Force. Cependant, elle ne peut pas refuser un défi, et ni elle ni aucune unité qu'elle a rejointe ne peuvent Fuir en réaction à une charge."},
+      {n:"Kineater", pts:15, d:"Army General only. Unless this character is fleeing, friendly models within this character's Command range may re-roll any failed Panic or Rally test.", df:"Général de l'armée uniquement. À moins que ce personnage ne soit en fuite, les figurines amies à portée de Commandement peuvent relancer tout test de Panique ou de Ralliement raté."},
+      {n:"Longstrider", pts:10, d:"Infantry only. This model has a +1 modifier to its Movement characteristic.", df:"Figurine de type « infanterie » uniquement. Cette figurine gagne +1 en Mouvement."},
+      {n:"Beastkiller", pts:5, noRen:1, d:"Once per turn, you may re-roll a single failed roll To Wound made against an enemy model with the Large Target special rule.", df:"Une fois par tour, vous pouvez relancer un seul jet pour Blesser raté fait contre une figurine ennemie ayant la règle Grande Cible."},
+      {n:"Beastkiller", pts:40, ren:1, d:"Renegade. Hunter only, 0-1 per army. Unless wielding a magic weapon, this model (but not its mount) gains the Monster Slayer special rule. Note: Monster Slayer does not apply to shooting attacks.", df:"Renegade. Chasseur uniquement, 0-1 par armée. À moins de manier une arme magique, cette figurine (mais pas sa monture) gagne la règle Tueur de Monstres. Note : Tueur de Monstres ne s'applique pas aux attaques de tir."},
+      {n:"Wallcrusher", pts:30, ren:1, d:"Renegade. This model (but not their mount) gains Impact Hits (1). In addition, Wallcrushers and any unit they have joined treat low linear obstacles as open ground.", df:"Renegade. Cette figurine (mais pas sa monture) gagne Touches d'Impact (1). De plus, les Brise-Murs et toute unité qu'ils ont rejointe traitent les obstacles linéaires bas comme du terrain dégagé."},
+      {n:"Deathcheater", pts:5, d:"Once per game, you may make your opponent re-roll a single roll To Wound made against this model.", df:"Une fois par partie, vous pouvez obliger votre adversaire à relancer un seul jet pour Blesser fait contre cette figurine."},
     ],
     "vampire-counts-powers": [
       {n:"Curse of the Revenant", pts:50, d:"Vampire only. Bearer has +1 to their Regeneration save (or gains Regen (6+) if they do not already have it).", df:"Vampire uniquement. +1 à la sauvegarde de Régénération du porteur (ou gagne Régénération (6+) s'il ne l'a pas déjà)."},
