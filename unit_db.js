@@ -5438,6 +5438,18 @@ Regiments of Nuln State Troops and Nuln Veteran State Troops are formed using th
     equipment: ["Hand weapons", "light armour"],
     specialRules: [{"name": "Cold Blooded", "slug": "cold-blooded", "url": "https://tow.whfb.app/special-rules/cold-blooded"}, {"name": "Move Through Cover", "slug": "move-through-cover", "url": "https://tow.whfb.app/special-rules/move-through-cover"}, {"name": "Poisoned Attacks (javelins only)", "slug": "poisoned-attacks", "url": "https://tow.whfb.app/special-rules/poisoned-attacks"}, {"name": "Skirmishers", "slug": "skirmish-formation", "url": "https://tow.whfb.app/unusual-formations/skirmish-formation"}],
   },
+  "skink-cohort": {
+    name: "Skink Cohort",
+    army: "lizardmen",
+    category: "Core",
+    troopType: "Regular Infantry",
+    baseSize: "25 x 25 mm",
+    unitSize: "10+",
+    armourValue: "\u2014",
+    profiles: [{"name": "Skink", "M": "6", "WS": "2", "BS": "3", "S": "3", "T": "2", "W": "1", "I": "4", "A": "1", "Ld": "5"}, {"name": "Skink Brave", "M": "6", "WS": "2", "BS": "4", "S": "3", "T": "2", "W": "1", "I": "4", "A": "1", "Ld": "5"}],
+    equipment: ["Hand weapons", "light armour"],
+    specialRules: [{"name":"Aquatic","slug":"aquatic","url":""},{"name":"Close Order","slug":"close-order","url":""},{"name":"Cold Blooded","slug":"cold-blooded","url":""},{"name":"Move Through Cover","slug":"move-through-cover","url":""},{"name":"Poisoned Attacks (javelins & shortbows only)","slug":"poisoned-attacks","url":""},{"name":"Spawn-kin","slug":"spawn-kin","url":""}],
+  },
   "skull-cannon-of-khorne": {
     name: "Skull Cannon of Khorne",
     army: "daemons-of-chaos",

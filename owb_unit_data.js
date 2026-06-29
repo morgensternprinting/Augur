@@ -4105,6 +4105,33 @@ const OWB_UNIT_DATA = {
       {name_fr: "Musicien", name_en: "Musician", points: 7}
     ]
   },
+  "skink-cohort": {
+    id: "skink-cohort",
+    army: "lizardmen",
+    category: "core",
+    name_fr: "Cohortes de Skinks",
+    name_en: "Skink Cohort",
+    points: 5,
+    specialRules: "Aquatique, Ordre Serré, Sang Froid, Mouvement à Couvert, Attaques Empoisonnées (Javelines & Arcs courts), Engeance (Spawn-kin)",
+    opts: [
+      {name_fr: "Kroxigor (0-1 par 8 Skinks, max 3)", name_en: "Kroxigor (0-1 per 8 Skinks, max 3)", points: 49}
+    ],
+    equip: [
+      {name_fr: "Armes de base, Sarbacanes", name_en: "Hand weapons, Blowpipes", points: 0, active: true, perModel: true},
+      {name_fr: "Armes de base, Javelines & Boucliers", name_en: "Hand weapons, Javelins & Shields", points: 0, active: false, perModel: true},
+      {name_fr: "Armes de base, Arcs courts", name_en: "Hand weapons, Shortbows", points: 0, active: false, perModel: true}
+    ],
+    armor: [
+      {name_fr: "Armure légère (Peaux calleuses)", name_en: "Light armour (Calloused hides)", points: 0, active: true}
+    ],
+    mounts: [],
+    magic: null,
+    command: [
+      {name_fr: "Skink Brave (champion)", name_en: "Skink Brave (champion)", points: 5},
+      {name_fr: "Porte-étendard", name_en: "Standard bearer", points: 5},
+      {name_fr: "Musicien", name_en: "Musician", points: 5}
+    ]
+  },
   "skink-skirmishers": {
     id: "skink-skirmishers",
     army: "lizardmen",
