@@ -468,14 +468,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Bigger Choppier Axe",
     "pts": 55,
-    "d": "S+2, AP-3. The wielder has the Strike First special rule.",
-    "df": "F+2, PA-3. Le porteur a la règle spéciale Frappe En Premier."
+    "d": "S+2, AP-2. Killing Blow, Magical Attacks, Requires Two Hands, Strikes Last.",
+    "df": "F+2, PA-2. Coup Fatal, Attaques Magiques, Arme à Deux Mains, Frappe en Dernier."
    },
    {
     "n": "Martog's Best Basha",
     "pts": 50,
-    "d": "S+2, AP-2. The wielder has +D3 Attacks.",
-    "df": "F+2, PA-2. Le porteur a +D3 Attaques."
+    "d": "S+1, AP-2. Magical Attacks, Requires Two Hands. Notes: the wielder has a +1 modifier to their Weapon Skill and Initiative characteristics.",
+    "df": "F+1, PA-2. Attaques Magiques, Arme à Deux Mains. Notes : le porteur a un modificateur de +1 à ses caractéristiques de Capacité de Combat et d'Initiative."
    },
    {
     "n": "Porko's Pigstikka",
@@ -492,14 +492,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Da Akrit Axe",
     "pts": 30,
-    "d": "S, AP-2. The wielder has a +2 modifier to their Strength characteristic.",
-    "df": "F, PA-2. Le porteur a un modificateur de +2 à sa caractéristique de Force."
+    "d": "S+1, AP-. Armour Bane (1), Magical Attacks. Notes: the wielder may re-roll any failed rolls To Hit made with it. However, this weapon's Strength modifier applies only against enemy models the wielder charged this turn.",
+    "df": "F+1, PA-. Arme Perforante (1), Attaques Magiques. Notes : le porteur peut relancer tout jet pour Toucher raté effectué avec cette arme. Cependant, le modificateur de Force ne s'applique que contre les figurines ennemies que le porteur a chargées ce tour."
    },
    {
     "n": "Backstabber's Blade",
     "pts": 25,
-    "d": "S, AP-1. Re-roll To Wound against enemy units with a higher Unit Strength. Extremely Common.",
-    "df": "F, PA-1. Relancer les jets pour blesser contre les unités ennemies ayant une Puissance d'Unité supérieure. Extrêmement Commun."
+    "d": "S+1, AP-1. Magical Attacks. Goblin and Night Goblin Bosses only. Notes: if the wielder is engaged with an enemy's flank arc, it may re-roll failed rolls To Wound; if engaged with an enemy's rear arc, it may re-roll failed rolls To Hit and To Wound. Extremely Common.",
+    "df": "F+1, PA-1. Attaques Magiques. Chefs Gobelins et Gobelins de la Nuit uniquement. Notes : si le porteur est engagé avec l'arc latéral d'un ennemi, il peut relancer les jets pour Blesser ratés ; avec l'arc arrière, il peut relancer les jets pour Toucher et pour Blesser ratés. Extrêmement Courant."
    },
    {
     "n": "Wollopa's One Hit Wunda",
@@ -1080,8 +1080,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Dead 'Ard Armour",
     "pts": 35,
-    "d": "Full plate armour. Enemies in base contact suffer -1 Weapon Skill.",
-    "df": "Armure de plate complète. Les ennemis au contact socle à socle subissent -1 en CC."
+    "d": "Full plate armour. In addition, the wearer improves their Toughness characteristic by 1. Black Orc and Orc Bosses whose troop type is 'infantry', 'cavalry' or 'chariot' only.",
+    "df": "Armure de plates complète. De plus, le porteur améliore sa caractéristique d'Endurance de 1. Chefs Orques Noirs et Chefs Orques de type « infanterie », « cavalerie » ou « char » uniquement."
    },
    {
     "n": "Armour of Mork",
@@ -1092,8 +1092,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Spiteful Shield",
     "pts": 20,
-    "d": "Shield. Enemies in base contact suffer -1 Attacks (min 1).",
-    "df": "Bouclier. Les ennemis au contact socle à socle subissent -1 Attaque (min 1)."
+    "d": "Shield. In addition, any enemy model that rolls a natural 1 when making a roll To Hit or To Wound against the wearer during the Combat phase immediately suffers a Strength 4 hit with an AP of -.",
+    "df": "Bouclier. De plus, toute figurine ennemie qui obtient un 1 naturel pour Toucher ou pour Blesser le porteur à la phase de Combat subit immédiatement une touche de Force 4, PA -."
    }
   ],
   "skaven": [
@@ -1482,14 +1482,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Sparkly Wizard Finda",
     "pts": 45,
-    "d": "Magic Resistance (-3). Once per Magic phase, may steal a Power or Dispel dice from the opponent.",
-    "df": "Résistance à la Magie (-3). Une fois par phase de Magie : voler un dé de Pouvoir ou de Dissipation à l'adversaire."
+    "d": "The bearer has the Magic Resistance (-2) and Hatred (enemy Wizards) special rules.",
+    "df": "Le porteur a les règles spéciales Résistance à la Magie (-2) et Haine (Sorciers ennemis)."
    },
    {
     "n": "Effigy of Mork",
     "pts": 35,
-    "d": "5+ Ward save. When a Wizard within 18\" casts a spell, roll a dice: on 6+ the spell is dispelled automatically.",
-    "df": "Sauvegarde Invulnérable 5+. Quand un Sorcier à moins de 18\" lance un sort, lancer un dé : sur 6+, le sort est dissipé automatiquement."
+    "d": "Any model that directs its attacks against the bearer during the Combat phase suffers a -1 modifier to its rolls To Hit.",
+    "df": "Toute figurine qui dirige ses attaques contre le porteur à la phase de Combat subit un modificateur de -1 à ses jets pour Toucher."
    },
    {
     "n": "Glowy Green Amulet",
@@ -2088,8 +2088,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Da Angry Ladz Flag",
     "pts": 35,
-    "d": "+1 Strength to all models in the unit.",
-    "df": "+1 Force pour toutes les figurines de l'unité."
+    "d": "A unit carrying this banner gains the Frenzy special rule.",
+    "df": "Une unité portant cette bannière gagne la règle spéciale Frénésie."
    },
    {
     "n": "Da Banner of Butchery",
@@ -2100,20 +2100,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Da Spider Banner",
     "pts": 35,
-    "d": "Unit gains Poisoned Attacks and Move Through Cover.",
-    "df": "L'unité gagne Attaques Empoisonnées et Mouvement à Couvert."
+    "d": "A unit carrying this banner gains the Poisoned Attacks special rule. If the unit already has Poisoned Attacks, its attacks wound automatically on a natural roll of 5 or 6 To Hit, rather than the usual 6.",
+    "df": "Une unité portant cette bannière gagne la règle spéciale Attaques Empoisonnées. Si l'unité a déjà Attaques Empoisonnées, ses attaques blessent automatiquement sur un 5 ou un 6 naturel pour Toucher, au lieu du 6 habituel."
    },
    {
     "n": "Da Banner of Da Nomadz",
     "pts": 25,
-    "d": "Unit gains Vanguard and Move Through Cover.",
-    "df": "L'unité gagne Avant-garde et Mouvement à Couvert."
+    "d": "When a unit carrying this banner makes a Charge, Flee or Pursuit roll, it may re-roll any dice that roll a natural 1, before discarding any dice required to be discarded.",
+    "df": "Quand une unité portant cette bannière effectue un jet de Charge, de Fuite ou de Poursuite, elle peut relancer tout dé d'un 1 naturel, avant de défausser les dés à défausser."
    },
    {
     "n": "Banner of the Wildz",
     "pts": 20,
-    "d": "Unit gains Move Through Cover.",
-    "df": "L'unité gagne Mouvement à Couvert."
+    "d": "A unit carrying this banner gains the Move Through Cover special rule.",
+    "df": "Une unité portant cette bannière gagne la règle spéciale Mouvement à Couvert."
    },
    {
     "n": "Guff's Windy Banner",
@@ -2240,8 +2240,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Banner of the Wildwood",
     "pts": 40,
-    "d": "+1 Strength to all models in the unit.",
-    "df": "+1 Force pour toutes les figurines de l'unité."
+    "d": "A unit carrying this banner gains the Frenzy special rule.",
+    "df": "Une unité portant cette bannière gagne la règle spéciale Frénésie."
    },
    {
     "n": "Banner of the Hunter King",
@@ -2730,20 +2730,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Necklace of Blessed Teef",
     "pts": 50,
-    "d": "5+ Ward save. Once per game: re-roll any single dice.",
-    "df": "Sauvegarde Invulnérable 5+. Une fois par partie : relancer un seul dé de son choix."
+    "d": "The bearer may re-roll any Armour Save, Ward Save or Regeneration Save roll of a natural 1.",
+    "df": "Le porteur peut relancer tout jet de Sauvegarde d'Armure, de Sauvegarde Invulnérable ou de Sauvegarde de Régénération d'un 1 naturel."
    },
    {
     "n": "Grisly Trophy Rack",
     "pts": 30,
-    "d": "Enemies within 12\" suffer -1 Ld. +1 Attacks to bearer.",
-    "df": "Les ennemis à moins de 12\" subissent -1 Cd. +1 Attaque pour le porteur."
+    "d": "All enemy units within 6\" of the bearer suffer a -1 modifier to their Leadership characteristic (to a minimum of 2). Black Orc, Orc, Goblin and Night Goblin Bosses only.",
+    "df": "Toutes les unités ennemies à 6 ps du porteur subissent un modificateur de -1 à leur Commandement (minimum 2). Chefs Orques Noirs, Orques, Gobelins et Gobelins de la Nuit uniquement."
    },
    {
     "n": "Da Thinkin' Orc's 'At",
     "pts": 25,
-    "d": "Bearer gains the Loner special rule but can re-roll Waaagh! tests.",
-    "df": "Le porteur gagne la règle spéciale Solitaire mais peut relancer les tests de Waaagh!."
+    "d": "The wearer improves their Initiative characteristic by 1. In addition, the wearer and any unit they have joined is not subject to the Impetuous special rule.",
+    "df": "Le porteur améliore sa caractéristique d'Initiative de 1. De plus, le porteur et toute unité qu'il a rejointe ne sont pas sujets à la règle spéciale Impétueux."
    },
    {
     "n": "'Eadbuttin' 'At",
@@ -3257,8 +3257,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Staff of Baduumm",
     "pts": 55,
-    "d": "Bearer generates +D3 Power dice at the start of each Magic phase.",
-    "df": "Le porteur génère +D3 dés de Pouvoir au début de chaque phase de Magie."
+    "d": "The bearer applies a +D3 modifier to the result of any Casting roll they make. However, on a natural double 1 or double 6 on a Casting roll, centre a 5\" blast template over the bearer; each model (friend or foe) under it risks a single Strength 6 hit at AP -1, then the staff is destroyed. These effects are in addition to the normal effects of a natural double 1 or double 6.",
+    "df": "Le porteur applique un modificateur de +D3 au résultat de tout jet de Lancement. Cependant, sur un double 1 ou un double 6 naturel à un jet de Lancement, centrez un gabarit d'explosion de 5 ps sur le porteur ; chaque figurine (amie ou ennemie) sous le gabarit risque une touche de Force 6 à PA -1, puis le bâton est détruit. Ces effets s'ajoutent à ceux d'un double 1 ou double 6 naturel."
    },
    {
     "n": "Glittering Wotnots",
@@ -3269,8 +3269,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Idol of Gork",
     "pts": 40,
-    "d": "Cast a Waaagh! Magic spell as a Bound Spell (PL 3).",
-    "df": "Lance un sort de Magie Waaagh! comme sort Lié (Niveau de Pouvoir 3)."
+    "d": "The bearer increases the range of all of their spells by 3\". In addition, once per turn, the bearer may re-roll a Casting roll. (Does not increase the aura of a range 'self' spell.)",
+    "df": "Le porteur augmente la portée de tous ses sorts de 3 ps. De plus, une fois par tour, il peut relancer un jet de Lancement. (N'augmente pas l'aura d'un sort de portée « soi-même ».)"
    },
    {
     "n": "Buzgob's Knobbly Staff",
@@ -3287,8 +3287,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Da Hag's Brew",
     "pts": 25,
-    "d": "Single use. D6: 1-2 miscast, 3-4 +1 Power dice, 5-6 +D3 Power dice.",
-    "df": "Usage unique. D6 : 1-2 Fiasco, 3-4 +1 dé de Pouvoir, 5-6 +D3 dés de Pouvoir."
+    "d": "In addition to the Lores of Magic the bearer may normally know spells from, they may also know spells from the Lore of Troll Magic. Orc, Goblin and Night Goblin Shamans only.",
+    "df": "En plus des Domaines de Magie dont le porteur tire normalement ses sorts, il peut aussi connaître des sorts du Domaine de la Magie Troll. Chamanes Orques, Gobelins et Gobelins de la Nuit uniquement."
    }
   ],
   "skaven": [
