@@ -513,25 +513,25 @@ window.MAGIC_ITEMS_DB = {
     "n": "Fellblade",
     "pts": 100,
     "d": "Combat, S+3, AP N/A. Infantry characters only. Magical Attacks, Multiple Wounds (D3). No armour, Ward or Regeneration saves are permitted against wounds caused by this weapon. In the Command sub-phase the wielder rolls a D3: on a 1 they lose a single Wound.",
-    "df": "Corps à corps, F+3, PA N/A. Personnages d'infanterie uniquement. Attaques Magiques, Blessures Multiples (D3). Aucune sauvegarde d'Armure, Invulnérable ou de Régénération n'est permise contre les blessures causées par cette arme. Lors de la sous-phase de Commandement, le porteur lance un D3 : sur un 1, il perd un point de Vie."
+    "df": "Corps à corps, F+3, PA N/A. Attaques Magiques, Blessures Multiples (D3). Personnages dont le type de troupe est « Infanterie » uniquement. Aucune sauvegarde d'Armure, Invulnérable ou de Régénération n'est permise contre les blessures infligées par cette arme. Cependant, pendant la sous-phase de Commandement de son tour, le porteur de la Lame Fatale doit lancer un D3. Sur un résultat de 1, il perd 1 Point de Vie."
    },
    {
     "n": "Weeping Blade",
     "pts": 50,
     "d": "Combat, S as user, AP-2. Magical Attacks, Multiple Wounds (D3), Poisoned Attacks.",
-    "df": "Corps à corps, F du porteur, PA-2. Attaques Magiques, Blessures Multiples (D3), Attaques Empoisonnées."
+    "df": "Corps à corps, F du porteur, PA-2. Attaques Magiques, Attaques Empoisonnées, Blessures Multiples (D3)."
    },
    {
     "n": "Blade of Nurglitch",
     "pts": 35,
     "d": "Combat, S+1, AP-. Magical Attacks. Any enemy model suffering 1+ unsaved wound from it must take a Toughness test; if failed, -1 Toughness (min 1) for the rest of the game.",
-    "df": "Corps à corps, F+1, PA-. Attaques Magiques. Toute figurine ennemie subissant une ou plusieurs blessures non sauvegardées doit faire un test d'Endurance ; en cas d'échec, -1 Endurance (min 1) pour le reste de la partie."
+    "df": "Corps à corps, F+1, PA-. Attaques Magiques. Toute figurine qui subit une ou plusieurs blessures non sauvegardées de la Lame de Nurglitch doit immédiatement effectuer un test d'Endurance. Si ce test est raté, elle subit un modificateur de -1 à sa caractéristique d'Endurance (jusqu'à un minimum de 1) pour le restant de la partie."
    },
    {
     "n": "Death Globe",
     "pts": 25,
     "d": "R 9\", Magical Attacks, Move & Shoot. Single use. Target a specific model within the target unit (champion/character). Roll To Hit; if it hits, centre a small (3\") blast template over the target. Any model under it takes an Initiative test; if failed, it loses a single Wound. Extremely Common.",
-    "df": "Portée 9 ps, Attaques Magiques, Mouvement & Tir. Usage unique. Cible une figurine précise de l'unité visée (champion/personnage). Jet pour toucher ; en cas de réussite, centrer un petit gabarit d'explosion (3 ps) sur la cible. Toute figurine sous le gabarit fait un test d'Initiative ; en cas d'échec, elle perd un point de Vie. Extrêmement Courant."
+    "df": "Portée 9 ps, PA N/A. Attaques Magiques, Mouvement & Tir. Usage unique. Une figurine armée d'une Sphère de Mort doit cibler une figurine spécifique au sein de l'unité qu'elle cible, telle qu'un champion ou un personnage. Effectuez un jet de Touche normalement. En cas de réussite, centrez un petit gabarit d'explosion (3\") sur la figurine ciblée. Toute figurine dont le socle se trouve sous le gabarit doit effectuer un test d'Initiative. Si ce test est raté, elle perd 1 Point de Vie. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -1101,13 +1101,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Warpstone Armour",
     "pts": 25,
     "d": "Heavy armour. May be purchased and worn even without the armour option, and may be worn by a Wizard without penalty. Extremely Common.",
-    "df": "Armure lourde. Peut être achetée et portée même sans l'option d'armure, et peut être portée par un Magicien sans pénalité. Extrêmement Courant."
+    "df": "L'Armure d'Éclats de Malepierre est une armure lourde qui peut être achetée et portée par un Sorcier sans pénalités, même s'il n'a pas l'option pour être équipé avec une armure, un bouclier ou un caparaçon. Extrêmement Courant."
    },
    {
     "n": "Cautious Shield",
     "pts": 20,
     "d": "A shield. Bearer may choose to wield it two-handed when their combat is chosen (Step 1.1): until end of that Combat phase, armour value improved by 3 but Attacks reduced to 0.",
-    "df": "Un bouclier. Le porteur peut choisir de le manier à deux mains lorsque son combat est choisi (étape 1.1) : jusqu'à la fin de cette phase de Combat, valeur d'armure améliorée de 3 mais Attaques réduites à 0."
+    "df": "Le Bouclier de Couardise est un bouclier. En outre, son porteur peut choisir de le porter avec deux mains quand son combat est choisi pendant l'Étape 1.1 de n'importe quelle sous-phase Choisir & Livrer les Combats. S'il le fait, jusqu'à la fin de la phase de Combat, il améliore sa valeur d'armure de 3, mais sa caractéristique d'Attaque est réduite à 0."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -1509,13 +1509,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Shadow Magnet",
     "pts": 40,
     "d": "Any enemy model targeting the bearer (or any unit they have joined) during the Shooting phase suffers an additional -1 To Hit modifier.",
-    "df": "Toute figurine ennemie ciblant le porteur (ou toute unité qu'il a rejointe) durant la phase de Tir subit un modificateur supplémentaire de -1 pour toucher."
+    "df": "Toute figurine ennemie qui cible le porteur de la Breloque d'Obscurité Magnétique (ou toute unité qu'il a rejointe) pendant la phase de Tir subit un modificateur supplémentaire de -1 pour Toucher."
    },
    {
     "n": "Warpstone Amulet",
     "pts": 35,
     "d": "4+ Ward save against wounds caused by non-magical enemy attacks.",
-    "df": "Sauvegarde Invulnérable 4+ contre les blessures causées par des attaques ennemies non magiques."
+    "df": "L'Amulette de Malepierre donne à son porteur une sauvegarde Invulnérable de 4+ contre toute blessure subie qui est causée par une attaque ennemie non-magique."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -2127,7 +2127,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Storm Banner",
     "pts": 65,
     "d": "Single use. Activate in a Command sub-phase. Until next Start of Turn: enemy units cannot use Fly (X); all enemy shooting suffers an additional -1 To Hit.",
-    "df": "Usage unique. Activée en sous-phase de Commandement. Jusqu'au prochain Début de Tour : les unités ennemies ne peuvent utiliser Vol (X) ; tous les tirs ennemis subissent un -1 supplémentaire pour toucher."
+    "df": "Usage unique. L'unité qui porte la Bannière d'Orage peut l'activer pendant la sous-phase de Commandement de son tour. Jusqu'à votre prochaine sous-phase de Début du Tour, les unités ennemies ne peuvent pas utiliser la règle spéciale Vol (X) et tous les tirs ennemis subissent un modificateur supplémentaire de -1 pour Toucher."
    },
    {
     "n": "Grand Banner of Superiority",
@@ -2139,13 +2139,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Dwarf Hide Banner",
     "pts": 40,
     "d": "Unit gains the Hatred (Dwarfs) and Stubborn special rules.",
-    "df": "L'unité gagne les règles Haine (Nains) et Obstiné."
+    "df": "Une unité portant la Bannière en Peau de Nain gagne les règles spéciales Haine (Nains) et Obstiné."
    },
    {
     "n": "Banner of Verminous Scurrying",
     "pts": 35,
     "d": "Unit gains the Swiftstride special rule.",
-    "df": "L'unité gagne la règle Rapide."
+    "df": "Une unité portant l'Étendard de Vivacité Vermineuse gagne la règle spéciale Rapide."
    },
    {
     "n": "Plague Banner",
@@ -2763,19 +2763,19 @@ window.MAGIC_ITEMS_DB = {
     "n": "Brass Orb",
     "pts": 50,
     "d": "Single use. Instead of attacking in Combat, toss it at a single model in combat with the bearer (champion/character). Make one roll To Hit; if it hits, the target takes an Initiative test. If failed, the target is removed from play as a casualty.",
-    "df": "Usage unique. Au lieu d'attaquer au Combat, le lancer sur une unique figurine engagée avec le porteur (champion/personnage). Un seul jet pour toucher ; en cas de réussite, la cible fait un test d'Initiative. En cas d'échec, elle est retirée du jeu comme perte."
+    "df": "Usage unique. Au lieu d'attaquer normalement pendant la phase de Combat, le porteur de l'Orbe d'Airain peut la lancer sur une figurine spécifique dans une unité contre laquelle il est engagé en combat, telle qu'un champion ou un personnage. Effectuez un seul jet pour Toucher. S'il est réussi, la figurine ciblée doit effectuer un test d'Initiative. Si ce test échoue, la figurine ciblée est retirée du jeu."
    },
    {
     "n": "Skalm",
     "pts": 35,
     "d": "Single use. In the Command sub-phase, bearer recovers a single lost Wound and, until next Start of Turn, gains +1 Toughness.",
-    "df": "Usage unique. En sous-phase de Commandement, le porteur récupère un point de Vie perdu et, jusqu'au prochain Début de Tour, bénéficie de +1 Endurance."
+    "df": "Usage unique. Pendant la sous-phase de Commandement de son tour, le porteur du Skataplasme peut l'utiliser. La figurine récupère immédiatement 1 Point de Vie perdu et, jusqu'à votre prochaine sous-phase de Début du Tour, a un modificateur de +1 à sa caractéristique d'Endurance."
    },
    {
     "n": "Skavenbrew",
     "pts": 20,
     "d": "Single use. Skaven Warlords and Skaven Chieftains only. In the Command sub-phase (if not engaged), make a Leadership test to distribute it to a unit the bearer has joined; if passed, that character and the unit gain Frenzy until next Start of Turn. Extremely Common.",
-    "df": "Usage unique. Seigneurs de Guerre Skavens et Chefs Skavens uniquement. En sous-phase de Commandement (s'il n'est pas engagé), faire un test de Commandement pour le distribuer à une unité rejointe ; en cas de réussite, ce personnage et l'unité gagnent Frénésie jusqu'au prochain Début de Tour. Extrêmement Courant."
+    "df": "Usage unique. Seigneurs de Guerre Skavens et Chefs Skavens uniquement. Pendant la sous-phase de Commandement de son tour, s'il n'est pas engagé en combat, ce personnage peut tenter de distribuer le Breuvage Skaven à une unité qu'il a rejointe en effectuant un test de Commandement (en utilisant son propre Commandement). Si ce test est réussi, jusqu'à votre prochaine sous-phase de Début du Tour, ce personnage et toute unité qu'il a rejointe gagnent la règle spéciale Frénésie. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -3296,19 +3296,19 @@ window.MAGIC_ITEMS_DB = {
     "n": "Warp Condenser",
     "pts": 50,
     "d": "+3\" Dispel range. When casting a Magic Missile, +1 modifier to the Casting roll. On a Miscast, may re-roll the result on the Miscast table.",
-    "df": "+3 ps de portée de Dissipation. Pour lancer un Projectile Magique, +1 au jet de Lancement. En cas de Fiasco, peut relancer le résultat sur la table de Fiasco."
+    "df": "Le porteur du Condensateur d'Énergie Magique augmente sa portée de Dissipation de 3\". De plus, quand il essaye de lancer un sort de Projectile Magique, le porteur du Condensateur d'Énergie Magique gagne un modificateur de +1 à son jet de lancement. Enfin, en cas de Fiasco, le porteur du Condensateur d'Énergie Magique peut relancer le résultat obtenu sur le tableau des Fiascos."
    },
    {
     "n": "Storm Daemon",
     "pts": 30,
     "d": "Bound spell (Power Level 1). Type: Magic Missile, Casting Value 8+, Range 18\". Effect: target enemy unit suffers D3+1 Strength 5 hits, each AP-2.",
-    "df": "Sort Lié (Niveau de Puissance 1). Type : Projectile Magique, Valeur de Lancement 8+, Portée 18 ps. Effet : l'unité ennemie ciblée subit D3+1 touches de Force 5, chacune PA-2."
+    "df": "Cette figurine peut lancer le Sort Lié suivant, avec un Niveau de Pouvoir de 1 : Type : Projectile Magique ; Valeur de Lancement : 8+ ; Portée : 18\". Effet : L'unité ennemie ciblée subit D3+1 touches de Force 5, chacune avec une PA de -2."
    },
    {
     "n": "Warpstone Tokens",
     "pts": 15,
     "d": "A Wizard may purchase up to three (each single use). Before a Casting roll, consume a Token to roll an additional D3 added to the Casting roll; for each natural 1 rolled, the Wizard loses a single Wound. Extremely Common.",
-    "df": "Un Magicien peut en acheter jusqu'à trois (chacun à usage unique). Avant un jet de Lancement, consommer un Fragment pour lancer un D3 supplémentaire ajouté au jet ; pour chaque 1 naturel obtenu, le Magicien perd un point de Vie. Extrêmement Courant."
+    "df": "Un Sorcier peut acheter jusqu'à trois Fragments de Malepierre, chacun étant à usage unique. Avant d'effectuer un jet de Lancement, un Sorcier peut choisir de consommer un seul Fragment de Malepierre. Pour chaque Fragment consommé, il peut lancer un D3 supplémentaire et ajouter le résultat à son jet de Lancement. Cependant, pour chaque 1 naturel, le sorcier perd 1 Point de Vie. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -3596,7 +3596,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Axe of Khorne",
     "pts": 35,
     "d": "Combat S+1, AP-1. Killing Blow, Magical Attacks, Requires Two Hands. Extremely Common (may be taken multiple times).",
-    "df": "Corps à corps F+1, PA-1. Coup Fatal, Attaques Magiques, Armes à Deux Mains. Extrêmement Commun (peut être pris plusieurs fois)."
+    "df": "Corps à corps F+1, PA-1. Coup fatal, Attaques Magiques, Arme à Deux Mains. (Extrêmement commun : peut être pris plusieurs fois.)"
    },
    {
     "n": "Collar of Khorne",
@@ -3676,7 +3676,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Stream of Contagion",
     "pts": 25,
     "d": "N/A range, S3, AP-2. Breath Weapon, Magical Attacks. Extremely Common (may be taken multiple times).",
-    "df": "Portée N/A, F3, PA-2. Arme à Souffle, Attaques Magiques. Extrêmement Commun (peut être pris plusieurs fois)."
+    "df": "Portée N/A, F3, PA-2. Arme à Souffle, Attaques Magiques. (Extrêmement commun : peut être pris plusieurs fois.)"
    },
    {
     "n": "Æther Blade",
@@ -3788,7 +3788,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Staff of Change",
     "pts": 65,
     "d": "Combat S, AP-1. Flaming Attacks, Magical Attacks. An enemy taking 1+ unsaved wounds from it must pass a Toughness test or loses all remaining Wounds.",
-    "df": "Corps à corps F, PA-1. Attaques Enflammées, Attaques Magiques. Un ennemi subissant 1+ blessure non sauvegardée doit réussir un test d'Endurance ou perd tous ses PV restants."
+    "df": "Corps à corps F, PA-1. Attaques Enflammées, Attaques Magiques. Toute figurine ennemie qui subit une ou plusieurs blessures non sauvegardées doit immédiatement faire un test d'Endurance. Si ce test est raté, la figurine blessée perd tous ses Points de Vie restants."
    },
    {
     "n": "Will of Tzeentch",
@@ -3812,7 +3812,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Twin Heads",
     "pts": 20,
     "d": "Bearer knows 1 more spell than normal for their Level (does not increase the Wizard's Level).",
-    "df": "Le porteur connaît 1 sort de plus que la normale pour son Niveau (n'augmente pas le Niveau du Sorcier)."
+    "df": "Cette figurine connaît un sort supplémentaire (choisi de la manière habituelle) par rapport à son niveau de Sorcellerie. Notez que cela n'augmente pas le niveau du Sorcier."
    },
    {
     "n": "Æther Blade",
@@ -3844,13 +3844,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Standard of Chaotic Glory",
     "pts": 15,
     "d": "Daemonic Locus only. Friendly Daemonic units within Command range improve their Leadership by 1 (to a maximum of 10).",
-    "df": "Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de Commandement améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."
+    "df": "Locus Démoniaque seulement. Les unités Démons amies gagnent un modificateur +1 à leur caractéristique de Commandement tant qu'elles sont dans la portée de commandement du porteur de cette bannière (jusqu'à un maximum de 10)."
    },
    {
     "n": "Skull Totem",
     "pts": 50,
     "d": "Unit (not its mounts) gains Furious Charge.",
-    "df": "L'unité (mais pas ses montures) gagne Charge Dévastatrice."
+    "df": "Une unité portant le Totem des Crânes gagne la règle spéciale Charge Dévastatrice (mais pas ses montures)."
    },
    {
     "n": "Icon of Endless War",
@@ -3882,7 +3882,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Standard of Chaotic Glory",
     "pts": 15,
     "d": "Daemonic Locus only. Friendly Daemonic units within Command range improve their Leadership by 1 (to a maximum of 10).",
-    "df": "Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de Commandement améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."
+    "df": "Locus Démoniaque seulement. Les unités Démons amies gagnent un modificateur +1 à leur caractéristique de Commandement tant qu'elles sont dans la portée de commandement du porteur de cette bannière (jusqu'à un maximum de 10)."
    },
    {
     "n": "Icon of Eternal Virulence",
@@ -3920,7 +3920,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Standard of Chaotic Glory",
     "pts": 15,
     "d": "Daemonic Locus only. Friendly Daemonic units within Command range improve their Leadership by 1 (to a maximum of 10).",
-    "df": "Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de Commandement améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."
+    "df": "Locus Démoniaque seulement. Les unités Démons amies gagnent un modificateur +1 à leur caractéristique de Commandement tant qu'elles sont dans la portée de commandement du porteur de cette bannière (jusqu'à un maximum de 10)."
    },
    {
     "n": "Icon of the Eternal Dance",
@@ -3964,13 +3964,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Standard of Chaotic Glory",
     "pts": 15,
     "d": "Daemonic Locus only. Friendly Daemonic units within Command range improve their Leadership by 1 (to a maximum of 10).",
-    "df": "Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de Commandement améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."
+    "df": "Locus Démoniaque seulement. Les unités Démons amies gagnent un modificateur +1 à leur caractéristique de Commandement tant qu'elles sont dans la portée de commandement du porteur de cette bannière (jusqu'à un maximum de 10)."
    },
    {
     "n": "Icon of Sorcery",
     "pts": 20,
     "d": "Pink Horrors only. When the unit casts its Bound spell, its Power Level equals twice the unit's current Rank Bonus. Extremely Common (may be taken multiple times).",
-    "df": "Horreurs Roses uniquement. Quand l'unité lance son sort Lié, son Niveau de Puissance est égal à deux fois le Bonus de Rang actuel de l'unité. Extrêmement Commun (peut être pris plusieurs fois)."
+    "df": "Horreurs Roses seulement. Quand une unité portant l'Icône de la sorcellerie lance un sort Lié, elle le fait avec un niveau de puissance égal à deux fois son Bonus de Rang. (Extrêmement commun : peut être pris plusieurs fois.)"
    },
    {
     "n": "Banner Of Unholy Victory",
