@@ -296,8 +296,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Lifetaker",
     "pts": 35,
-    "d": "Repeater crossbow: 24\", S3, AP-1, with Armour Bane (1), Magical Attacks, Multiple Shots (D3+1) and Poisoned Attacks.",
-    "df": "Arbalète à répétition : 24 ps, F3, PA-1, avec Fléau des Armures (1), Attaques Magiques, Tirs Multiples (D3+1) et Attaques Empoisonnées."
+    "d": "Shooting weapon: 24\", S3, AP-1, with Armour Piercing (1), Magical Attacks, Multiple Shots (D3+1) and Poisoned Attacks.",
+    "df": "Arme de tir : 24 ps, F3, PA-1, avec Arme Perforante (1), Attaques Magiques, Tirs Multiples (D3+1) et Attaques Empoisonnées."
    },
    {
     "n": "Whip of Agony",
@@ -1916,8 +1916,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Cold-Blooded Banner",
     "pts": 20,
-    "d": "Single use. After making any test against its Leadership characteristic (including a Break test), the unit carrying this banner may re-roll the test.",
-    "df": "Usage unique. Après tout test de Commandement (y compris un test de Moral), l'unité portant cette bannière peut relancer ce test."
+    "d": "Single use. The unit may use it on any test against its Leadership characteristic, including a Break test. When it does, it rolls one extra D6 and discards the highest result.",
+    "df": "Usage unique. Une unité portant la Bannière de Sang-froid peut l'utiliser lors de tout test contre sa caractéristique de Commandement, y compris un test de Moral. Quand c'est le cas, elle peut lancer un D6 supplémentaire et défausser le résultat le plus élevé."
    }
   ],
   "high-elf-realms": [
@@ -2588,8 +2588,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Black Dragon Egg",
     "pts": 35,
-    "d": "Single use. In the Command sub-phase of its turn, the bearer may consume it. Until your next Command sub-phase, the model has Toughness 6 (which cannot be improved further) and gains a noxious breath weapon.",
-    "df": "Usage unique. Lors de la sous-phase de Commandement de son tour, le porteur peut le consommer. Jusqu'à votre prochaine sous-phase de Commandement, la figurine a une Endurance de 6 (qui ne peut être améliorée davantage) et gagne une arme de souffle nocive."
+    "d": "Single use. During the Command sub-phase of its turn, the bearer may consume it. Until the end of that turn, the model has Toughness 6 (which cannot be improved) and gains the noxious breath weapon.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut le consommer. Jusqu'à la fin de ce tour, la figurine a une caractéristique d'Endurance de 6 (qui ne peut pas être améliorée) et gagne souffle toxique."
    },
    {
     "n": "Hydra's Tooth",
@@ -2600,8 +2600,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "The Guiding Eye",
     "pts": 25,
-    "d": "Single use. Re-roll failed rolls To Hit in the Shooting phase.",
-    "df": "Usage unique. Relancer les jets pour toucher ratés en phase de Tir."
+    "d": "Single use. The bearer and any unit he has joined may re-roll any failed roll To Hit made during the Shooting phase.",
+    "df": "Usage unique. Le porteur de l'Œil de Guidance et toute unité qu'il a rejoint peuvent relancer tout jet pour Toucher raté effectué pendant la Phase de tir."
    }
   ],
   "high-elf-realms": [
@@ -3126,8 +3126,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Focus Familiar",
     "pts": 10,
-    "d": "Single use. When attempting to cast a spell, place a marker wholly within 12\" of the owner. The spell's range and all its effects are measured from the marker, not the caster; if the spell needs line of sight, this is drawn from the marker (which has a 360° arc of sight). If the spell remains in play, keep the marker on the table until the spell is dispelled or removed. Extremely Common.",
-    "df": "Usage unique. En tentant de lancer un sort, placez un marqueur entièrement à moins de 12 ps du propriétaire. La portée du sort et tous ses effets se mesurent depuis ce marqueur, et non depuis le lanceur ; si le sort nécessite une ligne de vue, celle-ci est déterminée depuis le marqueur (qui a un arc de vision de 360°). Si le sort reste en jeu, gardez le marqueur sur la table jusqu'à ce que le sort soit dissipé ou retiré. Extrêmement Commun."
+    "d": "Single use. When attempting to cast a spell, place a marker (such as a familiar model) wholly within 12\" of the owner. The spell's range and all its effects are measured from the marker, not the caster; if the spell needs line of sight, this is drawn from the marker (which has a 360° arc of sight). Extremely Common.",
+    "df": "Usage unique. Le propriétaire peut l'utiliser lorsqu'il tente de lancer un sort. Placez un marqueur (comme une figurine de familier) entièrement dans les 12 ps du propriétaire. La portée et tous les effets du sort sont mesurés à partir de ce marqueur, plutôt qu'à partir de son propriétaire. Si le sort nécessite une ligne de vue, celle-ci est déterminée à partir du marqueur (qui a un arc de vision de 360°). Extrêmement Commun."
    }
   ],
   "high-elf-realms": [
@@ -3495,20 +3495,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Black Lotus",
     "pts": 5,
-    "d": "Enemy characters that suffer one or more unsaved wounds from the bearer suffer -1 Leadership for the rest of the game.",
-    "df": "Les personnages ennemis subissant une ou plusieurs blessures non sauvegardées du porteur subissent -1 en Commandement pour le reste de la partie."
+    "d": "For each unsaved wound inflicted on them by the bearer, enemy characters suffer -1 Leadership for the rest of the game.",
+    "df": "Pour chaque Blessure non sauvegardée qui leur est infligée par le porteur, les personnages ennemis subissent un modificateur de -1 à leur caractéristique de Commandement pour le reste de la partie."
    },
    {
     "n": "Dark Venom",
     "pts": 15,
-    "d": "The bearer's close combat attacks have the Killing Blow special rule.",
-    "df": "Les attaques de corps à corps du porteur ont la règle spéciale Coup Fatal."
+    "d": "The bearer has the Killing Blow special rule.",
+    "df": "Le porteur possède la règle spéciale Coup Fatal."
    },
    {
     "n": "Manbane",
     "pts": 15,
-    "d": "The bearer's close combat To Wound rolls of 4+ always succeed.",
-    "df": "Les jets pour blesser de 4+ du porteur en corps à corps réussissent toujours."
+    "d": "When the bearer makes a roll To Wound, a roll of 4+ always succeeds, regardless of the target's Toughness.",
+    "df": "Lorsque le porteur fait un jet de Blessure, un jet de 4+ est toujours une réussite, quelle que soit l'Endurance de la cible."
    }
   ],
   "warriors-of-chaos": [
