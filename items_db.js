@@ -462,8 +462,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Battleaxe of the Last Big Waaagh!",
     "pts": 75,
-    "d": "S+3, AP-3. The wielder has the Heroic Killing Blow special rule.",
-    "df": "F+3, PA-3. Le porteur a la règle spéciale Coup Fatal Héroïque."
+    "d": "Combat, S+2, AP-2. Extra Attacks (+D6), Magical Attacks, Requires Two Hands, Strike Last. Notes: if a natural 6 is rolled for the Extra Attacks (+D6), the axe loses Extra Attacks (+D6) at the end of the current Combat phase.",
+    "df": "Combat, F+2, PA-2. Attaques Supplémentaires (+D6), Attaques Magiques, Arme à Deux Mains, Frappe en Dernier. Notes : sur un 6 naturel aux Attaques Supplémentaires (+D6), la hache perd Attaques Supplémentaires (+D6) à la fin de la phase de Combat en cours."
    },
    {
     "n": "Bigger Choppier Axe",
@@ -480,14 +480,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Porko's Pigstikka",
     "pts": 40,
-    "d": "12\", S3, AP-1. Also a melee weapon: S, AP-1.",
-    "df": "12\", F3, PA-1. Aussi une arme de corps à corps : F, PA-1."
+    "d": "Combat, S+1, AP-1. Armour Bane (1), Magical Attacks. Notes: cavalry, monster or chariot only. The Strength and AP modifiers apply only during a turn in which the wielder charged. On a charge, grants +1 Attack for each rank the enemy unit has.",
+    "df": "Combat, F+1, PA-1. Arme Perforante (1), Attaques Magiques. Notes : cavalerie, monstre ou char uniquement. Les modificateurs de Force et de PA ne s'appliquent que lors d'un tour où le porteur a chargé. Lors d'une charge : +1 Attaque par rang de l'unité ennemie."
    },
    {
     "n": "Da Choppiest Choppa",
     "pts": 35,
-    "d": "S+1, AP-2. The wielder has Killing Blow.",
-    "df": "F+1, PA-2. Le porteur a Coup Fatal."
+    "d": "Combat, S+1, AP-3. Magical Attacks.",
+    "df": "Combat, F+1, PA-3. Attaques Magiques."
    },
    {
     "n": "Da Akrit Axe",
@@ -504,8 +504,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Wollopa's One Hit Wunda",
     "pts": 15,
-    "d": "S+3, AP-3. The wielder can only make 1 attack, regardless of their Attacks characteristic.",
-    "df": "F+3, PA-3. Le porteur ne peut faire qu'1 seule attaque, quelle que soit sa caractéristique d'Attaques."
+    "d": "Combat, Strength 10, AP-3. Magical Attacks, Strike First. Notes: Goblin and Night Goblin Bosses only. Single use — once per game, during the first round of combat, use this profile; at all other times it counts as a hand weapon with Magical Attacks.",
+    "df": "Combat, Force 10, PA-3. Attaques Magiques, Frappe en Premier. Notes : Chefs Gobelins et Gobelins de la Nuit uniquement. Usage unique — une fois par partie, au premier round de combat ; le reste du temps, compte comme une arme de base avec Attaques Magiques."
    }
   ],
   "skaven": [
@@ -1074,8 +1074,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Trollhide Trousers",
     "pts": 40,
-    "d": "Full plate armour. Wearer has the Regeneration (5+) special rule. Extremely Common.",
-    "df": "Armure de plate complète. Le porteur a la règle spéciale Régénération (5+). Extrêmement Commun."
+    "d": "May be worn with other armour. Improves the wearer's armour value by 1 (to a maximum of 2+). The wearer has Regeneration (5+). Extremely Common.",
+    "df": "Peut être porté avec une autre armure. Améliore la valeur d'armure du porteur de 1 (max 2+). Le porteur a Régénération (5+). Extrêmement Courant."
    },
    {
     "n": "Dead 'Ard Armour",
@@ -1086,8 +1086,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Armour of Mork",
     "pts": 30,
-    "d": "Heavy armour. 5+ Ward save vs Magical Attacks.",
-    "df": "Armure lourde. Sauvegarde Invulnérable 5+ contre les Attaques Magiques."
+    "d": "Heavy armour. The wearer has Magic Resistance (-2).",
+    "df": "Armure lourde. Le porteur a Résistance à la Magie (-2)."
    },
    {
     "n": "Spiteful Shield",
@@ -1494,14 +1494,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Glowy Green Amulet",
     "pts": 35,
-    "d": "4+ Ward save vs Magical Attacks.",
-    "df": "Sauvegarde Invulnérable 4+ contre les Attaques Magiques."
+    "d": "If the bearer (or any unit they have joined) is the target of an enemy spell, the bearer may use this instead of attempting a Wizardly dispel: roll a D6; on a 2+ the spell is dispelled; on a 1 the amulet explodes (it is destroyed and the bearer loses 1 Wound). Cannot be used against a perfect invocation.",
+    "df": "Si le porteur (ou son unité) est la cible d'un sort ennemi, il peut l'utiliser au lieu d'une dissipation de Magicien : lancez un D6 ; sur 2+ le sort est dissipé ; sur 1 l'amulette explose (détruite, le porteur perd 1 PV). Inutilisable contre une invocation parfaite."
    },
    {
     "n": "Collar of Zorga",
     "pts": 20,
-    "d": "4+ Ward save vs Poisoned Attacks and Flaming Attacks.",
-    "df": "Sauvegarde Invulnérable 4+ contre les Attaques Empoisonnées et Enflammées."
+    "d": "Any enemy 'beast of burden' that directs its attacks against the wearer or their unit during the Combat phase suffers a -1 modifier To Hit. (A 'beast of burden' is the mount of a 'cavalry' model, the beast(s) drawing a 'chariot', and the mount of a mounted character whose troop type is 'monster'.)",
+    "df": "Toute « bête de somme » ennemie qui dirige ses attaques contre le porteur ou son unité en phase de Combat subit un malus de -1 pour Toucher. (Une « bête de somme » est la monture d'une figurine de « cavalerie », la/les bête(s) tirant un « char », et la monture d'un personnage monté de type « monstre ».)"
    }
   ],
   "skaven": [
@@ -1574,8 +1574,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Glamourweave",
     "pts": 30,
-    "d": "4+ Ward save vs Magical Attacks.",
-    "df": "Sauvegarde Invulnérable 4+ contre les Attaques Magiques."
+    "d": "If the bearer (or any unit they have joined) is the target of an enemy spell, the bearer may use this instead of attempting a Wizardly dispel: roll a D6; on a 2+ the spell is dispelled; on a 1 the amulet explodes (it is destroyed and the bearer loses 1 Wound). Cannot be used against a perfect invocation.",
+    "df": "Si le porteur (ou son unité) est la cible d'un sort ennemi, il peut l'utiliser au lieu d'une dissipation de Magicien : lancez un D6 ; sur 2+ le sort est dissipé ; sur 1 l'amulette explose (détruite, le porteur perd 1 PV). Inutilisable contre une invocation parfaite."
    },
    {
     "n": "Orion's Favour",
@@ -2076,14 +2076,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Big Red Raggedy Flag",
     "pts": 50,
-    "d": "Unit gains Frenzy which cannot be lost. When the unit passes a Waaagh! test, all models in the unit gain +1 Attack.",
-    "df": "L'unité gagne Frénésie qui ne peut être perdue. Quand l'unité réussit un test de Waaagh!, toutes ses figurines gagnent +1 Attaque."
+    "d": "A unit carrying this banner has a +1 modifier to its Weapon Skill (to a maximum of 10) and, when calculating its combat result, may claim an additional +1 combat result point.",
+    "df": "Une unité portant cette bannière gagne +1 en Capacité de Combat (max 10) et, lors du calcul de son résultat de combat, peut revendiquer +1 point de résultat de combat supplémentaire."
    },
    {
     "n": "Waaagh! Banner",
     "pts": 40,
-    "d": "Once per game: unit automatically passes a single Waaagh! test.",
-    "df": "Une fois par partie : l'unité réussit automatiquement un test de Waaagh!."
+    "d": "A unit carrying this banner increases its maximum possible charge range by 3\" and, when it makes a Charge roll, may apply a +D3 modifier to the result.",
+    "df": "Une unité portant cette bannière augmente sa portée de charge maximale de 3 ps et, lorsqu'elle effectue un jet de Charge, peut appliquer un modificateur de +D3 au résultat."
    },
    {
     "n": "Da Angry Ladz Flag",
@@ -2094,8 +2094,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Da Banner of Butchery",
     "pts": 35,
-    "d": "Unit re-rolls To Wound rolls of natural 1.",
-    "df": "L'unité relance les jets pour blesser de 1 naturel."
+    "d": "All models in the unit have a +1 modifier to their Strength characteristic during a turn in which the unit charges.",
+    "df": "Toutes les figurines de l'unité gagnent un modificateur de +1 en Force lors d'un tour où l'unité charge."
    },
    {
     "n": "Da Spider Banner",
@@ -2118,8 +2118,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Guff's Windy Banner",
     "pts": 20,
-    "d": "Unit gains Flaming Attacks.",
-    "df": "L'unité gagne Attaques Enflammées."
+    "d": "A unit carrying this banner may re-roll any failed Panic test.",
+    "df": "Une unité portant cette bannière peut relancer tout test de Panique raté."
    }
   ],
   "skaven": [
@@ -2724,8 +2724,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Big Boss 'At",
     "pts": 50,
-    "d": "Wearer gains Inspiring Presence (18\") and General special rule if they are a Big Boss.",
-    "df": "Si le porteur est un Grand Chef : il gagne Présence Inspirante (18\") et la règle spéciale Général."
+    "d": "During the Command sub-phase of their turn, if not engaged in combat, the wearer may make a Leadership test (using their own Leadership). If passed, until your next Start of Turn sub-phase the wearer and any unit they have joined have the Unbreakable special rule.",
+    "df": "Lors de la sous-phase de Commandement de son tour, s'il n'est pas engagé, le porteur peut faire un test de Commandement (avec son propre Cd). En cas de réussite, jusqu'à votre prochaine sous-phase de Début de Tour, le porteur et l'unité qu'il a rejointe gagnent Indémoralisable."
    },
    {
     "n": "Necklace of Blessed Teef",
@@ -2748,14 +2748,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "'Eadbuttin' 'At",
     "pts": 15,
-    "d": "Orc Bosses/Warbosses only. Bearer has the Headbutt attack. Extremely Common.",
-    "df": "Chefs / Chefs de Guerre Orques uniquement. Le porteur dispose de l'attaque Coup de Boule. Extrêmement Commun."
+    "d": "0-1 per model. The wearer gains the Impact Hits (1) special rule; this Impact Hit has an AP of -2. Extremely Common.",
+    "df": "0-1 par figurine. Le porteur gagne Touches d'Impact (1) ; cette Touche d'Impact a une PA de -2. Extrêmement Courant."
    },
    {
     "n": "Fungus Wine",
     "pts": 10,
-    "d": "Single use. Until end of turn: bearer has +D6 Attacks but must re-roll successful To Hit rolls. Extremely Common.",
-    "df": "Usage unique. Jusqu'à la fin du tour : le porteur a +D6 Attaques mais doit relancer ses jets pour toucher réussis. Extrêmement Commun."
+    "d": "Night Goblin characters only. Single use. During the Command sub-phase of their turn, if not engaged in combat, the bearer may make a Leadership test. If passed, until your next Start of Turn sub-phase the bearer and any unit they have joined have the Immune to Psychology special rule. Extremely Common.",
+    "df": "Personnages Gobelins de la Nuit uniquement. Usage unique. Lors de la sous-phase de Commandement, s'il n'est pas engagé, le porteur peut faire un test de Commandement. En cas de réussite, jusqu'à votre prochaine sous-phase de Début de Tour, le porteur et son unité gagnent Immunisé à la Psychologie. Extrêmement Courant."
    }
   ],
   "skaven": [
@@ -3263,8 +3263,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Glittering Wotnots",
     "pts": 40,
-    "d": "Enemy Wizards within 18\" cannot use their Level of Wizardry as a bonus to Dispel rolls.",
-    "df": "Les Sorciers ennemis à moins de 18\" ne peuvent pas ajouter leur Niveau de Sorcellerie à leurs jets de Dissipation."
+    "d": "If the bearer (or their unit) is the target of an enemy spell, the bearer may use this instead of attempting a Wizardly dispel: roll a D6; on a 1-3 there is no effect (the spell is cast as normal); on a 4+ the spell is reflected back onto the caster (the caster and their unit become the target; the caster may attempt a Wizardly dispel).",
+    "df": "Si le porteur (ou son unité) est la cible d'un sort ennemi, il peut l'utiliser au lieu d'une dissipation de Magicien : lancez un D6 ; sur 1-3 aucun effet (le sort est lancé normalement) ; sur 4+ le sort est renvoyé sur le lanceur (le lanceur et son unité deviennent la cible ; le lanceur peut tenter une dissipation)."
    },
    {
     "n": "Idol of Gork",
@@ -3275,14 +3275,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Buzgob's Knobbly Staff",
     "pts": 35,
-    "d": "+1 to Casting rolls. Once per game: re-roll a failed Casting roll.",
-    "df": "+1 aux jets de Lancement. Une fois par partie : relancer un jet de Lancement raté."
+    "d": "Once per turn, the bearer may re-roll a Casting roll.",
+    "df": "Une fois par tour, le porteur peut relancer un jet de Lancement."
    },
    {
     "n": "Idol of Mork",
     "pts": 30,
-    "d": "Cast a Waaagh! Magic spell as a Bound Spell (PL 2).",
-    "df": "Lance un sort de Magie Waaagh! comme sort Lié (Niveau de Pouvoir 2)."
+    "d": "The bearer increases their Dispel range by 3\". In addition, once per turn, when attempting a Wizardly dispel, the bearer may re-roll the Dispel roll.",
+    "df": "Le porteur augmente sa portée de Dissipation de 3 ps. De plus, une fois par tour, lorsqu'il tente une dissipation de Magicien, il peut relancer le jet de Dissipation."
    },
    {
     "n": "Da Hag's Brew",
