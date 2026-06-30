@@ -76,6 +76,7 @@ const AUGUR_AL = {
     mercenaries:[
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
       {n:"Chaos Marauder Horsemen (cond.)",s:"chaos-marauder-horsemen"},
+      {n:"Bonegrinder Giant (0-1)",s:"bonegrinder-giant"},
     ],
     allies:["Warriors of Chaos","Daemons of Chaos (Suspicious)"],
   },
@@ -241,9 +242,10 @@ const AUGUR_AL = {
       {n:"Nasty Skulkers (cond.)",s:"nasty-skulkers"},
       {n:"Doom Diver Catapult",s:"doom-diver-catapult"},
       {n:"Rock Lobber",s:"rock-lobber"},
-      {n:"Giant",s:"giant"}
+      {n:"Giant",s:"giant"},
+      {n:"Troll Hag (0-1, via Mère Troll)",s:"troll-hag"}
     ],
-    mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"}],
+    mercenaries:[{n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},{n:"Bonegrinder Giant (0-1)",s:"bonegrinder-giant"}],
     allies:["Ogre Kingdoms"],
   },
   "tomb-kings-of-khemri":{
@@ -305,6 +307,7 @@ const AUGUR_AL = {
       {n:"Badlands Ogre Bulls",s:"badlands-ogre-bulls"},
       {n:"Gor Herd (Beastmen)",s:"gor-herd"},
       {n:"Ungor Herd (Beastmen)",s:"ungor-herd"},
+      {n:"Bonegrinder Giant (0-1)",s:"bonegrinder-giant"},
     ],
     allies:["Beastmen Brayherds","Daemons of Chaos (Suspicious)"],
   },
