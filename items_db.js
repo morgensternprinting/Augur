@@ -76,8 +76,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Berserker Blade",
     "pts": 20,
-    "d": "Combat, S+1, -. Frenzy, Magical Attacks.",
-    "df": "Combat, F+1, -. Frénésie, Attaques Magiques."
+    "d": "Combat, S+1, -. Extra Attacks (+1), Impetuous, Magical Attacks. The wielder of the Berserker Blade is Impetuous. (Errata)",
+    "df": "Combat, F+1, -. Attaques Supplémentaires (+1), Impétueux, Attaques Magiques. Le porteur de la Lame du Berserker est Impétueux. (Errata)"
    },
    {
     "n": "Sword of Might",
@@ -820,8 +820,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Bedazzling Helm",
     "pts": 60,
-    "d": "May be worn with other armour. The wearer improves their armour value by 1 (to a maximum of 2+). In addition, any enemy model that directs its attacks against the wearer during the Combat phase suffers a -1 modifier to its rolls To Hit.",
-    "df": "Peut être porté avec une autre armure. Le porteur améliore sa valeur d'armure de 1 (jusqu'à un maximum de 2+). De plus, toute figurine ennemie dirigeant ses attaques contre le porteur en phase de Combat subit un modificateur de -1 à ses jets pour toucher."
+    "d": "Models whose troop type is ‘infantry’ or ‘cavalry’ only (Errata). May be worn with other armour. The wearer improves their armour value by 1 (to a maximum of 2+). In addition, any enemy model that directs its attacks against the wearer during the Combat phase suffers a -1 modifier to its rolls To Hit.",
+    "df": "Figurines dont le type de troupe est « infanterie » ou « cavalerie » uniquement (Errata). Peut être porté avec une autre armure. Le porteur améliore sa valeur d’armure de 1 (jusqu’à un maximum de 2+). De plus, toute figurine ennemie dirigeant ses attaques contre le porteur en phase de Combat subit un modificateur de -1 à ses jets pour toucher."
    },
    {
     "n": "Armour of Silvered Steel",
