@@ -41,7 +41,7 @@ const OWB_UNIT_DATA = {
   "pink-horrors-of-tzeentch-core": {id:"pink-horrors-of-tzeentch-core", army:"daemons-of-chaos", category:"core", name_fr:"Horreurs Roses de Tzeentch", name_en:"Pink Horrors of Tzeentch", points:12, unitSize:"9+", specialRules:"Close Order, Daemonic {renegade}, Daemons of Tzeentch, Scintillating Sorcery", equip:[{"name_fr": "Arme de base, Flammes de Tzeentch", "name_en": "Hand weapon, Flames of Tzeentch", "points": 0, "perModel": true, "active": true}], command:[{"name_fr": "Horreur Iridescente (champion)", "name_en": "Iridescent Horror (champion)", "points": 6}, {"name_fr": "Porte-étendard", "name_en": "Standard bearer", "points": 6}, {"name_fr": "Musicien", "name_en": "Musician", "points": 6}]},
   "blue-horrors-of-tzeentch-core": {id:"blue-horrors-of-tzeentch-core", army:"daemons-of-chaos", category:"core", name_fr:"Horreurs Bleues de Tzeentch", name_en:"Blue Horrors of Tzeentch", points:9, unitSize:"9+", specialRules:"Daemonic, Daemons of Tzeentch, Move Through Cover, Open Order", equip:[{"name_fr": "Armes de base, Flammes de Tzeentch", "name_en": "Hand weapons, Flames of Tzeentch", "points": 0, "active": true}], command:[{"name_fr": "Horreur Ectoplasmique (champion)", "name_en": "Ectoplasmic Horror (champion)", "points": 6}]},
   "brimstone-horrors-of-tzeentch": {id:"brimstone-horrors-of-tzeentch", army:"daemons-of-chaos", category:"core", name_fr:"Horreurs Sulfureuses de Tzeentch", name_en:"Brimstone Horrors of Tzeentch", points:38, unitSize:"2+", specialRules:"Daemonic {renegade}, Daemons of Tzeentch, Flaming Attacks, Loner, Skirmishers", equip:[{"name_fr": "Armes de base", "name_en": "Hand weapons", "points": 0, "perModel": true, "active": true}]},
-  "chaos-furies": {id:"chaos-furies", army:"daemons-of-chaos", category:"core", name_fr:"Gargouilles du Chaos", name_en:"Chaos Furies", points:12, unitSize:"5+", specialRules:"Daemonic {renegade}, Fly (8), Furious Charge, Skirmishers, Swiftstride, Vanguard", equip:[{"name_fr": "Serres démoniaques", "name_en": "Daemonic talons", "points": 0, "perModel": true, "active": true}]},
+  "chaos-furies": {id:"chaos-furies", army:"daemons-of-chaos", category:"core", name_fr:"Gargouilles du Chaos", name_en:"Chaos Furies", points:12, unitSize:"5+", specialRules:"Daemonic {renegade}, Fly (8), Furious Charge, Skirmishers, Swiftstride, Vanguard", opts:[{"name_fr": "Démon de Khorne", "name_en": "Daemon of Khorne", "points": 2, "perModel": true}, {"name_fr": "Démon de Nurgle", "name_en": "Daemon of Nurgle", "points": 2, "perModel": true}, {"name_fr": "Démon de Slaanesh", "name_en": "Daemon of Slaanesh", "points": 2, "perModel": true}, {"name_fr": "Démon de Tzeentch", "name_en": "Daemon of Tzeentch", "points": 2, "perModel": true}], equip:[{"name_fr": "Serres démoniaques", "name_en": "Daemonic talons", "points": 0, "perModel": true, "active": true}]},
   "chaos-furies-of-slaanesh": {id:"chaos-furies-of-slaanesh", army:"daemons-of-chaos", category:"core", name_fr:"Gargouilles du Chaos de Slaanesh", name_en:"Chaos Furies of Slaanesh", points:14, unitSize:"5+", specialRules:"Daemonic {renegade}, Fly (8), Furious Charge, Skirmishers, Swiftstride, Vanguard, Daemons of Slaanesh", equip:[{"name_fr": "Serres démoniaques", "name_en": "Daemonic talons", "points": 0, "perModel": true, "active": true}]},
   "chaos-furies-of-nurgle": {id:"chaos-furies-of-nurgle", army:"daemons-of-chaos", category:"core", name_fr:"Gargouilles du Chaos de Nurgle", name_en:"Chaos Furies of Nurgle", points:14, unitSize:"5+", specialRules:"Daemonic {renegade}, Fly (8), Furious Charge, Skirmishers, Swiftstride, Vanguard, Daemons of Nurgle", equip:[{"name_fr": "Serres démoniaques", "name_en": "Daemonic talons", "points": 0, "perModel": true, "active": true}]},
   "chaos-furies-of-khorne": {id:"chaos-furies-of-khorne", army:"daemons-of-chaos", category:"core", name_fr:"Gargouilles du Chaos de Khorne", name_en:"Chaos Furies of Khorne", points:14, unitSize:"5+", specialRules:"Daemonic {renegade}, Fly (8), Furious Charge, Skirmishers, Swiftstride, Vanguard, Daemons of Khorne", equip:[{"name_fr": "Serres démoniaques", "name_en": "Daemonic talons", "points": 0, "perModel": true, "active": true}]},
@@ -58,9 +58,9 @@ const OWB_UNIT_DATA = {
   "pink-horrors-of-tzeentch": {id:"pink-horrors-of-tzeentch", army:"daemons-of-chaos", category:"special", name_fr:"Horreurs Roses de Tzeentch", name_en:"Pink Horrors of Tzeentch", points:12, unitSize:"9+", specialRules:"Close Order, Daemonic {renegade}, Daemons of Tzeentch, Scintillating Sorcery", equip:[{"name_fr": "Arme de base, Flammes de Tzeentch", "name_en": "Hand weapon, Flames of Tzeentch", "points": 0, "perModel": true, "active": true}], command:[{"name_fr": "Horreur Iridescente (champion)", "name_en": "Iridescent Horror (champion)", "points": 6}, {"name_fr": "Porte-étendard", "name_en": "Standard bearer", "points": 6}, {"name_fr": "Musicien", "name_en": "Musician", "points": 6}]},
   "blue-horrors-of-tzeentch": {id:"blue-horrors-of-tzeentch", army:"daemons-of-chaos", category:"special", name_fr:"Horreurs Bleues de Tzeentch", name_en:"Blue Horrors of Tzeentch", points:9, unitSize:"9+", specialRules:"Daemonic, Daemons of Tzeentch, Move Through Cover, Open Order", equip:[{"name_fr": "Armes de base, Flammes de Tzeentch", "name_en": "Hand weapons, Flames of Tzeentch", "points": 0, "active": true}], command:[{"name_fr": "Horreur Ectoplasmique (champion)", "name_en": "Ectoplasmic Horror (champion)", "points": 6}]},
   "screamers-of-tzeentch": {id:"screamers-of-tzeentch", army:"daemons-of-chaos", category:"special", name_fr:"Hurleurs de Tzeentch", name_en:"Screamers of Tzeentch", points:44, unitSize:"3+", specialRules:"Daemonic {renegade}, Daemons of Tzeentch, Fly (9), Loner, Skirmishers, Slashing Attack", equip:[{"name_fr": "Morsure de lamproie", "name_en": "Lamprey's bite", "points": 0, "perModel": true, "active": true}]},
-  "flamers-of-tzeentch": {id:"flamers-of-tzeentch", army:"daemons-of-chaos", category:"special", name_fr:"Incendiaires de Tzeentch", name_en:"Flamers of Tzeentch", points:40, unitSize:"3-6", specialRules:"Daemonic {renegade}, Daemons of Tzeentch, Flaming Attacks, Infernal Favour (1 - Exalted Flamer only), Lore of Daemons {renegade}, Move Through Cover, Skirmishers", equip:[{"name_fr": "Armes de base, Feu mutant", "name_en": "Hand weapons, Warpflame", "points": 0, "active": true}], command:[{"name_fr": "Pyrobole (champion)", "name_en": "Pyroclaster (champion)", "points": 7}]},
-  "burning-chariot-of-tzeentch": {id:"burning-chariot-of-tzeentch", army:"daemons-of-chaos", category:"rare", name_fr:"Char Incendiaire de Tzeentch", name_en:"Burning Chariot of Tzeentch", points:190, specialRules:"Close Order, Daemonic {renegade}, Daemon of Tzeentch, Fly (9), Impact Hits (D6+1), Lore of Daemons {renegade}, Slashing Attack (Screamers only)", opts:[{"name_fr": "Sorcier", "name_en": "Wizard", "points": 0, "active": true}], equip:[{"name_fr": "Armes de base, Feu mutant, Flammes de Tzeentch, Morsure de lamproie", "name_en": "Hand weapons, Warpflame, Flames of Tzeentch, Lamprey's bite", "points": 0, "active": true}], armor:[{"name_fr": "4+", "name_en": "4+", "points": 0, "active": true}]},
-  "soul-grinder": {id:"soul-grinder", army:"daemons-of-chaos", category:"rare", name_fr:"Broyeur d’Âme", name_en:"Soul Grinder", points:255, specialRules:"Close Order, Daemonic {renegade}, Furious Charge, Large Target, Reserve Move, Stomp Attacks (D6+1), Terror", opts:[{"name_fr": "Démon de Khorne", "name_en": "Daemon of Khorne", "points": 10}, {"name_fr": "Démon de Nurgle", "name_en": "Daemon of Nurgle", "points": 10}, {"name_fr": "Démon de Slaanesh", "name_en": "Daemon of Slaanesh", "points": 10}, {"name_fr": "Démon de Tzeentch", "name_en": "Daemon of Tzeentch", "points": 10}], equip:[{"name_fr": "Arme de base, Griffe de fer, Canon moissonneur", "name_en": "Hand weapon, Iron claw, Harvester cannon", "points": 0, "active": true}, {"name_fr": "Arme de base, Griffe de fer, Canon moissonneur, Torrent de sang brûlant", "name_en": "Hand weapon, Iron claw, Harvester cannon, Baleful torrent", "points": 25}, {"name_fr": "Arme de base, Griffe de fer, Canon moissonneur, Regard corrupteur", "name_en": "Hand weapon, Iron claw, Harvester cannon, Warp gaze", "points": 30}], armor:[{"name_fr": "Armure lourde (Chair démoniaque)", "name_en": "Heavy armour (Daemonic flesh)", "points": 0, "active": true}]},
+  "flamers-of-tzeentch": {id:"flamers-of-tzeentch", army:"daemons-of-chaos", category:"special", name_fr:"Incendiaires de Tzeentch", name_en:"Flamers of Tzeentch", points:40, unitSize:"3-6", specialRules:"Daemonic {renegade}, Daemons of Tzeentch, Flaming Attacks, Infernal Favour (1 - Exalted Flamer only), Lore of Daemons {renegade}, Move Through Cover, Skirmishers", equip:[{"name_fr": "Armes de base, Feu mutant", "name_en": "Hand weapons, Warpflame", "points": 0, "active": true}], command:[{"name_fr": "Pyrobole (champion)", "name_en": "Pyroclaster (champion)", "points": 7}, {"name_fr": "Incendiaire Exalté (champion)", "name_en": "Exalted Flamer (champion)", "points": 40}]},
+  "burning-chariot-of-tzeentch": {id:"burning-chariot-of-tzeentch", army:"daemons-of-chaos", category:"rare", name_fr:"Char Incendiaire de Tzeentch", name_en:"Burning Chariot of Tzeentch", points:190, specialRules:"Close Order, Daemonic {renegade}, Daemon of Tzeentch, Fly (9), Impact Hits (D6+1), Lore of Daemons {renegade}, Slashing Attack (Screamers only)", opts:[{"name_fr": "Sorcier de Niveau 2", "name_en": "Level 2 Wizard", "points": 30}, {"name_fr": "Sorcier de Niveau 3", "name_en": "Level 3 Wizard", "points": 60}], equip:[{"name_fr": "Armes de base, Feu mutant, Flammes de Tzeentch, Morsure de lamproie", "name_en": "Hand weapons, Warpflame, Flames of Tzeentch, Lamprey's bite", "points": 0, "active": true}], armor:[{"name_fr": "4+", "name_en": "4+", "points": 0, "active": true}]},
+  "soul-grinder": {id:"soul-grinder", army:"daemons-of-chaos", category:"rare", name_fr:"Broyeur d’Âme", name_en:"Soul Grinder", points:255, specialRules:"Close Order, Daemonic {renegade}, Furious Charge, Large Target, Reserve Move, Stomp Attacks (D6+1), Terror", opts: [{"name_fr": "Démon de Khorne", "name_en": "Daemon of Khorne", "points": 10}, {"name_fr": "Démon de Nurgle", "name_en": "Daemon of Nurgle", "points": 10}, {"name_fr": "Démon de Slaanesh", "name_en": "Daemon of Slaanesh", "points": 10}, {"name_fr": "Démon de Tzeentch", "name_en": "Daemon of Tzeentch", "points": 10}, {name_fr: "Torrent funeste", name_en: "Baleful torrent", points: 25}, {name_fr: "Regard du Warp", name_en: "Warp gaze", points: 30}], equip:[{"name_fr": "Arme de base, Griffe de fer, Canon moissonneur", "name_en": "Hand weapon, Iron claw, Harvester cannon", "points": 0, "active": true}, {"name_fr": "Arme de base, Griffe de fer, Canon moissonneur, Torrent de sang brûlant", "name_en": "Hand weapon, Iron claw, Harvester cannon, Baleful torrent", "points": 25}, {"name_fr": "Arme de base, Griffe de fer, Canon moissonneur, Regard corrupteur", "name_en": "Hand weapon, Iron claw, Harvester cannon, Warp gaze", "points": 30}], armor:[{"name_fr": "Armure lourde (Chair démoniaque)", "name_en": "Heavy armour (Daemonic flesh)", "points": 0, "active": true}]},
   "skull-cannon-of-khorne": {id:"skull-cannon-of-khorne", army:"daemons-of-chaos", category:"rare", name_fr:"Canon à Crânes de Khorne", name_en:"Skull Cannon of Khorne", points:185, specialRules:"Brazen Wheels, Close Order, Daemonic {renegade}, Daemon of Khorne, First Charge, Impact Hits (D3+1), Impetuous, Stomp Attacks (D3)", equip:[{"name_fr": "Roues d’airain, Arme de base (faux), Canon de Khorne, Lames Infernales", "name_en": "Brazen wheels, Hand weapon (scything blades), Cannon of Khorne {renegade}, Hellblades", "points": 0, "active": true}], armor:[{"name_fr": "Armure de plate complète", "name_en": "Full plate armour", "points": 0, "active": true}]},
   "sisters-of-slaughter": {id:"sisters-of-slaughter", army:"dark-elves", category:"rare", name_fr:"Sœurs du Massacre", name_en:"Sisters of Slaughter", points:17, unitSize:"10+", specialRules:"Dance of Death, Elven Reflexes, Hatred (High Elves), Impetuous, Loner, Murderous {renegade}, Open Order", equip:[{"name_fr": "Armes de base, Lanières & bocle", "name_en": "Hand weapons, Lash & buckler", "points": 0, "perModel": true, "active": true}], command:[{"name_fr": "Doyenne (champion)", "name_en": "Hag (champion)", "points": 7}, {"name_fr": "Porte-étendard", "name_en": "Standard bearer", "points": 7}, {"name_fr": "Musicien", "name_en": "Musician", "points": 7}]},
   "harpies": {id:"harpies", army:"dark-elves", category:"special", name_fr:"Harpies", name_en:"Harpies", points:11, unitSize:"5+", specialRules:"Fly (10), Move Through Cover, Scouts, Skirmishers, Swiftstride", equip:[{"name_fr": "Armes de base (Griffes)", "name_en": "Hand weapons (Claws)", "points": 0, "perModel": true, "active": true}]},
@@ -2795,7 +2795,7 @@ const OWB_UNIT_DATA = {
       {name_fr: "Arme de base additionnelle", name_en: "Additional hand weapon", points: 6, perModel: true},
       {name_fr: "Épée bilieuse", name_en: "Bilesword", points: 10, perModel: true},
       {name_fr: "Fléau pestilentiel", name_en: "Plagueflail", points: 25, perModel: true},
-      {name_fr: "Sorcier", name_en: "Wizard", points: 0, active: true}
+      {name_fr: "Sorcier de Niveau 2", name_en: "Level 2 Wizard", points: 30}, {name_fr: "Sorcier de Niveau 3", name_en: "Level 3 Wizard", points: 60}, {name_fr: "Sorcier de Niveau 4", name_en: "Level 4 Wizard", points: 90}
     ],
     equip: [
       {name_fr: "Arme de base", name_en: "Hand weapon", points: 0, active: true, perModel: true}
@@ -2828,7 +2828,7 @@ const OWB_UNIT_DATA = {
     armor: [],
     mounts: [
       {name_fr: "À Pied", name_en: "On foot", points: 0, active: true},
-      {name_fr: "Palanquin de Nurgle", name_en: "Palanquin of Nurgle {renegade}", points: 40}
+      {name_fr: "Palanquin de Nurgle", name_en: "Palanquin of Nurgle", points: 40}
     ],
     magic: {items: [
       {name_fr: "Dons Démoniaques", name_en: "Daemonic Gifts", types: ["daemonic-gift-common", "daemonic-gift-nurgle"], maxPoints: 50}
@@ -2847,7 +2847,7 @@ const OWB_UNIT_DATA = {
     points: 330,
     specialRules: "Démoniaque, Démon de Slaanesh, Faveur Infernale (2), Grande Cible, Domaine des Démons, Attaques de Piétinement (D3), Rapide, Terreur",
     opts: [
-      {name_fr: "Sorcier", name_en: "Wizard", points: 0, active: true}
+      {name_fr: "Sorcier de Niveau 2", name_en: "Level 2 Wizard", points: 30}, {name_fr: "Sorcier de Niveau 3", name_en: "Level 3 Wizard", points: 60}, {name_fr: "Sorcier de Niveau 4", name_en: "Level 4 Wizard", points: 90}
     ],
     equip: [
       {name_fr: "Pinces empaleuses", name_en: "Impaling claws", points: 0, active: true, perModel: true}
@@ -2857,6 +2857,36 @@ const OWB_UNIT_DATA = {
     magic: {items: [
       {name_fr: "Dons Démoniaques", name_en: "Daemonic Gifts", types: ["daemonic-gift-common", "daemonic-gift-slaanesh"], maxPoints: 100}
     ], lores: ["dark-magic", "daemonology", "illusion"]},
+    command: [
+      {name_fr: "Général", name_en: "General", points: 0}
+    ]
+  },
+  "daemon-prince-daemons-of-chaos": {
+    id: "daemon-prince-daemons-of-chaos",
+    army: "daemons-of-chaos",
+    category: "characters",
+    name_fr: "Prince Démon",
+    name_en: "Daemon Prince",
+    points: 210,
+    specialRules: "Démoniaque, Faveur Infernale (2), Armure du Chaos, Domaine des Démons",
+    opts: [
+      {name_fr: "Armure lourde", name_en: "Heavy armour", points: 6},
+      {name_fr: "Vol (9)", name_en: "Fly (9)", points: 30},
+      {name_fr: "Démon de Khorne", name_en: "Daemon of Khorne", points: 10},
+      {name_fr: "Démon de Nurgle", name_en: "Daemon of Nurgle", points: 10},
+      {name_fr: "Démon de Slaanesh", name_en: "Daemon of Slaanesh", points: 10},
+      {name_fr: "Démon de Tzeentch", name_en: "Daemon of Tzeentch", points: 10},
+      {name_fr: "Sorcier de Niveau 1", name_en: "Level 1 Wizard", points: 25},
+      {name_fr: "Sorcier de Niveau 2", name_en: "Level 2 Wizard", points: 50},
+      {name_fr: "Sorcier de Niveau 3", name_en: "Level 3 Wizard", points: 75},
+      {name_fr: "Sorcier de Niveau 4", name_en: "Level 4 Wizard", points: 100}
+    ],
+    equip: [],
+    armor: [],
+    mounts: [],
+    magic: {items: [
+      {name_fr: "Dons Démoniaques", name_en: "Daemonic Gifts", types: ["daemonic-gift-common", "daemonic-gift-khorne", "daemonic-gift-nurgle", "daemonic-gift-slaanesh", "daemonic-gift-tzeentch"], maxPoints: 100}
+    ], lores: ["battle-magic", "daemonology", "dark-magic", "elementalism", "illusion"]},
     command: [
       {name_fr: "Général", name_en: "General", points: 0}
     ]
@@ -2901,7 +2931,7 @@ const OWB_UNIT_DATA = {
     specialRules: "Démoniaque, Démon de Tzeentch, Attaques Enflammées, Vol (9), Faveur Infernale (2), Grande Cible, Domaine des Démons, Attaques de Piétinement (D3), Rapide, Terreur",
     opts: [
       {name_fr: "Baguette de Tzeentch", name_en: "Tzeentchian Wand", points: 20, perModel: true},
-      {name_fr: "Sorcier", name_en: "Wizard", points: 0, active: true}
+      {name_fr: "Sorcier de Niveau 3", name_en: "Level 3 Wizard", points: 30}, {name_fr: "Sorcier de Niveau 4", name_en: "Level 4 Wizard", points: 60}
     ],
     equip: [
       {name_fr: "Arme de base, Arme lourde (Bâton de Tzeentch)", name_en: "Hand weapon, Great weapon (Staff of Tzeentch)", points: 0, active: true, perModel: true}
@@ -2924,7 +2954,7 @@ const OWB_UNIT_DATA = {
     points: 90,
     specialRules: "Démoniaque, Démon de Tzeentch, Faveur Infernale (1), Domaine des Démons",
     opts: [
-      {name_fr: "Sorcier", name_en: "Wizard", points: 0, active: true}
+      {name_fr: "Sorcier de Niveau 2", name_en: "Level 2 Wizard", points: 30}, {name_fr: "Sorcier de Niveau 3", name_en: "Level 3 Wizard", points: 60}
     ],
     equip: [
       {name_fr: "Arme de base, Flammes de Tzeentch", name_en: "Hand weapon, Flames of Tzeentch", points: 0, active: true, perModel: true}
@@ -2937,7 +2967,6 @@ const OWB_UNIT_DATA = {
       {name_fr: "Char Incendiaire de Tzeentch", name_en: "Burning Chariot of Tzeentch", points: 190}
     ],
     magic: {items: [
-      {name_fr: "Dons Démoniaques", name_en: "Daemonic Gifts", types: ["daemonic-gift-common", "daemonic-gift-tzeentch"], maxPoints: 50},
       {name_fr: "Dons Démoniaques", name_en: "Daemonic Gifts", types: ["daemonic-gift-common", "daemonic-gift-tzeentch"], maxPoints: 50}
     ], lores: ["daemonology", "dark-magic", "elementalism", "battle-magic", "illusion"]},
     command: [
@@ -3556,7 +3585,7 @@ const OWB_UNIT_DATA = {
   "stormvermin": {
     id: "stormvermin",
     army: "skaven",
-    category: "special",
+    category: "core",
     name_fr: "Vermines de choc",
     name_en: "Stormvermin",
     points: 10,
@@ -3626,8 +3655,8 @@ const OWB_UNIT_DATA = {
     mounts: [],
     magic: null,
     command: [
-      {name_fr: "Cliquetis", name_en: "Packmaster", points: 5},
-      {name_fr: "Maître des Artificiers", name_en: "Master Moulder", points: 20},
+      {name_fr: "Chef de meute", name_en: "Packmaster", points: 5},
+      {name_fr: "Maître corrupteur", name_en: "Master Moulder", points: 20},
       {name_fr: "Musicien", name_en: "Musician", points: 2}
     ]
   },

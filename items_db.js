@@ -784,6 +784,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Axe of Khorne", pts:35, d:"S+1, AP-1. Extremely Common.", df:"F+1, PA-1. Extrêmement Commun."},
       {n:"Collar of Khorne", pts:25, d:"+1 Magic Resistance. Extremely Common.", df:"+1 Résistance à la Magie. Extrêmement Commun."},
       {n:"Might of Khorne", pts:25, d:"+1 Strength.", df:"+1 Force."},
+      {n:"Æther Blade", pts:50, d:"This Daemon's hand weapon allows no armour saves (Ward and Regeneration still allowed).", df:"L'arme de base de ce Démon n'autorise aucune sauvegarde d'armure (sauvegarde invulnérable et régénération restent possibles)."},
+      {n:"Many Arms", pts:30, d:"+1 to the Attacks characteristic. Extremely Common.", df:"+1 en caractéristique d'Attaques. Extrêmement Commun."},
+      {n:"Winged Horror", pts:50, d:"Daemonic Heralds (regular infantry only) gain Fly (8) and Swiftstride.", df:"Les Hérauts Démoniaques (infanterie régulière uniquement) gagnent Vol (8) et Rapide."},
+      {n:"Daemonic Robes", pts:35, d:"Cannot be wounded by a roll To Wound of a natural 2, regardless of the attack's Strength.", df:"Ne peut être blessé par un jet pour blesser de 2 naturel, quelle que soit la Force de l'attaque."}
     ],
     "daemons-of-chaos-nurgle": [
       {n:"Exalted Locus", pts:60, d:"Daemonic Locus only. The Herald's Locus special rule affects all friendly units in Command range with the same Daemonic Alignment.", df:"Locus Démoniaque uniquement. La règle de Locus du Héraut affecte toutes les unités amies à portée de Cd ayant le même Alignement Démoniaque."},
@@ -793,6 +797,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Spoilpox Scrivener", pts:30, d:"Daemonic Heralds infantry only. Friendly Daemons of Nurgle within Command range re-roll To Hit rolls of 1.", df:"Hérauts Démoniaques d'infanterie uniquement. Les Démons de Nurgle amis à portée de Cd relancent les jets pour toucher de 1."},
       {n:"Trappings of Nurgle", pts:30, d:"Armour value 4+ which cannot be improved in any way.", df:"Valeur d'armure de 4+ qui ne peut être améliorée d'aucune façon."},
       {n:"Stream of Contagion", pts:25, d:"S3, AP-2 breath weapon. Extremely Common.", df:"Arme à souffle F3, PA-2. Extrêmement Commun."},
+      {n:"Æther Blade", pts:50, d:"This Daemon's hand weapon allows no armour saves (Ward and Regeneration still allowed).", df:"L'arme de base de ce Démon n'autorise aucune sauvegarde d'armure (sauvegarde invulnérable et régénération restent possibles)."},
+      {n:"Many Arms", pts:30, d:"+1 to the Attacks characteristic. Extremely Common.", df:"+1 en caractéristique d'Attaques. Extrêmement Commun."},
+      {n:"Winged Horror", pts:50, d:"Daemonic Heralds (regular infantry only) gain Fly (8) and Swiftstride.", df:"Les Hérauts Démoniaques (infanterie régulière uniquement) gagnent Vol (8) et Rapide."},
+      {n:"Daemonic Robes", pts:35, d:"Cannot be wounded by a roll To Wound of a natural 2, regardless of the attack's Strength.", df:"Ne peut être blessé par un jet pour blesser de 2 naturel, quelle que soit la Force de l'attaque."}
     ],
     "daemons-of-chaos-slaanesh": [
       {n:"Exalted Locus", pts:60, d:"Daemonic Locus only. The Herald's Locus special rule affects all friendly units in Command range with the same Daemonic Alignment.", df:"Locus Démoniaque uniquement. La règle de Locus du Héraut affecte toutes les unités amies à portée de Cd ayant le même Alignement Démoniaque."},
@@ -802,6 +810,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Siren Song", pts:30, d:"Single use. One enemy unit that can charge bearer must pass Ld test or is forced to charge.", df:"Usage unique. Une unité ennemie pouvant charger le porteur doit réussir un test de Cd ou est forcée de charger."},
       {n:"Soporific Musk", pts:30, d:"Enemies in combat cannot use Strike First; others gain Strike Last. Extremely Common.", df:"Les ennemis en combat ne peuvent utiliser Frappe En Premier ; les autres gagnent Frappe En Dernier. Extrêmement Commun."},
       {n:"Enrapturing Gaze", pts:20, d:"Enemies in combat cannot use Inspiring Presence. Extremely Common.", df:"Les ennemis en combat ne peuvent utiliser Présence Inspirante. Extrêmement Commun."},
+      {n:"Æther Blade", pts:50, d:"This Daemon's hand weapon allows no armour saves (Ward and Regeneration still allowed).", df:"L'arme de base de ce Démon n'autorise aucune sauvegarde d'armure (sauvegarde invulnérable et régénération restent possibles)."},
+      {n:"Many Arms", pts:30, d:"+1 to the Attacks characteristic. Extremely Common.", df:"+1 en caractéristique d'Attaques. Extrêmement Commun."},
+      {n:"Winged Horror", pts:50, d:"Daemonic Heralds (regular infantry only) gain Fly (8) and Swiftstride.", df:"Les Hérauts Démoniaques (infanterie régulière uniquement) gagnent Vol (8) et Rapide."},
+      {n:"Daemonic Robes", pts:35, d:"Cannot be wounded by a roll To Wound of a natural 2, regardless of the attack's Strength.", df:"Ne peut être blessé par un jet pour blesser de 2 naturel, quelle que soit la Force de l'attaque."}
     ],
     "daemons-of-chaos-tzeentch": [
       {n:"Exalted Locus", pts:60, d:"Daemonic Locus only. The Herald's Locus special rule affects all friendly units in Command range with the same Daemonic Alignment.", df:"Locus Démoniaque uniquement. La règle de Locus du Héraut affecte toutes les unités amies à portée de Cd ayant le même Alignement Démoniaque."},
@@ -811,24 +823,43 @@ window.MAGIC_ITEMS_DB = {
       {n:"Power Vortex", pts:35, d:"Enemy Wizards within Dispel range suffer -1 to Casting rolls.", df:"Les Sorciers ennemis à portée de Dissipation subissent -1 aux jets de Lancement."},
       {n:"Iridescent Corona", pts:30, d:"Enemies targeting bearer in Shooting phase suffer -1 To Hit. Extremely Common.", df:"Les ennemis ciblant le porteur en phase de Tir subissent -1 pour toucher. Extrêmement Commun."},
       {n:"Twin Heads", pts:20, d:"Bearer knows 1 more spell than normal for their Level.", df:"Le porteur connaît 1 sort de plus que la normale pour son Niveau."},
+      {n:"Æther Blade", pts:50, d:"This Daemon's hand weapon allows no armour saves (Ward and Regeneration still allowed).", df:"L'arme de base de ce Démon n'autorise aucune sauvegarde d'armure (sauvegarde invulnérable et régénération restent possibles)."},
+      {n:"Many Arms", pts:30, d:"+1 to the Attacks characteristic. Extremely Common.", df:"+1 en caractéristique d'Attaques. Extrêmement Commun."},
+      {n:"Winged Horror", pts:50, d:"Daemonic Heralds (regular infantry only) gain Fly (8) and Swiftstride.", df:"Les Hérauts Démoniaques (infanterie régulière uniquement) gagnent Vol (8) et Rapide."},
+      {n:"Daemonic Robes", pts:35, d:"Cannot be wounded by a roll To Wound of a natural 2, regardless of the attack's Strength.", df:"Ne peut être blessé par un jet pour blesser de 2 naturel, quelle que soit la Force de l'attaque."}
     ],
     "daemons-of-chaos-icon-khorne": [
       {n:"Standard of Chaotic Glory", pts:15, d:"Models in the unit improve their Leadership by 1 (to a maximum of 10).", df:"Les figurines de l'unité améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."},
       {n:"Skull Totem", pts:50, d:"Unit (not its mounts) gains Furious Charge. On the turn it charged, models in the unit improve their weapons' AP by 1 and may re-roll rolls To Wound of a natural 1.", df:"L'unité (mais pas ses montures) gagne Charge Dévastatrice. Au tour où elle a chargé, les figurines de l'unité améliorent la PA de leurs armes de 1 et peuvent relancer les jets pour blesser de 1 naturel."},
       {n:"Icon of Endless War", pts:30, d:"When the unit declares a charge, it may re-roll its Charge roll.", df:"Quand l'unité déclare une charge, elle peut relancer son jet de Charge."},
+      {n:"Banner Of Unholy Victory", pts:50, d:"Unit may claim an additional +D3 combat result points.", df:"l'unité peut revendiquer +D3 points de résultat de combat supplémentaires."},
+      {n:"Totem Of Eternal War", pts:45, d:"Daemonic Locus only. Friendly Daemonic units within command range reduce wounds from Daemonic Instability by an additional D3.", df:"Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de commandement réduisent les blessures d'Instabilité Démoniaque de D3 supplémentaires."},
+      {n:"Great Standard Of Sundering", pts:45, d:"Enemy Wizards with line of sight to the bearer suffer -1 to Casting rolls.", df:"les Sorciers ennemis ayant une ligne de vue sur le porteur subissent -1 aux jets de lancement."}
     ],
     "daemons-of-chaos-icon-nurgle": [
       {n:"Standard of Chaotic Glory", pts:15, d:"Models in the unit improve their Leadership by 1 (to a maximum of 10).", df:"Les figurines de l'unité améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."},
       {n:"Icon of Eternal Virulence", pts:50, d:"+1 combat result point (to a maximum of +3) for each unsaved wound caused by a Poisoned Attack.", df:"+1 point de résultat de combat (jusqu'à un maximum de +3) pour chaque blessure non sauvegardée causée par une Attaque Empoisonnée."},
       {n:"Rotten Icon", pts:15, d:"Enemy units cannot claim any bonus combat result points for being engaged in the flank or rear arc of the bearer's unit.", df:"Les unités ennemies ne peuvent réclamer aucun point de résultat de combat bonus pour être engagées sur le flanc ou l'arrière de l'unité du porteur."},
+      {n:"Banner Of Unholy Victory", pts:50, d:"Unit may claim an additional +D3 combat result points.", df:"l'unité peut revendiquer +D3 points de résultat de combat supplémentaires."},
+      {n:"Totem Of Eternal War", pts:45, d:"Daemonic Locus only. Friendly Daemonic units within command range reduce wounds from Daemonic Instability by an additional D3.", df:"Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de commandement réduisent les blessures d'Instabilité Démoniaque de D3 supplémentaires."},
+      {n:"Standard Of Seeping Decay", pts:35, d:"Unit may re-roll To Wound rolls of a natural 1 in combat.", df:"l'unité peut relancer les jets pour blesser d'un 1 naturel au corps à corps."}
     ],
     "daemons-of-chaos-icon-slaanesh": [
       {n:"Standard of Chaotic Glory", pts:15, d:"Models in the unit improve their Leadership by 1 (to a maximum of 10).", df:"Les figurines de l'unité améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."},
       {n:"Icon of the Eternal Dance", pts:25, d:"Enemy units may not make Stomp Attacks against the bearer's unit.", df:"Les unités ennemies ne peuvent pas effectuer d'Attaques de Piétinement contre l'unité du porteur."},
+      {n:"Banner Of Unholy Victory", pts:50, d:"Unit may claim an additional +D3 combat result points.", df:"l'unité peut revendiquer +D3 points de résultat de combat supplémentaires."},
+      {n:"Totem Of Eternal War", pts:45, d:"Daemonic Locus only. Friendly Daemonic units within command range reduce wounds from Daemonic Instability by an additional D3.", df:"Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de commandement réduisent les blessures d'Instabilité Démoniaque de D3 supplémentaires."},
+      {n:"Banner Of Acquiescence", pts:50, d:"A single enemy unit in combat with the bearer suffers -D3 to Weapon Skill and Initiative (min 1).", df:"une unité ennemie au corps à corps avec le porteur subit -D3 en Capacité de Combat et en Initiative (min 1)."},
+      {n:"Rapturous Standard", pts:35, d:"Enemy charging the front arc makes a disordered charge.", df:"un ennemi chargeant l'arc avant effectue une charge désordonnée."},
+      {n:"Siren Standard", pts:15, d:"Enemy charged by the bearer wanting to Flee (or Fire & Flee) must pass a Leadership test first; on a fail must Hold.", df:"un ennemi chargé par le porteur voulant Fuir (ou Tirer & Fuir) doit d'abord réussir un test de Commandement ; en cas d'échec il doit Tenir."}
     ],
     "daemons-of-chaos-icon-tzeentch": [
       {n:"Standard of Chaotic Glory", pts:15, d:"Models in the unit improve their Leadership by 1 (to a maximum of 10).", df:"Les figurines de l'unité améliorent leur Commandement de 1 (jusqu'à un maximum de 10)."},
       {n:"Icon of Sorcery", pts:20, d:"Pink Horrors only. When the unit casts Pink Fire from the Lore of Daemons, the Strength of the hits is increased by +1 and their AP improved by -1 for each point of the casting unit's Rank Bonus. Extremely Common.", df:"Horreurs Roses uniquement. Quand l'unité lance Feu Rose du Domaine des Démons, la Force des touches est augmentée de +1 et leur PA améliorée de -1 par point de Bonus de Rang de l'unité lanceuse. Extrêmement Commun."},
+      {n:"Banner Of Unholy Victory", pts:50, d:"Unit may claim an additional +D3 combat result points.", df:"l'unité peut revendiquer +D3 points de résultat de combat supplémentaires."},
+      {n:"Totem Of Eternal War", pts:45, d:"Daemonic Locus only. Friendly Daemonic units within command range reduce wounds from Daemonic Instability by an additional D3.", df:"Locus Démoniaque uniquement. Les unités Démoniaques amies à portée de commandement réduisent les blessures d'Instabilité Démoniaque de D3 supplémentaires."},
+      {n:"Banner Of Discord", pts:50, d:"Unit gains Magic Resistance (-3); friendly units within 6\" gain Magic Resistance (-1).", df:"l'unité gagne Résistance à la Magie (-3) ; les unités amies à moins de 6\" gagnent Résistance à la Magie (-1)."},
+      {n:"Banner Of Change", pts:45, d:"At the start of the Combat phase, a single enemy in combat suffers 3D6 Strength 2 hits (AP -).", df:"au début de la phase de Corps à corps, un ennemi au contact subit 3D6 touches de Force 2 (PA -)."}
     ],
     "beastmen-brayherds-mutations": [
       {n:"Slug-skin", pts:50, d:"Enemies attacking bearer or unit in Combat suffer -1 To Hit.", df:"Les ennemis attaquant le porteur ou son unité en Combat subissent -1 pour toucher."},

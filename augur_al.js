@@ -409,7 +409,8 @@ const AUGUR_AL = {
       {n:"Horrors of Tzeentch",s:"horrors-of-tzeentch"},
       {n:"Exalted Flamers of Tzeentch",s:"exalted-flamers-of-tzeentch"},
       {n:"Plague Drones of Nurgle",s:"plague-drones-of-nurgle"},
-      {n:"Hellflayer of Slaanesh",s:"hellflayer-of-slaanesh"}
+      {n:"Hellflayer of Slaanesh",s:"hellflayer-of-slaanesh"},
+      {n:"Seeker Chariot of Slaanesh",s:"seeker-chariot-of-slaanesh"}
     ],
     rare:[
       {n:"Skull Cannon of Khorne",s:"skull-cannon-of-khorne"},
@@ -521,7 +522,7 @@ const AUGUR_AL = {
     ],
     core:[
       {n:"Skaven Clanrats",s:"skaven-clanrats"},
-
+      {n:"Skaven Stormvermin",s:"skaven-stormvermin"},
       {n:"Giant Rats",s:"giant-rats"},
       {n:"Skaven Dregs",s:"skaven-dregs"},
       {n:"Rat Swarms",s:"rat-swarms"},
@@ -533,8 +534,7 @@ const AUGUR_AL = {
       {n:"Gutter Runners",s:"gutter-runners"},
       {n:"Rat Ogres",s:"rat-ogres"},
       {n:"Poisoned Wind Mortars",s:"poisoned-wind-mortars"},
-      {n:"Warplock Jezzails",s:"warplock-jezzails"},
-      {n:"Skaven Stormvermin",s:"skaven-stormvermin"}
+      {n:"Warplock Jezzails",s:"warplock-jezzails"}
     ],
     rare:[
       {n:"Plague Furnace (0-1)",s:"plague-furnace"},
@@ -1116,17 +1116,45 @@ const AUGUR_RENEGADE = {
     spells: [{n:'Toothcracker', c:'6+/9+'},{n:'Trollguts', c:'7+/10+'}]
   },
   'skaven': {
-    comp: 'Renegade Army List: Characters ≤50% (0-1 Warlord & 0-1 Grey Seer per 1000), Core ≥25%, Special ≤50%, Rare ≤25%, Allies ≤25% (WoC, Uneasy).',
+    comp: 'Renegade Army List: Characters ≤50% (0-1 Warlord/Master Assassin & 0-1 Grey Seer per 1000), Core ≥25% (0-1 Skaven Dregs per Clanrats unit), Special ≤50% (Globadiers 0-1/1000), Rare ≤25%, Allies ≤25% (WoC, Uneasy).',
     units: {
-      'clanrats': {addRules:[{name:'Regiment'}], note:['Unit size → 20+','+ Regiment']},
-      'stormvermin': {addRules:[{name:'Regiment'}], note:['+ Regiment']},
-      'hell-pit-abomination': {stats:{T:'6'}, addRules:[{name:'Impact Hits (D3+1)'}], note:['Toughness → 6','+ Impact Hits D3+1']},
-      'warp-lightning-cannon': {note:['Weapon: + Multiple Wounds D3+1, Magical Attacks; cannot strike an enemy character within 3\" of a friendly 5+ same-type unit unless it is the closest target']},
-      'plague-furnace': {baseSize:'60x100 min, 75x100 max', note:['Base → 60×100 / 75×100 mm','May only use Dragged Along to join Plague Monks','If a mount: no Verminous Valour']},
-      'screaming-bell': {baseSize:'60x100 min, 75x100 max', note:['Base → 60×100 / 75×100 mm','May only use Dragged Along to join Clanrats or Stormvermin','If a mount: no Verminous Valour']}
+      'master-assassin': {stats:{A:'4'}, addRules:[{name:'Always Strikes First'},{name:'Dodge'}], note:['Attacks → 4','Single hand weapon + throwing weapons','Magic items up to 75 pts','+ Always Strikes First, Dodge (5+ Ward save)']},
+      'skaven-chieftain': {note:['BSB +25 (magic standard no limit)']},
+      'grey-seer': {note:['Base 155 pts; Level 4 Wizard +30']},
+      'warlock-engineer': {note:['Doomrocket +35, Warlock Optics +10; wizard levels +30/+60']},
+      'clanrats': {addRules:[{name:'Regimental Unit'}], note:['Unit size → 20+','+ Regimental Unit','0-1/1000 may take a magic standard up to 50 pts']},
+      'stormvermin': {addRules:[{name:'Regimental Unit'}], note:['Heavy infantry; Core; min 10','+ Regimental Unit']},
+      'giant-rats': {stats:{S:'3'}, addRules:[{name:'Open Order'},{name:'Motley Crew'}], note:['Strength → 3','+ Open Order, Motley Crew','Packmaster → Master Moulder +20']},
+      'night-runners': {addRules:[{name:'Skirmishers'},{name:'Vanguard'},{name:'Regimental Unit'}], note:['Two hand weapons','+ Skirmishers, Vanguard, Regimental Unit','0-1/1000 may take a Warp Grinder weapon-team detachment']},
+      'gutter-runners': {addRules:[{name:'Poisoned Attacks'}], note:['+ Poisoned Attacks; Assassin +7']},
+      'plague-monks': {addRules:[{name:'Regimental Unit'}], note:['+ Regimental Unit','0-1/1000 may take a Plague Censer Bearer detachment']},
+      'rat-ogres': {addRules:[{name:'Scurrying Masses'},{name:'Warpstone Weapons'},{name:'Motley Crew'}], note:['+ Scurrying Masses, Warpstone Weapons, Motley Crew']},
+      'plague-censer-bearers': {stats:{A:'2'}, addRules:[{name:'Hatred (all enemies)'},{name:'Detachment'},{name:'Plague Disciples'}], note:['Attacks → 2; min 5','Detachment for Plague Monks']},
+      'weapon-team': {addRules:[{name:'Skirmishers'},{name:'Detachment'}], note:['+ Skirmishers, Detachment (may ignore minimum models)','Warpfire Thrower 60→40 pts','Doom-flayer gains Swiftstride','Misfire weapons use the Skaven Misfire table']},
+      'warplock-jezzails': {note:['Base 15 pts; Reserve Move optional; pavise restored']},
+      'poisoned-wind-globadiers': {note:['Removed long-range penalty; 0-1/1000; Life is Cheap simplified']},
+      'doomwheel': {stats:{S:'6',W:'5'}, addRules:[{name:'Impact Hits (D6+1)'},{name:'Stomp Attacks (D3)'}], note:['Strength → 6, Wounds → 5','Impact Hits (D6+1), Stomp Attacks (D3)','Crushing Bulk (Stomp AP-2 + first-hit Disrupted); Warp Lightning Bolt + Zzzzap']},
+      'hell-pit-abomination': {stats:{T:'6'}, addRules:[{name:'Impact Hits (D3+1)'},{name:'Warpstone Spikes'}], note:['Toughness → 6','+ Warpstone Spikes (Impact Hits AP-2 + Magical Attacks)']},
+      'warp-lightning-cannon': {note:['+ Multiple Wounds D3+1, Magical Attacks; Skaven Misfire table']},
+      'screaming-bell': {stats:{M:'5'}, baseSize:'60x100 min, 75x100 max', addRules:[{name:'Pushed Into Battle'}], note:['Movement → 5; +185 to Grey Seer','Pushed Into Battle (replaces Dragged Along); joins Clanrats/Stormvermin','Tolling table reworked']},
+      'plague-furnace': {stats:{M:'5'}, baseSize:'60x100 mm', addRules:[{name:'Impact Hits (D6+1)'},{name:'Terror'},{name:'Pushed Into Battle'}], note:['Movement → 5; +170 to Plague Priest','Impact Hits (D6+1); + Terror','Pushed Into Battle; joins Plague Monks only','Billowing Death breath weapon']}
     },
-    rules: [{n:'Weapon Teams', c:'+ Detachment; remove Deploying Weapon Teams & Weapon Team Leadership; may ignore the minimum models to form a Detachment.'}],
-    spells: [{n:'Skitterleap', c:'7+'},{n:'Cloud of Corruption', c:'9+'},{n:'Warp Lightning', c:'9+'}]
+    rules: [
+      {n:'Verminous Valour', c:'Clarified/restricted: may retire only in the Combat phase, before attacks are allocated, in a US 10+ unit, not in a Challenge.'},
+      {n:'Weapon Teams', c:'+ Detachment + Skirmish; remove Deploying Weapon Teams & Weapon Team Leadership; may ignore the minimum models to form a Detachment.'},
+      {n:'Pushed Into Battle', c:'Replaces Dragged Along on the Bell/Furnace: a Heavy Chariot may join Infantry (US 10+), centre-front, losing Lumbering; one per unit.'},
+      {n:'Expendable', c:'Simplified: all failed-to-hit rolls when shooting into the combat count as hits against the friendly Expendable unit.'},
+      {n:'Poisoned Wind', c:'A To Wound roll of 5+ is always a success; no armour save (Ward/Regeneration as normal).'},
+      {n:'Scurrying Masses', c:'Within 3" of a friendly Skaven unit, add a + Leadership modifier equal to that unit’s current Rank Bonus (max Ld 10). Not with Warband/Inspiring Presence.'},
+      {n:'Skaven Misfire table', c:'New artillery misfire: 1 Whoompff! / 2-5 Wildly off Target / 6 Pppphhtt!'},
+      {n:'Leader of the Pack', c:'Packmasters/Master Moulders may only join Dregs, Rat Ogres or Giant Rats; may sit behind the front rank.'},
+      {n:'Plague Disciples', c:'Used as a detachment, may only be a detachment for a regiment of Plague Monks.'},
+      {n:'Cornered Rats', c:'Skaven Dregs that break from combat are destroyed; if 10+ models, units within 2D6" suffer D3 Strength 3 hits.'},
+      {n:'Blessings of the Horned Rat', c:'Screaming Bell: 5+ Ward save vs any wounds; any unit it joins gains Stubborn.'},
+      {n:'Tolling the Bell', c:'Reworked table (result 2 = D3 wounds AP-1 to the Bell + units within 3"; result 12 = enemy in Command range failing a Ld test suffer D3+3 wounds).'},
+      {n:'Master Moulder', c:'A Packmaster may be upgraded to a Master Moulder (+20): WS5/S4/T4/W2/I5/Ld7, with Verminous Valour and Leader of the Pack.'}
+    ],
+    spells: [{n:'Skitterleap', c:'7+'},{n:'Warp Lightning', c:'9+ (D3+1 S5, AP-3)'},{n:'Cloud of Corruption', c:'9+'}]
   },
   'vampire-counts': {
     comp: 'Renegade: rules changes only (standard composition kept).',
