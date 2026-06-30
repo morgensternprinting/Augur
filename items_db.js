@@ -5,7 +5,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Ogre Blade",
     "pts": 75,
     "d": "Combat, S+2, AP-2. Armour Bane (1), Magical Attacks, Multiple Wounds (D3). A broad and heavy blade.",
-    "df": "Combat, F+2, PA-2. Fléau des Armures (1), Attaques Magiques, Blessures Multiples (D3). Une lame large et lourde."
+    "df": "Combat, F+2, PA-2. Arme Perforante (1), Attaques Magiques, Blessures Multiples (D3). Une lame large et lourde."
    },
    {
     "n": "Cackling Blade",
@@ -17,7 +17,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Sword of Battle",
     "pts": 60,
     "d": "Combat, S+1, AP-1. Armour Bane (1), Extra Attacks (+1), Magical Attacks.",
-    "df": "Combat, F+1, PA-1. Fléau des Armures (1), Attaques Supplémentaires (+1), Attaques Magiques."
+    "df": "Combat, F+1, PA-1. Arme Perforante (1), Attaques Supplémentaires (+1), Attaques Magiques."
    },
    {
     "n": "Duellist's Blades",
@@ -53,7 +53,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Giant Blade",
     "pts": 30,
     "d": "Combat, S+1, -. Armour Bane (2), Magical Attacks, Multiple Wounds (2).",
-    "df": "Combat, F+1, -. Fléau des Armures (2), Attaques Magiques, Blessures Multiples (2)."
+    "df": "Combat, F+1, -. Arme Perforante (2), Attaques Magiques, Blessures Multiples (2)."
    },
    {
     "n": "Hell-forged Axe",
@@ -89,7 +89,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Biting Blade",
     "pts": 15,
     "d": "Combat, S, AP-2. Armour Bane (1), Magical Attacks.",
-    "df": "Combat, F, PA-2. Fléau des Armures (1), Attaques Magiques."
+    "df": "Combat, F, PA-2. Arme Perforante (1), Attaques Magiques."
    },
    {
     "n": "Sword of Striking",
@@ -1685,7 +1685,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Razor Standard",
     "pts": 40,
     "d": "A unit carrying the Razor Standard gains the Armour Bane (2) special rule.",
-    "df": "Une unité portant l'Étendard du Rasoir gagne la règle spéciale Fléau des Armures (2)."
+    "df": "Une unité portant l'Étendard du Rasoir gagne la règle spéciale Arme Perforante (2)."
    },
    {
     "n": "Banner of Swirling Wind",
