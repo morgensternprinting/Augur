@@ -4,8 +4,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Ogre Blade",
     "pts": 75,
-    "d": "S+2, AP-2. A broad and heavy blade.",
-    "df": "F+2, PA-2. Une lame large et lourde."
+    "d": "Combat, S+2, AP-2. Armour Bane (1), Magical Attacks, Multiple Wounds (D3). A broad and heavy blade.",
+    "df": "Combat, F+2, PA-2. Fléau des Armures (1), Attaques Magiques, Blessures Multiples (D3). Une lame large et lourde."
    },
    {
     "n": "Cackling Blade",
@@ -16,20 +16,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Sword of Battle",
     "pts": 60,
-    "d": "S+1, AP-1. +1 Attack.",
-    "df": "F+1, PA-1. +1 Attaque."
+    "d": "Combat, S+1, AP-1. Armour Bane (1), Extra Attacks (+1), Magical Attacks.",
+    "df": "Combat, F+1, PA-1. Fléau des Armures (1), Attaques Supplémentaires (+1), Attaques Magiques."
    },
    {
     "n": "Duellist's Blades",
     "pts": 55,
-    "d": "S, AP-1. +2 Attacks. Must be used as an additional hand weapon.",
-    "df": "F, PA-1. +2 Attaques. Doit être utilisée comme arme de base supplémentaire."
+    "d": "Combat, S, AP-1. Extra Attacks (+2), Magical Attacks, Requires Two Hands.",
+    "df": "Combat, F, PA-1. Attaques Supplémentaires (+2), Attaques Magiques, Arme à Deux Mains (Requires Two Hands)."
    },
    {
     "n": "Dragon Slaying Sword",
     "pts": 50,
-    "d": "S, -. The wielder has the Armour Bane (D3) and Heroic Killing Blow special rules against models with the Large Target special rule.",
-    "df": "F, -. Le porteur a les règles spéciales Arme Perforante (D3) et Coup Fatal Héroïque contre les figurines ayant la règle spéciale Grande Cible."
+    "d": "Combat, S, -. Magical Attacks, Monster Slayer. A mighty blade wielded by heroes to slay foul monsters.",
+    "df": "Combat, F, -. Attaques Magiques, Tueur de Monstres. Une lame puissante maniée par les héros pour terrasser d'immondes monstres."
    },
    {
     "n": "Meteor Hammer",
@@ -40,20 +40,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Headsman's Axe",
     "pts": 45,
-    "d": "S+1, AP-1. The wielder has the Killing Blow and Heroic Killing Blow special rules.",
-    "df": "F+1, PA-1. Le porteur a les règles spéciales Coup Fatal et Coup Fatal Héroïque."
+    "d": "Combat, S+1, AP-1. Killing Blow, Magical Attacks, Requires Two Hands.",
+    "df": "Combat, F+1, PA-1. Coup Fatal, Attaques Magiques, Arme à Deux Mains (Requires Two Hands)."
    },
    {
     "n": "Spelleater Axe",
     "pts": 35,
-    "d": "S, AP-1. The wielder dispels one spell per Magic phase as a bound spell (Power Level 2). No roll required.",
-    "df": "F, PA-1. Le porteur dissipe un sort par phase de Magie comme un sort Lié (Niveau de Pouvoir 2). Aucun jet requis."
+    "d": "Combat, S, AP-1. Magical Attacks, Magic Resistance (-2).",
+    "df": "Combat, F, PA-1. Attaques Magiques, Résistance à la Magie (-2)."
    },
    {
     "n": "Giant Blade",
     "pts": 30,
-    "d": "S+1, -. The wielder has the Strike First special rule.",
-    "df": "F+1, -. Le porteur a la règle spéciale Frappe En Premier."
+    "d": "Combat, S+1, -. Armour Bane (2), Magical Attacks, Multiple Wounds (2).",
+    "df": "Combat, F+1, -. Fléau des Armures (2), Attaques Magiques, Blessures Multiples (2)."
    },
    {
     "n": "Hell-forged Axe",
@@ -70,38 +70,38 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Sword of Swiftness",
     "pts": 25,
-    "d": "S, -. The wielder has +2 Attacks.",
-    "df": "F, -. Le porteur a +2 Attaques."
+    "d": "Combat, S, -. Magical Attacks, Strike First.",
+    "df": "Combat, F, -. Attaques Magiques, Frappe en Premier."
    },
    {
     "n": "Berserker Blade",
     "pts": 20,
-    "d": "S+1, -. Wielder gains Impetuous.",
-    "df": "F+1, -. Le porteur gagne Impétueux."
+    "d": "Combat, S+1, -. Frenzy, Magical Attacks.",
+    "df": "Combat, F+1, -. Frénésie, Attaques Magiques."
    },
    {
     "n": "Sword of Might",
     "pts": 20,
-    "d": "S+1, AP-1. Extremely Common.",
-    "df": "F+1, PA-1. Extrêmement Commun."
+    "d": "Combat, S+1, AP-1. Magical Attacks. Extremely Common.",
+    "df": "Combat, F+1, PA-1. Attaques Magiques. Extrêmement Commun."
    },
    {
     "n": "Biting Blade",
     "pts": 15,
-    "d": "S, AP-2.",
-    "df": "F, PA-2."
+    "d": "Combat, S, AP-2. Armour Bane (1), Magical Attacks.",
+    "df": "Combat, F, PA-2. Fléau des Armures (1), Attaques Magiques."
    },
    {
     "n": "Sword of Striking",
     "pts": 15,
-    "d": "S, -. +1 To Hit modifier in Combat. Extremely Common.",
-    "df": "F, -. Modificateur de +1 pour toucher en Combat. Extrêmement Commun."
+    "d": "Combat, S, -. Magical Attacks. Notes: during the Combat phase, the wielder has a +1 modifier to their rolls To Hit. Extremely Common.",
+    "df": "Combat, F, -. Attaques Magiques. Notes : en phase de Combat, le porteur a un modificateur de +1 à ses jets pour toucher. Extrêmement Commun."
    },
    {
     "n": "Burning Blade",
     "pts": 5,
-    "d": "S, -. Flaming Attacks. Extremely Common.",
-    "df": "F, -. Attaques Enflammées. Extrêmement Commun."
+    "d": "Combat, S, -. Flaming Attacks, Magical Attacks. Extremely Common.",
+    "df": "Combat, F, -. Attaques Enflammées, Attaques Magiques. Extrêmement Commun."
    }
   ],
   "beastmen-brayherds": [
@@ -814,32 +814,32 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Armour of Destiny",
     "pts": 70,
-    "d": "Heavy armour + 4+ Ward save.",
-    "df": "Armure lourde + sauvegarde Invulnérable 4+."
+    "d": "A suit of heavy armour. In addition, its wearer has a 4+ Ward save against any wounds suffered.",
+    "df": "Une armure lourde. De plus, le porteur a une sauvegarde Invulnérable de 4+ contre toute blessure subie."
    },
    {
     "n": "Bedazzling Helm",
     "pts": 60,
-    "d": "Infantry/cavalry only. +1 armour value (max 2+). Enemies suffer -1 To Hit against bearer in Combat.",
-    "df": "Infanterie/cavalerie uniquement. +1 à la valeur d'armure (max 2+). Les ennemis subissent -1 pour toucher le porteur en Combat."
+    "d": "May be worn with other armour. The wearer improves their armour value by 1 (to a maximum of 2+). In addition, any enemy model that directs its attacks against the wearer during the Combat phase suffers a -1 modifier to its rolls To Hit.",
+    "df": "Peut être porté avec une autre armure. Le porteur améliore sa valeur d'armure de 1 (jusqu'à un maximum de 2+). De plus, toute figurine ennemie dirigeant ses attaques contre le porteur en phase de Combat subit un modificateur de -1 à ses jets pour toucher."
    },
    {
     "n": "Armour of Silvered Steel",
     "pts": 40,
-    "d": "Armour value 3+ which cannot be improved in any way.",
-    "df": "Valeur d'armure de 3+ qui ne peut être améliorée d'aucune façon."
+    "d": "A suit of armour that gives its wearer an armour value of 3+ which cannot be improved in any way.",
+    "df": "Une armure qui confère au porteur une valeur d'armure de 3+ qui ne peut être améliorée d'aucune façon."
    },
    {
     "n": "Glittering Scales",
     "pts": 35,
-    "d": "Light armour. Once per turn, force opponent to re-roll one To Hit roll against the bearer.",
-    "df": "Armure légère. Une fois par tour, oblige l'adversaire à relancer un jet pour toucher contre le porteur."
+    "d": "A suit of light armour. In addition, once per turn, you may make your opponent re-roll a single roll To Hit made against the wearer.",
+    "df": "Une armure légère. De plus, une fois par tour, vous pouvez forcer l'adversaire à relancer un seul jet pour toucher dirigé contre le porteur."
    },
    {
     "n": "Shield of the Warrior True",
     "pts": 30,
-    "d": "Shield. 5+ Ward save against wounds in the Shooting phase.",
-    "df": "Bouclier. Sauvegarde Invulnérable 5+ contre les blessures en phase de Tir."
+    "d": "A shield. In addition, its bearer has a 5+ Ward save against any wounds suffered during the Shooting phase.",
+    "df": "Un bouclier. De plus, son porteur a une sauvegarde Invulnérable de 5+ contre toute blessure subie en phase de Tir."
    },
    {
     "n": "Levitating Shield",
@@ -850,14 +850,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Spellshield",
     "pts": 25,
-    "d": "Shield. 5+ Ward save vs wounds from Magic Missiles, Magical Vortexes, or Assailments. Extremely Common.",
-    "df": "Bouclier. Sauvegarde Invulnérable 5+ contre les blessures des Projectiles Magiques, Vortex Magiques ou Assaillements. Extrêmement Commun."
+    "d": "A shield. In addition, its bearer has a 5+ Ward save against any wounds suffered that were caused by a Magic Missile, a Magical Vortex, or an Assailment spell. Extremely Common.",
+    "df": "Un bouclier. De plus, son porteur a une sauvegarde Invulnérable de 5+ contre toute blessure subie causée par un Projectile Magique, un Vortex Magique ou un sort d'Assaillement. Extrêmement Commun."
    },
    {
     "n": "Armour of Meteoric Iron",
     "pts": 20,
-    "d": "Armour value 5+ — cannot be improved OR reduced in any way.",
-    "df": "Valeur d'armure de 5+ — ne peut être ni améliorée ni réduite d'aucune façon."
+    "d": "Gives its wearer an armour value of 5+, which cannot be improved in any way. Nor can this armour value be reduced in any way either.",
+    "df": "Confère au porteur une valeur d'armure de 5+, qui ne peut être améliorée d'aucune façon. Cette valeur d'armure ne peut pas non plus être réduite d'aucune façon."
    },
    {
     "n": "Trailblazer's Hauberk",
@@ -868,14 +868,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Enchanted Shield",
     "pts": 10,
-    "d": "Shield. 6+ Ward save vs non-magical attacks. Extremely Common.",
-    "df": "Bouclier. Sauvegarde Invulnérable 6+ contre les attaques non magiques. Extrêmement Commun."
+    "d": "A shield. In addition, its bearer has a 6+ Ward save against any wounds suffered that were caused by a non-magical enemy attack. Extremely Common.",
+    "df": "Un bouclier. De plus, son porteur a une sauvegarde Invulnérable de 6+ contre toute blessure subie causée par une attaque ennemie non magique. Extrêmement Commun."
    },
    {
     "n": "Charmed Shield",
     "pts": 5,
-    "d": "Shield. Single use: 5+ Ward save against one wound, then becomes mundane. Extremely Common.",
-    "df": "Bouclier. Usage unique : sauvegarde Invulnérable 5+ contre une blessure, puis devient ordinaire. Extrêmement Commun."
+    "d": "A shield. In addition, once per game the Charmed Shield gives its bearer a 5+ Ward save against a single wound. Once this Ward save has been used, the shield is considered to be an ordinary, non-magical shield. Extremely Common.",
+    "df": "Un bouclier. De plus, une fois par partie, le Bouclier Enchanté confère à son porteur une sauvegarde Invulnérable de 5+ contre une seule blessure. Une fois cette sauvegarde Invulnérable utilisée, le bouclier est considéré comme un bouclier ordinaire non magique. Extrêmement Commun."
    }
   ],
   "beastmen-brayherds": [
@@ -1252,8 +1252,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Dawnstone",
     "pts": 35,
-    "d": "Re-roll Armour Save rolls of a natural 1.",
-    "df": "Relancer les jets de Sauvegarde d'armure de 1 naturel."
+    "d": "The bearer may re-roll any Armour Save roll of a natural 1.",
+    "df": "Le porteur peut relancer tout jet de Sauvegarde d'armure de 1 naturel."
    },
    {
     "n": "Icon of Fortitude",
@@ -1270,26 +1270,26 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Talisman of Protection",
     "pts": 30,
-    "d": "5+ Ward save.",
-    "df": "Sauvegarde Invulnérable 5+."
+    "d": "Gives its bearer a 5+ Ward save against any wounds suffered.",
+    "df": "Confère à son porteur une sauvegarde Invulnérable de 5+ contre toute blessure subie."
    },
    {
     "n": "Paymaster's Coin",
     "pts": 25,
-    "d": "Single use. Re-roll all failed rolls To Hit in Combat. Extremely Common.",
-    "df": "Usage unique. Relancer tous les jets pour toucher ratés en Combat. Extrêmement Commun."
+    "d": "Single use. The bearer can re-roll any failed rolls To Hit made during the Combat phase. Extremely Common.",
+    "df": "Usage unique. Le porteur peut relancer tous les jets pour toucher ratés effectués en phase de Combat. Extrêmement Commun."
    },
    {
     "n": "Obsidian Lodestone",
     "pts": 20,
-    "d": "Up to 3x. Each gives Magic Resistance (-1). Extremely Common.",
-    "df": "Jusqu'à 3 fois. Chacun confère Résistance à la Magie (-1). Extrêmement Commun."
+    "d": "A model may purchase up to three Obsidian Lodestones. A model bearing a single Obsidian Lodestone has Magic Resistance (-1), two grants Magic Resistance (-2), and three grants Magic Resistance (-3). Extremely Common.",
+    "df": "Une figurine peut acheter jusqu'à trois Pierres d'Obsidienne. Une figurine portant une seule Pierre d'Obsidienne a Résistance à la Magie (-1), deux confèrent Résistance à la Magie (-2) et trois confèrent Résistance à la Magie (-3). Extrêmement Commun."
    },
    {
     "n": "Luckstone",
     "pts": 15,
-    "d": "Single use. Re-roll one failed Armour Save. Extremely Common.",
-    "df": "Usage unique. Relancer une Sauvegarde d'armure ratée. Extrêmement Commun."
+    "d": "Single use. The bearer can re-roll a single failed Armour Save roll. Extremely Common.",
+    "df": "Usage unique. Le porteur peut relancer un seul jet de Sauvegarde d'armure raté. Extrêmement Commun."
    }
   ],
   "beastmen-brayherds": [
@@ -1666,8 +1666,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Banner of Iron Resolve",
     "pts": 50,
-    "d": "Unit gains Stubborn.",
-    "df": "L'unité gagne Obstiné."
+    "d": "A unit carrying the Banner of Iron Resolve gains the Stubborn special rule.",
+    "df": "Une unité portant la Bannière de Résolution de Fer gagne la règle spéciale Obstiné."
    },
    {
     "n": "Banner of the Steadfast",
@@ -1684,8 +1684,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Razor Standard",
     "pts": 40,
-    "d": "Unit gains Armour Bane (2).",
-    "df": "L'unité gagne Arme Perforante (2)."
+    "d": "A unit carrying the Razor Standard gains the Armour Bane (2) special rule.",
+    "df": "Une unité portant l'Étendard du Rasoir gagne la règle spéciale Fléau des Armures (2)."
    },
    {
     "n": "Banner of Swirling Wind",
@@ -1696,14 +1696,14 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Rampaging Banner",
     "pts": 30,
-    "d": "Re-roll the Charge roll when declaring a charge.",
-    "df": "Relancer le jet de Charge lors de la déclaration d'une charge."
+    "d": "When a unit carrying the Rampaging Banner declares a charge, it may re-roll its Charge roll.",
+    "df": "Lorsqu'une unité portant la Bannière Déchaînée déclare une charge, elle peut relancer son jet de Charge."
    },
    {
     "n": "The Blazing Banner",
     "pts": 25,
-    "d": "Unit gains Flaming Attacks.",
-    "df": "L'unité gagne Attaques Enflammées."
+    "d": "A unit carrying the Blazing Banner gains the Flaming Attacks special rule.",
+    "df": "Une unité portant la Bannière Flamboyante gagne la règle spéciale Attaques Enflammées."
    },
    {
     "n": "Monster Hunter's Tapestry",
@@ -1714,8 +1714,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "War Banner",
     "pts": 25,
-    "d": "+1 combat result point.",
-    "df": "+1 point de résultat de combat."
+    "d": "When calculating its combat result, a unit carrying the War Banner may claim an additional bonus of +1 combat result point.",
+    "df": "Lors du calcul de son résultat de combat, une unité portant la Bannière de Guerre peut revendiquer un bonus supplémentaire de +1 point de résultat de combat."
    }
   ],
   "beastmen-brayherds": [
@@ -2386,8 +2386,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Wizarding Hat",
     "pts": 45,
-    "d": "Wearer becomes a Level 1 Wizard knowing 1 random spell but gains Stupidity.",
-    "df": "Le porteur devient un Magicien de Niveau 1 connaissant 1 sort aléatoire mais gagne Stupidité."
+    "d": "The wearer is a Level 1 Wizard and knows one randomly generated spell from a Lore of Magic of your choosing. However, the wearer also becomes subject to the Stupidity special rule.",
+    "df": "Le porteur est un Magicien de Niveau 1 et connaît un sort généré aléatoirement dans un Domaine de Magie de votre choix. Toutefois, le porteur devient également sujet à la règle spéciale Stupidité."
    },
    {
     "n": "Arch-Lightning Rod",
@@ -2398,20 +2398,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Flying Carpet",
     "pts": 40,
-    "d": "Regular/heavy infantry only. Bearer gains Fly (8) and Swiftstride but cannot join a unit.",
-    "df": "Infanterie régulière/lourde uniquement. Le porteur gagne Vol (8) et Rapide mais ne peut rejoindre une unité."
+    "d": "Models whose troop type is 'regular infantry' or 'heavy infantry' only. The bearer gains the Fly (8) and Swiftstride special rules. However, the bearer cannot join a unit.",
+    "df": "Figurines dont le type de troupe est « infanterie régulière » ou « infanterie lourde » uniquement. Le porteur gagne les règles spéciales Vol (8) et Foulée Rapide (Swiftstride). Toutefois, le porteur ne peut pas rejoindre une unité."
    },
    {
     "n": "Healing Potion",
     "pts": 35,
-    "d": "Single use. Recover D3 lost Wounds. Extremely Common.",
-    "df": "Usage unique. Récupère D3 PV perdus. Extrêmement Commun."
+    "d": "Single use. During the Command sub-phase of their turn, the bearer can consume it. The model immediately recovers D3 lost Wounds. Extremely Common.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut la consommer. La figurine récupère immédiatement D3 PV perdus. Extrêmement Commun."
    },
    {
     "n": "Ruby Ring of Ruin",
     "pts": 35,
-    "d": "Cast Fireball (Battle Magic) as a Bound Spell (Power Level 1).",
-    "df": "Lance Boule de Feu (Magie de Bataille) comme un Sort Lié (Niveau de Pouvoir 1)."
+    "d": "The wielder can cast the Fireball spell from the Lore of Battle Magic as a Bound spell, with a Power Level of 2.",
+    "df": "Le porteur peut lancer le sort Boule de Feu du Domaine de la Magie de Bataille comme un Sort Lié, avec un Niveau de Pouvoir de 2."
    },
    {
     "n": "Potion of Fervour",
@@ -2422,8 +2422,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Potion of Strength",
     "pts": 25,
-    "d": "Single use. Until end of turn: +D3 Strength (max 10). Extremely Common.",
-    "df": "Usage unique. Jusqu'à la fin du tour : +D3 Force (max 10). Extrêmement Commun."
+    "d": "Single use. During the Command sub-phase of their turn, the bearer can consume it. Until the end of that turn, the model has a +D3 modifier to its Strength characteristic (to a maximum of 10). Extremely Common.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut la consommer. Jusqu'à la fin de ce tour, la figurine a un modificateur de +D3 à sa caractéristique de Force (jusqu'à un maximum de 10). Extrêmement Commun."
    },
    {
     "n": "Becalming Orb",
@@ -2434,20 +2434,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Potion of Toughness",
     "pts": 20,
-    "d": "Single use. Until end of turn: +D3 Toughness (max 10). Extremely Common.",
-    "df": "Usage unique. Jusqu'à la fin du tour : +D3 Endurance (max 10). Extrêmement Commun."
+    "d": "Single use. During the Command sub-phase of their turn, the bearer can consume it. Until the end of that turn, the model has a +D3 modifier to its Toughness characteristic (to a maximum of 10). Extremely Common.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut la consommer. Jusqu'à la fin de ce tour, la figurine a un modificateur de +D3 à sa caractéristique d'Endurance (jusqu'à un maximum de 10). Extrêmement Commun."
    },
    {
     "n": "Potion of Speed",
     "pts": 10,
-    "d": "Single use. Until end of turn: +D3 Initiative (max 10). Extremely Common.",
-    "df": "Usage unique. Jusqu'à la fin du tour : +D3 Initiative (max 10). Extrêmement Commun."
+    "d": "Single use. During the Command sub-phase of their turn, the bearer can consume it. Until the end of that turn, the model has a +D3 modifier to its Initiative characteristic (to a maximum of 10). Extremely Common.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut la consommer. Jusqu'à la fin de ce tour, la figurine a un modificateur de +D3 à sa caractéristique d'Initiative (jusqu'à un maximum de 10). Extrêmement Commun."
    },
    {
     "n": "Potion of Foolhardiness",
     "pts": 5,
-    "d": "Single use. Until end of turn: bearer gains Immune to Psychology. Extremely Common.",
-    "df": "Usage unique. Jusqu'à la fin du tour : le porteur gagne Immunisé à la Psychologie. Extrêmement Commun."
+    "d": "Single use. During the Command sub-phase of their turn, the bearer can consume it. Until the end of that turn, the model gains the Immune to Psychology special rule. Extremely Common.",
+    "df": "Usage unique. Durant la sous-phase de Commandement de son tour, le porteur peut la consommer. Jusqu'à la fin de ce tour, la figurine gagne la règle spéciale Immunisé à la Psychologie. Extrêmement Commun."
    }
   ],
   "beastmen-brayherds": [
@@ -2912,20 +2912,20 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Feedback Scroll",
     "pts": 60,
-    "d": "Single use. Use instead of Wizardly Dispel. Spell cast normally; then roll 2D6: each 4+ costs casting Wizard 1 Wound.",
-    "df": "Usage unique. À utiliser à la place d'une Dissipation de Magicien. Le sort est lancé normalement ; lancer ensuite 2D6 : chaque 4+ coûte 1 PV au Magicien lanceur."
+    "d": "Single use. The bearer may use this scroll instead of making a Wizardly dispel attempt. The spell is cast as normal. Once the spell has been resolved, roll two D6. For each roll of a 4+, the casting Wizard loses a single Wound.",
+    "df": "Usage unique. Le porteur peut utiliser ce parchemin à la place d'une tentative de Dissipation de Magicien. Le sort est lancé normalement. Une fois le sort résolu, lancer deux D6. Pour chaque résultat de 4+, le Magicien lanceur perd un PV."
    },
    {
     "n": "Scroll of Transmogrification",
     "pts": 50,
-    "d": "Single use. Use instead of Wizardly Dispel. Spell resolved normally; casting Wizard rolls vs their Level or turns into a frog. Extremely Common.",
-    "df": "Usage unique. À utiliser à la place d'une Dissipation de Magicien. Le sort est résolu normalement ; le Magicien lanceur fait un jet sous son Niveau ou est transformé en grenouille. Extrêmement Commun."
+    "d": "Single use. The bearer may use this scroll instead of making a Wizardly dispel attempt. The spell is cast as normal. Once the spell has been resolved, the casting player must roll equal to or lower than the casting Wizard's Level of Wizardry on a single D6; should they fail, the Wizard turns into a frog. Whilst transmogrified, the Wizard cannot cast or dispel spells, cannot use any equipment, and reduces all characteristics (excluding Wounds) to 1. During each Start of Turn sub-phase, roll a D6 for each transmogrified Wizard; on a 4+ the Wizard returns to normal. Extremely Common.",
+    "df": "Usage unique. Le porteur peut utiliser ce parchemin à la place d'une tentative de Dissipation de Magicien. Le sort est lancé normalement. Une fois le sort résolu, le joueur lanceur doit faire un jet inférieur ou égal au Niveau de Magie du Magicien lanceur sur un seul D6 ; en cas d'échec, le Magicien est transformé en grenouille. Tant qu'il est transformé, le Magicien ne peut ni lancer ni dissiper de sorts, ne peut utiliser aucun équipement et réduit toutes ses caractéristiques (PV exclus) à 1. À chaque sous-phase de Début de Tour, lancer un D6 pour chaque Magicien transformé ; sur un 4+ le Magicien revient à la normale. Extrêmement Commun."
    },
    {
     "n": "Wand of Jet",
     "pts": 45,
-    "d": "+1 to Casting and Dispel rolls. Any natural double destroys the Wand.",
-    "df": "+1 aux jets de Lancement et de Dissipation. Tout double naturel détruit la Baguette."
+    "d": "The bearer may apply a +1 modifier to any of their Casting or Dispel rolls. However, should they roll any natural double when making a Casting or Dispel roll, the Wand of Jet is destroyed and cannot be used again. Note that this is a modifier to the result of a roll; it does not negate a roll of a natural double 1.",
+    "df": "Le porteur peut appliquer un modificateur de +1 à n'importe lequel de ses jets de Lancement ou de Dissipation. Toutefois, s'il obtient un double naturel sur un jet de Lancement ou de Dissipation, la Baguette de Jais est détruite et ne peut plus être utilisée. À noter qu'il s'agit d'un modificateur au résultat d'un jet ; il n'annule pas un double 1 naturel."
    },
    {
     "n": "Staff of Quietude",
@@ -2936,8 +2936,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Lore Familiar",
     "pts": 30,
-    "d": "Do not randomly generate spells; choose freely from chosen lore (including signature).",
-    "df": "Ne génère pas ses sorts aléatoirement ; les choisit librement dans le domaine sélectionné (sort signature inclus)."
+    "d": "The owner does not randomly generate their spells. Instead, they may choose which spells they know from their chosen lore (including that lore's signature spell).",
+    "df": "Le possesseur ne génère pas ses sorts aléatoirement. À la place, il peut choisir les sorts qu'il connaît dans son domaine choisi (sort signature du domaine inclus)."
    },
    {
     "n": "Scroll of Disruption",
@@ -2954,26 +2954,26 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Dispel Scroll",
     "pts": 20,
-    "d": "Single use. When dispelling: roll extra D6, discard lowest. Double 1 on any two dice = outclassed. Extremely Common.",
-    "df": "Usage unique. En dissipant : lancer un D6 supplémentaire, écarter le plus bas. Un double 1 sur deux dés quelconques = surclassé. Extrêmement Commun."
+    "d": "Single use. A Wizard may use this scroll when attempting a Wizardly dispel. If they do so, roll an extra D6 when making the Dispel roll and discard the lowest result. However, if a double 1 is rolled on any two of the dice rolled, the Wizard is outclassed in the art. Extremely Common.",
+    "df": "Usage unique. Un Magicien peut utiliser ce parchemin lorsqu'il tente une Dissipation de Magicien. S'il le fait, lancer un D6 supplémentaire pour le jet de Dissipation et écarter le résultat le plus bas. Toutefois, si un double 1 est obtenu sur deux quelconques des dés lancés, le Magicien est surclassé dans l'art. Extrêmement Commun."
    },
    {
     "n": "Power Scroll",
     "pts": 20,
-    "d": "Single use. When casting: roll extra D6, discard lowest. Double 1 on any two dice = miscast. Extremely Common.",
-    "df": "Usage unique. Lors d’une tentative de Lancement : lancer un D6 supplémentaire, écarter le plus bas. Un double 1 sur deux dés quelconques = Fiasco. Extrêmement Commun."
+    "d": "Single use. A Wizard may use this scroll when attempting to cast a spell. If they do so, roll an extra D6 when making the Casting roll and discard the lowest result. However, if a double 1 is rolled on any two of the dice rolled, the spell is miscast. Extremely Common.",
+    "df": "Usage unique. Un Magicien peut utiliser ce parchemin lorsqu'il tente de lancer un sort. S'il le fait, lancer un D6 supplémentaire pour le jet de Lancement et écarter le résultat le plus bas. Toutefois, si un double 1 est obtenu sur deux quelconques des dés lancés, le sort est un Fiasco. Extrêmement Commun."
    },
    {
     "n": "Arcane Familiar",
     "pts": 15,
-    "d": "Know spells from two Lores of Magic. Roll for each lore separately.",
-    "df": "Connaît des sorts de deux Domaines de Magie. Lancer pour chaque domaine séparément."
+    "d": "The owner knows spells from two Lores of Magic, rather than the usual one. When determining the spells the Wizard knows, roll for each Lore separately. Duplicate spells are re-rolled as normal. The Wizard may discard one randomly generated spell, replacing it with the signature spell of the same Lore of Magic.",
+    "df": "Le possesseur connaît des sorts de deux Domaines de Magie, au lieu d'un seul habituellement. Pour déterminer les sorts connus du Magicien, lancer pour chaque Domaine séparément. Les sorts en double sont relancés normalement. Le Magicien peut écarter un sort généré aléatoirement et le remplacer par le sort signature du même Domaine de Magie."
    },
    {
     "n": "Earthing Rod",
     "pts": 5,
-    "d": "Single use. Re-roll a Miscast table result.",
-    "df": "Usage unique. Relancer un résultat sur la table des Fiascos."
+    "d": "Single use. Should they miscast a spell, a Wizard can use the Earthing Rod to re-roll the result rolled on the Miscast table.",
+    "df": "Usage unique. En cas de Fiasco, un Magicien peut utiliser la Tige de Mise à la Terre pour relancer le résultat obtenu sur la table des Fiascos."
    }
   ],
   "beastmen-brayherds": [
