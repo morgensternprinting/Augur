@@ -159,25 +159,25 @@ window.MAGIC_ITEMS_DB = {
     "n": "Black Hammer of Hashut",
     "pts": 60,
     "d": "S+2, AP-1, Flaming Attacks, Magical Attacks, Multiple Wounds (D3). Against Flammable models, also has Killing Blow.",
-    "df": "F+2, PA-1, Attaques Enflammées, Attaques Magiques, Blessures Multiples (D3). Contre les figurines Inflammables, a aussi Coup Fatal."
+    "df": "F+2, PA-1, Attaques Enflammées, Attaques Magiques, Blessures Multiples (D3). Contre les figurines suivant la règle spéciale Inflammable, cette arme gagne la règle spéciale Coup Fatal."
    },
    {
     "n": "Dark Maul",
     "pts": 50,
     "d": "S, AP-2, Killing Blow, Magical Attacks. Any enemy suffering 1+ unsaved wounds from it must take a Strength test or lose 1 additional Wound.",
-    "df": "F, PA-2, Coup Fatal, Attaques Magiques. Tout ennemi subissant 1+ blessure non sauvegardée doit faire un test de Force ou perdre 1 PV supplémentaire."
+    "df": "F, PA-2, Coup Fatal, Attaques Magiques. Une figurine ennemie qui subit au moins une blessure non sauvegardée infligée par la Masse des Ténèbres doit immédiatement passer un test de Force. En cas d'échec, cet ennemi perd un Point de Vie supplémentaire."
    },
    {
     "n": "Dagger of Malice",
     "pts": 35,
     "d": "S, -. Grants Frenzy, Hatred (all enemies), Magical Attacks. The wielder cannot lose Frenzy.",
-    "df": "F, -. Confère Frénésie, Haine (tous les ennemis), Attaques Magiques. Le porteur ne peut pas perdre Frénésie."
+    "df": "F, -. Frénésie, Haine (tous les ennemis), Attaques Magiques. Contrairement aux autres figurines Frénétiques, le porteur de la Dague de Malice ne perd jamais cette règle spéciale."
    },
    {
     "n": "The Graven Sceptre",
     "pts": 30,
     "d": "S+1, -, Magical Attacks. Roll To Wound of 4+ always succeeds, regardless of Toughness.",
-    "df": "F+1, -, Attaques Magiques. Un jet pour Blesser de 4+ réussit toujours, quelle que soit l'Endurance."
+    "df": "F+1, -, Attaques Magiques. Lors d'un jet pour Blesser suite à une touche causée par le Sceptre Gravé, un résultat de 4+ réussit toujours, quelle que soit l'Endurance de la cible."
    }
   ],
   "warriors-of-chaos": [
@@ -531,7 +531,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Death Globe",
     "pts": 25,
     "d": "R 9\", Magical Attacks, Move & Shoot. Single use. Target a specific model within the target unit (champion/character). Roll To Hit; if it hits, centre a small (3\") blast template over the target. Any model under it takes an Initiative test; if failed, it loses a single Wound. Extremely Common.",
-    "df": "Portée 9 ps, Attaques Magiques, Bouger & Tirer. Usage unique. Cible une figurine précise de l'unité visée (champion/personnage). Jet pour toucher ; en cas de réussite, centrer un petit gabarit d'explosion (3 ps) sur la cible. Toute figurine sous le gabarit fait un test d'Initiative ; en cas d'échec, elle perd un point de Vie. Extrêmement Commun."
+    "df": "Portée 9 ps, Attaques Magiques, Mouvement & Tir. Usage unique. Cible une figurine précise de l'unité visée (champion/personnage). Jet pour toucher ; en cas de réussite, centrer un petit gabarit d'explosion (3 ps) sur la cible. Toute figurine sous le gabarit fait un test d'Initiative ; en cas d'échec, elle perd un point de Vie. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -921,7 +921,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "The Mask of the Furnace",
     "pts": 40,
     "d": "May be worn with other armour. +1 armour value (max 2+). 3+ Ward save vs Flaming Attacks.",
-    "df": "Peut être porté avec une autre armure. +1 à la valeur d'armure (max 2+). Sauvegarde Invulnérable 3+ contre les Attaques Enflammées."
+    "df": "Peut être porté avec une autre armure. Le porteur améliore sa valeur d'armure de 1 (jusqu'à un maximum de 2+). De plus, il gagne une sauvegarde invulnérable de 3+ contre les blessures infligées par des attaques avec la règle spéciale Attaques Enflammées."
    }
   ],
   "warriors-of-chaos": [
@@ -1101,7 +1101,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Warpstone Armour",
     "pts": 25,
     "d": "Heavy armour. May be purchased and worn even without the armour option, and may be worn by a Wizard without penalty. Extremely Common.",
-    "df": "Armure lourde. Peut être achetée et portée même sans l'option d'armure, et peut être portée par un Magicien sans pénalité. Extrêmement Commun."
+    "df": "Armure lourde. Peut être achetée et portée même sans l'option d'armure, et peut être portée par un Magicien sans pénalité. Extrêmement Courant."
    },
    {
     "n": "Cautious Shield",
@@ -2145,7 +2145,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Banner of Verminous Scurrying",
     "pts": 35,
     "d": "Unit gains the Swiftstride special rule.",
-    "df": "L'unité gagne la règle Rapide (Swiftstride)."
+    "df": "L'unité gagne la règle Rapide."
    },
    {
     "n": "Plague Banner",
@@ -2499,7 +2499,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Breath of Hashut",
     "pts": 25,
     "d": "Single use. Breath weapon: S4, AP-2, Flaming Attacks, Magical Attacks.",
-    "df": "Usage unique. Arme à Souffle : F4, PA-2, Attaques Enflammées, Attaques Magiques."
+    "df": "Une seule utilisation. Le Souffle d'Hashut est une Arme à Souffle avec le profil suivant : F4, PA-2, Arme à Souffle, Attaques Enflammées, Attaque Magique."
    },
    {
     "n": "Obsidian Vambraces",
@@ -2775,7 +2775,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Skavenbrew",
     "pts": 20,
     "d": "Single use. Skaven Warlords and Skaven Chieftains only. In the Command sub-phase (if not engaged), make a Leadership test to distribute it to a unit the bearer has joined; if passed, that character and the unit gain Frenzy until next Start of Turn. Extremely Common.",
-    "df": "Usage unique. Seigneurs de Guerre et Chefs Skavens uniquement. En sous-phase de Commandement (s'il n'est pas engagé), faire un test de Commandement pour le distribuer à une unité rejointe ; en cas de réussite, ce personnage et l'unité gagnent Frénésie jusqu'au prochain Début de Tour. Extrêmement Commun."
+    "df": "Usage unique. Seigneurs de Guerre Skavens et Chefs Skavens uniquement. En sous-phase de Commandement (s'il n'est pas engagé), faire un test de Commandement pour le distribuer à une unité rejointe ; en cas de réussite, ce personnage et l'unité gagnent Frénésie jusqu'au prochain Début de Tour. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -2903,7 +2903,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Fires of Nan-Gau",
     "pts": 20,
     "d": "0-1 per model. Single use. A breath weapon with the following profile: S4, AP-2, with the Breath Weapon, Flaming Attacks and Magical Attacks special rules.",
-    "df": "0-1 par figurine. Usage unique. Une arme à souffle au profil suivant : F4, PA-2, avec les règles spéciales Arme à Souffle, Attaques Enflammées et Attaques Magiques."
+    "df": "0-1 par figurine. Usage unique. Les Feux de Nan-Gau sont une arme à souffle ayant le profil suivant : F4, PA-2, avec les règles spéciales Arme à Souffle, Attaques Enflammées et Attaques Magiques."
    }
   ]
  },
@@ -3025,13 +3025,13 @@ window.MAGIC_ITEMS_DB = {
     "n": "Vial of Lammasu Blood",
     "pts": 40,
     "d": "Single use. A Wizard may use it instead of a dispel attempt to automatically dispel a spell (no Dispel roll). A perfect invocation cannot be dispelled.",
-    "df": "Usage unique. Un Magicien peut l'utiliser au lieu d'une tentative de dissipation pour dissiper automatiquement un sort (sans jet de Dissipation). Une invocation parfaite ne peut être dissipée."
+    "df": "Une seule utilisation. Un Sorcier peut utiliser cet objet au lieu de tenter une dissipation. Dans ce cas, le sort est automatiquement dissipé, sans besoin de faire de jet de dissipation. Notez qu'une Invocation Parfaite ne peut être dissipée."
    },
    {
     "n": "Scroll of Binding",
     "pts": 30,
     "d": "Single use. A Wizard may use it when casting a spell: roll 3D6 for the Casting roll instead of 2D6. A double 1 on any two of the dice = miscast. Extremely Common.",
-    "df": "Usage unique. Un Magicien peut l'utiliser en lançant un sort : lancer 3D6 pour le jet de Lancement au lieu de 2D6. Un double 1 sur deux dés quelconques = Fiasco. Extrêmement Commun."
+    "df": "Une seule utilisation. Un Sorcier peut utiliser ce parchemin lorsqu'il tente de lancer un sort. Dans ce cas, il lance 3D6 pour le jet de Lancement (au lieu de 2D6). Cependant, si un double 1 est obtenu sur n'importe quelle paire de dés, le sort est un Fiasco. Extrêmement Commun."
    }
   ],
   "warriors-of-chaos": [
@@ -3296,7 +3296,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Warp Condenser",
     "pts": 50,
     "d": "+3\" Dispel range. When casting a Magic Missile, +1 modifier to the Casting roll. On a Miscast, may re-roll the result on the Miscast table.",
-    "df": "+3 ps de portée de Dissipation. Pour lancer un Projectile Magique, +1 au jet de Lancement. En cas de fiasco, peut relancer le résultat sur la table de Fiasco."
+    "df": "+3 ps de portée de Dissipation. Pour lancer un Projectile Magique, +1 au jet de Lancement. En cas de Fiasco, peut relancer le résultat sur la table de Fiasco."
    },
    {
     "n": "Storm Daemon",
@@ -3308,7 +3308,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Warpstone Tokens",
     "pts": 15,
     "d": "A Wizard may purchase up to three (each single use). Before a Casting roll, consume a Token to roll an additional D3 added to the Casting roll; for each natural 1 rolled, the Wizard loses a single Wound. Extremely Common.",
-    "df": "Un Magicien peut en acheter jusqu'à trois (chacun à usage unique). Avant un jet de Lancement, consommer un Fragment pour lancer un D3 supplémentaire ajouté au jet ; pour chaque 1 naturel obtenu, le Magicien perd un point de Vie. Extrêmement Commun."
+    "df": "Un Magicien peut en acheter jusqu'à trois (chacun à usage unique). Avant un jet de Lancement, consommer un Fragment pour lancer un D3 supplémentaire ajouté au jet ; pour chaque 1 naturel obtenu, le Magicien perd un point de Vie. Extrêmement Courant."
    }
   ],
   "tomb-kings-of-khemri": [
@@ -3596,7 +3596,7 @@ window.MAGIC_ITEMS_DB = {
     "n": "Axe of Khorne",
     "pts": 35,
     "d": "Combat S+1, AP-1. Killing Blow, Magical Attacks, Requires Two Hands. Extremely Common (may be taken multiple times).",
-    "df": "Corps à corps F+1, PA-1. Coup Fatal, Attaques Magiques, Arme à Deux Mains. Extrêmement Commun (peut être pris plusieurs fois)."
+    "df": "Corps à corps F+1, PA-1. Coup Fatal, Attaques Magiques, Armes à Deux Mains. Extrêmement Commun (peut être pris plusieurs fois)."
    },
    {
     "n": "Collar of Khorne",
