@@ -1046,8 +1046,8 @@ window.MAGIC_ITEMS_DB = {
    {
     "n": "Shield of the Mirror Pool",
     "pts": 40,
-    "d": "This is a shield. In addition, each time the bearer loses one or more Wounds to a Magic Missile, the caster suffers a single Strength 5 hit with AP -2.",
-    "df": "C'est un bouclier. De plus, chaque fois que le porteur perd un ou plusieurs PV à cause d'un Projectile Magique, le lanceur subit une touche de Force 5 avec PA -2."
+    "d": "This is a shield. In addition, each time the bearer loses one or more Wounds to a Magic Missile, the caster suffers a single Strength 5 hit with an AP of -2.",
+    "df": "Le Bouclier du Bassin Miroitant est un bouclier. De plus, chaque fois que le porteur perd un ou plusieurs Points de Vie à cause d'un Projectile Magique, le lanceur du sort subit une seule touche de Force 5 avec une PA de -2."
    },
    {
     "n": "Hide of the Cold Ones",
