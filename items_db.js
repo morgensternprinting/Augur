@@ -56,10 +56,10 @@ window.MAGIC_ITEMS_DB = {
       {n:"Von Trickschotte's Wondrous Arquebus", pts:25, d:"36\", S5, AP-2. City-state of Nuln only. Armour Bane (1), Multiple Wounds (D3). No -1 modifier for long range.", df:"36\", F5, PA-2. Armée d'Infamie de la Cité-État de Nuln uniquement. Arme Perforante (1), Blessures Multiples (D3). Pas de modificateur de -1 pour le tir à Longue Portée."},
     ],
     "dark-elves": [
-      {n:"Executioner's Axe", pts:70, d:"S, AP-2. Roll To Wound on 2+ always succeeds.", df:"F, PA-2. Les jets pour blesser réussissent toujours sur 2+."},
-      {n:"Sword of Ruin", pts:65, d:"S, *. No armour, Ward or Regeneration saves permitted.", df:"F, *. Aucune sauvegarde d'armure, Invulnérable ou de Régénération autorisée."},
-      {n:"Lifetaker", pts:35, d:"24\", S3, AP-1. Repeater crossbow.", df:"24\", F3, PA-1. Arbalète à répétition."},
-      {n:"Whip of Agony", pts:30, d:"S+1, AP-1. High Beastmasters only. Enemy hit suffers -1 Toughness (permanent, min 1).", df:"F+1, PA-1. Hauts Belluaires uniquement. L'ennemi touché subit -1 Endurance (permanent, min 1)."},
+      {n:"Executioner's Axe", pts:70, d:"Combat weapon: S, AP-2, with Killing Blow, Magical Attacks and Strikes Last. Any roll To Wound of 2+ always succeeds, regardless of the target's Toughness.", df:"Arme de Combat : F, PA-2, avec Coup Fatal, Attaques Magiques et Frappe en Dernier. Tout jet pour blesser de 2+ est toujours une réussite, quelle que soit l'Endurance de la cible."},
+      {n:"Sword of Ruin", pts:65, d:"Combat weapon: S, AP *, with Magical Attacks. No armour, Ward or Regeneration saves are permitted against wounds caused by this weapon.", df:"Arme de Combat : F, PA *, avec Attaques Magiques. Aucune sauvegarde d'armure, Invulnérable ou de Régénération n'est autorisée contre les blessures causées par cette arme."},
+      {n:"Lifetaker", pts:35, d:"Repeater crossbow: 24\", S3, AP-1, with Armour Bane (1), Magical Attacks, Multiple Shots (D3+1) and Poisoned Attacks.", df:"Arbalète à répétition : 24 ps, F3, PA-1, avec Fléau des Armures (1), Attaques Magiques, Tirs Multiples (D3+1) et Attaques Empoisonnées."},
+      {n:"Whip of Agony", pts:30, d:"Combat weapon: S+1, AP-1, with Magical Attacks and Strike First. High Beastmasters only. Any enemy model suffering one or more unsaved wounds from this weapon has its Toughness reduced by -1 (permanent, to a minimum of 1) for the rest of the game.", df:"Arme de Combat : F+1, PA-1, avec Attaques Magiques et Frappe en Premier. Hauts Belluaires uniquement. Toute figurine ennemie subissant une ou plusieurs blessures non sauvegardées de cette arme voit son Endurance réduite de -1 (permanent, minimum 1) pour le reste de la partie."},
     ],
     "high-elf-realms": [
       {n:"Woodsman's Axe", pts:90, d:"S+3, AP-4. Chracian Warhost only.", df:"F+3, PA-4. Armée de Chrace uniquement."},
